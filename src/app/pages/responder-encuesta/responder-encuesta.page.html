@@ -1,0 +1,115 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Responder Encuesta {{ tipoEncuesta === 'turista' ? 'Turística' : 'de Alojamiento' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <!-- Selector de tipo de encuesta -->
+  <div class="tipo-selector">
+    <ion-segment [(ngModel)]="tipoEncuesta" (ionChange)="cambiarTipo($event.detail.value)">
+      <ion-segment-button value="turista">
+        <ion-icon name="people-outline"></ion-icon>
+        <ion-label>Turística</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="hotel">
+        <ion-icon name="business-outline"></ion-icon>
+        <ion-label>Alojamiento</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <form #formulario="ngForm">
+    
+    <!-- Secciones de preguntas -->
+    <div *ngFor="let seccion of obtenerSecciones()" class="seccion-card">
+      <h3 class="seccion-titulo">{{ seccion }}</h3>
+      
+      <div *ngFor="let pregunta of getPreguntasPorSeccion(seccion)" class="pregunta-item">
+        <label class="pregunta-label">
+          <span class="codigo">{{ pregunta.codigo }}</span>
+          {{ pregunta.texto }}
+          <span class="obligatoria" *ngIf="pregunta.obligatoria">*</span>
+        </label>
+        
+        <!-- Input tipo texto -->
+        <ion-input 
+          *ngIf="pregunta.tipo === 'text' || pregunta.tipo === 'email'"
+          [type]="pregunta.tipo"
+          [(ngModel)]="respuestas[pregunta.codigo]"
+          [name]="pregunta.codigo"
+          [required]="pregunta.obligatoria"
+          [placeholder]="pregunta.valorDefault || 'Ingrese su respuesta'">
+        </ion-input>
+        
+        <!-- Input tipo número -->
+        <ion-input 
+          *ngIf="pregunta.tipo === 'number'"
+          type="number"
+          [(ngModel)]="respuestas[pregunta.codigo]"
+          [name]="pregunta.codigo"
+          [required]="pregunta.obligatoria"
+          placeholder="0">
+        </ion-input>
+        
+        <!-- Select simple -->
+        <ion-select 
+          *ngIf="pregunta.tipo === 'select'"
+          [(ngModel)]="respuestas[pregunta.codigo]"
+          [name]="pregunta.codigo"
+          [required]="pregunta.obligatoria"
+          placeholder="Seleccione una opción">
+          <ion-select-option *ngFor="let opcion of pregunta.opciones" [value]="opcion">
+            {{ opcion }}
+          </ion-select-option>
+        </ion-select>
+        
+        <!-- Multi-select -->
+        <ion-select 
+          *ngIf="pregunta.tipo === 'multiselect'"
+          [(ngModel)]="respuestas[pregunta.codigo]"
+          [name]="pregunta.codigo"
+          [required]="pregunta.obligatoria"
+          multiple="true"
+          placeholder="Seleccione opciones">
+          <ion-select-option *ngFor="let opcion of pregunta.opciones" [value]="opcion">
+            {{ opcion }}
+          </ion-select-option>
+        </ion-select>
+        
+        <!-- Escala 1-5 -->
+        <ion-select 
+          *ngIf="pregunta.tipo === 'escala'"
+          [(ngModel)]="respuestas[pregunta.codigo]"
+          [name]="pregunta.codigo"
+          [required]="pregunta.obligatoria"
+          placeholder="Seleccione nivel">
+          <ion-select-option *ngFor="let opcion of pregunta.opciones" [value]="opcion">
+            {{ opcion }}
+          </ion-select-option>
+        </ion-select>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="action-buttons">
+      <ion-button expand="block" (click)="guardarRespuestas()" [disabled]="guardando" color="success">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        {{ guardando ? 'Guardando...' : 'Guardar Respuestas' }}
+      </ion-button>
+      
+      <ion-button expand="block" (click)="exportarCSV()" [disabled]="exportando" color="primary">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
+        {{ exportando ? 'Exportando...' : 'Exportar CSV' }}
+      </ion-button>
+    </div>
+
+  </form>
+
+</ion-content>

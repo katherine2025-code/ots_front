@@ -1,0 +1,99 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/etl"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalles del Proceso ETL #{{ idProceso }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="descargarPDF()">
+        <ion-icon name="download-outline"></ion-icon>
+        PDF
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="proceso && estadisticas">
+    <!-- Información del Proceso -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Información del Proceso</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <p><strong>Archivo:</strong> {{ proceso.nombre_archivo }}</p>
+              <p><strong>Fecha Inicio:</strong> {{ proceso.fecha_inicio | date:'short' }}</p>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <p><strong>Fecha Fin:</strong> {{ proceso.fecha_fin | date:'short' }}</p>
+              <p><strong>Estado:</strong> 
+                <ion-badge [color]="proceso.estado === 'COMPLETADO' ? 'success' : 'danger'">
+                  {{ proceso.estado }}
+                </ion-badge>
+              </p>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Estadísticas -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Estadísticas del Proceso</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="3">
+              <div style="text-align: center; padding: 10px;">
+                <ion-icon name="database-outline" size="large" color="primary"></ion-icon>
+                <h3>{{ estadisticas.total_registros || 0 }}</h3>
+                <p>Total Registros</p>
+              </div>
+            </ion-col>
+            <ion-col size="12" size-md="3">
+              <div style="text-align: center; padding: 10px;">
+                <ion-icon name="checkmark-circle-outline" size="large" color="success"></ion-icon>
+                <h3>{{ estadisticas.registros_exitosos || 0 }}</h3>
+                <p>Exitosos</p>
+              </div>
+            </ion-col>
+            <ion-col size="12" size-md="3">
+              <div style="text-align: center; padding: 10px;">
+                <ion-icon name="close-circle-outline" size="large" color="danger"></ion-icon>
+                <h3>{{ estadisticas.registros_error || 0 }}</h3>
+                <p>Errores</p>
+              </div>
+            </ion-col>
+            <ion-col size="12" size-md="3">
+              <div style="text-align: center; padding: 10px;">
+                <ion-icon name="analytics-outline" size="large" color="tertiary"></ion-icon>
+                <h3>{{ estadisticas.tasa_exito || 0 }}%</h3>
+                <p>Tasa de Éxito</p>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Gráfico -->
+    <ion-card *ngIf="datosGrafico && datosGrafico.length > 0">
+      <ion-card-header>
+        <ion-card-title>Evolución de Datos</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <canvas id="estadisticasChart"></canvas>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div *ngIf="!proceso" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando detalles del proceso...</p>
+  </div>
+</ion-content>

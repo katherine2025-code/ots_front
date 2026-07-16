@@ -1,0 +1,282 @@
+<ion-header class="ion-no-print">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/etl"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Reporte Estadístico - Proceso #{{ idProceso }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="descargarPDF()" color="light">
+        <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+        PDF
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="reporte-content">
+  <div class="reporte-container">
+    
+    <!-- ENCABEZADO -->
+    <div class="reporte-header">
+      <div class="titulo-container">
+        <h1>OBSERVATORIO TURÍSTICO SOSTENIBLE</h1>
+        <h2>Universidad Estatal Península de Santa Elena - UPSE</h2>
+        <h3>Reporte Estadístico de {{ tipoDatos === 'encuestas' ? 'Encuestas Turísticas' : 'Ocupación Hotelera' }}</h3>
+        <p class="periodo">Período: {{ periodoReporte }} | Generado: {{ hoy | date:'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+    </div>
+
+    <!-- INFORMACIÓN DEL PROCESO -->
+    <div class="seccion" *ngIf="proceso">
+      <h4 class="seccion-titulo">INFORMACIÓN DEL PROCESO ETL</h4>
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>ID Proceso:</strong> {{ proceso.id_etl }}
+        </div>
+        <div class="info-item">
+          <strong>Archivo:</strong> {{ proceso.nombre_archivo }}
+        </div>
+        <div class="info-item">
+          <strong>Fecha de Carga:</strong> {{ proceso.fecha_fin | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+        <div class="info-item">
+          <strong>Estado:</strong> 
+          <span class="badge" [class.success]="proceso.estado === 'COMPLETADO'">
+            {{ proceso.estado }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- INDICADORES PARA ENCUESTAS -->
+    <!-- ========================================== -->
+    <div class="seccion" *ngIf="estadisticas && tipoDatos === 'encuestas'">
+      <h4 class="seccion-titulo">INDICADORES CLAVE - ENCUESTAS TURÍSTICAS</h4>
+      
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-icon">
+            <ion-icon name="people-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ estadisticas.total_registros || 0 }}</h3>
+            <p class="stat-label">Total Encuestas</p>
+          </div>
+        </div>
+
+        <div class="stat-card success">
+          <div class="stat-icon">
+            <ion-icon name="globe-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ estadisticas.paises_diferentes || 0 }}</h3>
+            <p class="stat-label">Países Diferentes</p>
+          </div>
+        </div>
+
+        <div class="stat-card warning">
+          <div class="stat-icon">
+            <ion-icon name="star-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ estadisticas.satisfaccion_promedio | number:'1.1-1' }}</h3>
+            <p class="stat-label">Satisfacción (1-5)</p>
+          </div>
+        </div>
+
+        <div class="stat-card info">
+          <div class="stat-icon">
+            <ion-icon name="cash-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">${{ estadisticas.gasto_promedio | number:'1.2-2' }}</h3>
+            <p class="stat-label">Gasto Promedio</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de estadísticas -->
+      <div class="tabla-container">
+        <table class="tabla-estadisticas">
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Valor</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Total de Encuestas</td>
+              <td><strong>{{ estadisticas.total_registros || 0 }}</strong></td>
+              <td>Registros procesados</td>
+            </tr>
+            <tr>
+              <td>Registros Exitosos</td>
+              <td><strong>{{ estadisticas.registros_exitosos || 0 }}</strong></td>
+              <td>Datos válidos</td>
+            </tr>
+            <tr>
+              <td>Registros con Error</td>
+              <td><strong>{{ estadisticas.registros_error || 0 }}</strong></td>
+              <td>Datos rechazados</td>
+            </tr>
+            <tr>
+              <td>Tasa de Éxito</td>
+              <td><strong>{{ estadisticas.tasa_exito || 0 }}%</strong></td>
+              <td>Porcentaje de éxito</td>
+            </tr>
+            <tr>
+              <td>Países Representados</td>
+              <td><strong>{{ estadisticas.paises_diferentes || 0 }}</strong></td>
+              <td>Origen de turistas</td>
+            </tr>
+            <tr>
+              <td>Noches Promedio</td>
+              <td><strong>{{ estadisticas.noches_promedio | number:'1.1-1' }}</strong></td>
+              <td>Duración de estadía</td>
+            </tr>
+            <tr>
+              <td>Gasto Promedio (USD)</td>
+              <td><strong>${{ estadisticas.gasto_promedio | number:'1.2-2' }}</strong></td>
+              <td>Gasto por turista</td>
+            </tr>
+            <tr>
+              <td>Satisfacción Promedio</td>
+              <td><strong>{{ estadisticas.satisfaccion_promedio | number:'1.1-1' }} / 5</strong></td>
+              <td>Nivel de satisfacción</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- INDICADORES PARA OCUPACIÓN HOTELERA -->
+    <!-- ========================================== -->
+    <div class="seccion" *ngIf="estadisticas && tipoDatos === 'ocupacion'">
+      <h4 class="seccion-titulo">INDICADORES CLAVE - OCUPACIÓN HOTELERA (MINTUR)</h4>
+      
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-icon">
+            <ion-icon name="business-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ estadisticas.ocupacion_promedio | number:'1.1-1' }}%</h3>
+            <p class="stat-label">Ocupación Promedio</p>
+          </div>
+        </div>
+
+        <div class="stat-card success">
+          <div class="stat-icon">
+            <ion-icon name="people-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ estadisticas.total_huespedes || 0 }}</h3>
+            <p class="stat-label">Total Huéspedes</p>
+          </div>
+        </div>
+
+        <div class="stat-card warning">
+          <div class="stat-icon">
+            <ion-icon name="cash-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">${{ estadisticas.tarifa_promedio | number:'1.2-2' }}</h3>
+            <p class="stat-label">Tarifa Promedio</p>
+          </div>
+        </div>
+
+        <div class="stat-card info">
+          <div class="stat-icon">
+            <ion-icon name="document-text-outline"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value">{{ estadisticas.total_registros || 0 }}</h3>
+            <p class="stat-label">Total Registros</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabla-container">
+        <table class="tabla-estadisticas">
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Valor</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>% Ocupación (OCC)</td>
+              <td><strong>{{ estadisticas.ocupacion_promedio | number:'1.1-1' }}%</strong></td>
+              <td>Habitaciones ocupadas</td>
+            </tr>
+            <tr>
+              <td>Tarifa Promedio (ADR)</td>
+              <td><strong>${{ estadisticas.tarifa_promedio | number:'1.2-2' }}</strong></td>
+              <td>Ingreso por habitación</td>
+            </tr>
+            <tr>
+              <td>Total Huéspedes</td>
+              <td><strong>{{ estadisticas.total_huespedes || 0 }}</strong></td>
+              <td>Nacionales + Extranjeros</td>
+            </tr>
+            <tr>
+              <td>Tasa de Éxito</td>
+              <td><strong>{{ estadisticas.tasa_exito || 0 }}%</strong></td>
+              <td>Porcentaje de éxito</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- GRÁFICOS -->
+    <!-- ========================================== -->
+    <div class="seccion" *ngIf="datosGrafico && datosGrafico.length > 0">
+      <h4 class="seccion-titulo">ANÁLISIS VISUAL DE DATOS</h4>
+      
+      <div class="graficos-grid">
+        <!-- Gráficos para ENCUESTAS -->
+        <div class="grafico-card" *ngIf="tipoDatos === 'encuestas'">
+          <canvas id="encuestasChart"></canvas>
+        </div>
+
+        <div class="grafico-card" *ngIf="tipoDatos === 'encuestas'">
+          <canvas id="satisfaccionChart"></canvas>
+        </div>
+
+        <!-- Gráficos para OCUPACIÓN -->
+        <div class="grafico-card" *ngIf="tipoDatos === 'ocupacion'">
+          <canvas id="ocupacionChart"></canvas>
+        </div>
+
+        <div class="grafico-card" *ngIf="tipoDatos === 'ocupacion'">
+          <canvas id="huespedesChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje si no hay datos para gráficos -->
+    <div class="seccion" *ngIf="!datosGrafico || datosGrafico.length === 0">
+      <div class="no-data">
+        <ion-icon name="analytics-outline" size="large"></ion-icon>
+        <p>No hay datos históricos suficientes para generar gráficos.</p>
+        <p>Se necesitan registros con fechas válidas en la base de datos.</p>
+      </div>
+    </div>
+
+    <!-- PIE DE PÁGINA -->
+    <div class="reporte-footer">
+      <p><strong>Elaborado por:</strong> Observatorio Turístico Sostenible - UPSE</p>
+      <p><strong>Metodología:</strong> Ministerio de Turismo del Ecuador (MINTUR)</p>
+      <p><strong>Fecha de generación:</strong> {{ hoy | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+    </div>
+
+  </div>
+</ion-content>

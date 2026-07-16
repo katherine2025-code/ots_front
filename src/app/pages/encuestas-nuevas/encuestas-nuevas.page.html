@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancelar()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Crear Nueva Encuesta</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="create-options">
+    <h2>Selecciona una opción para crear tu encuesta</h2>
+    
+    <div class="options-grid">
+      <!-- Opción 1: Crear desde borrador -->
+      <div class="option-card" (click)="crearDesdeBorrador()">
+        <ion-icon name="create-outline"></ion-icon>
+        <h3>Crear desde un borrador</h3>
+        <p>Empieza desde cero y añade preguntas manualmente</p>
+      </div>
+
+      <!-- Opción 2: Usar plantilla -->
+      <div class="option-card" (click)="usarPlantilla()">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <h3>Usar una plantilla</h3>
+        <p>Elige entre plantillas predefinidas (MINTUR, OTS, etc.)</p>
+      </div>
+
+      <!-- Opción 3: Cargar XLSForm -->
+      <div class="option-card" (click)="cargarXLSForm()">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+        <h3>Cargar un XLSForm</h3>
+        <p>Importa desde KoboToolbox o ODK</p>
+      </div>
+
+      <!-- Opción 4: Importar desde URL -->
+      <div class="option-card">
+        <ion-icon name="link-outline"></ion-icon>
+        <h3>Importar desde URL</h3>
+        <p>Importa un formulario desde una URL</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

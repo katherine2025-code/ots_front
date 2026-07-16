@@ -1,0 +1,365 @@
+<app-sidebar>
+  <div class="etl-page">
+    <!-- Header -->
+    <header class="page-header">
+      <div class="header-left">
+        <h1>Carga de Datos ETL</h1>
+        <p class="subtitle">Importar datos desde archivos CSV al Observatorio Turístico</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-refresh" (click)="cargarDatosIniciales()">
+          <ion-icon name="refresh-outline"></ion-icon>
+          Actualizar
+        </button>
+      </div>
+    </header>
+
+    <!-- Tarjetas de Estadísticas -->
+    <div class="stats-grid" *ngIf="estadoProcesos">
+      <div class="stat-card stat-active">
+        <ion-icon name="server-outline"></ion-icon>
+        <div>
+          <h3>{{ estadoProcesos.procesos_activos }}</h3>
+          <p>Procesos Activos</p>
+        </div>
+      </div>
+      <div class="stat-card stat-success">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        <div>
+          <h3>{{ estadoProcesos.procesos_completados }}</h3>
+          <p>Completados</p>
+        </div>
+      </div>
+      <div class="stat-card stat-error">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <div>
+          <h3>{{ estadoProcesos.procesos_fallidos }}</h3>
+          <p>Fallidos</p>
+        </div>
+      </div>
+      <div class="stat-card stat-info">
+        <ion-icon name="database-outline"></ion-icon>
+        <div>
+          <h3>{{ estadisticas?.total_registros || 0 }}</h3>
+          <p>Total Registros</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+      <button 
+        [class.active]="tabActiva === 'cargar'"
+        (click)="cambiarTab('cargar')"
+        class="tab-button">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+        Cargar Datos
+      </button>
+      <button 
+        [class.active]="tabActiva === 'historial'"
+        (click)="cambiarTab('historial')"
+        class="tab-button">
+        <ion-icon name="time-outline"></ion-icon>
+        Historial
+      </button>
+      <button 
+        [class.active]="tabActiva === 'programadas'"
+        (click)="cambiarTab('programadas')"
+        class="tab-button">
+        <ion-icon name="calendar-outline"></ion-icon>
+        Programadas
+      </button>
+      <button 
+        [class.active]="tabActiva === 'logs'"
+        (click)="cambiarTab('logs')"
+        class="tab-button">
+        <ion-icon name="bug-outline"></ion-icon>
+        Logs de Errores
+      </button>
+    </div>
+
+    <!-- TAB: Cargar Datos -->
+    <div *ngIf="tabActiva === 'cargar'" class="tab-content">
+      <!-- Alertas -->
+      <div *ngIf="uploadSuccess" class="alert alert-success">
+        <ion-icon name="checkmark-circle-outline"></ion-icon>
+        <div>
+          <strong>¡Carga exitosa!</strong>
+          <p *ngIf="resultadoCarga">
+            Total: {{ resultadoCarga.total }} | Exitosos: {{ resultadoCarga.exitosos }} | Errores: {{ resultadoCarga.errores }}
+          </p>
+          <p *ngIf="resultadoCarga?.mensaje">{{ resultadoCarga.mensaje }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="uploadError" class="alert alert-error">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <div>
+          <strong>Error</strong>
+          <p>{{ uploadError }}</p>
+        </div>
+      </div>
+
+      <div class="upload-card">
+        <h2>
+          <ion-icon name="cloud-upload-outline"></ion-icon>
+          Subir Archivo CSV
+        </h2>
+
+        <!-- Selector de tipo -->
+        <div class="tipo-carga">
+          <label class="input-label">Tipo de Datos a Cargar</label>
+          <select [(ngModel)]="tipoCarga" class="custom-select">
+            <option *ngFor="let tipo of tiposDatos" [value]="tipo.tipo">
+              {{ tipo.nombre }} - {{ tipo.descripcion }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Drag & Drop Zone -->
+        <div 
+          class="drop-zone"
+          [class.dragging]="isDragging"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (click)="abrirSelectorArchivos()">
+          <div class="drop-content">
+            <ion-icon name="cloud-upload-outline" class="upload-icon"></ion-icon>
+            <h3>Arrastra tu archivo CSV aquí</h3>
+            <p>o haz clic para explorar archivos</p>
+            <span class="file-types">Formato: .csv | Tamaño máximo: 10MB</span>
+          </div>
+          <input 
+            #fileInput
+            id="fileInput"
+            type="file" 
+            accept=".csv,text/csv"
+            (change)="onFileSelected($event)"
+            style="display: none">
+        </div>
+
+        <!-- Archivo seleccionado -->
+        <div *ngIf="selectedFile" class="file-preview">
+          <div class="file-info">
+            <ion-icon name="document-text-outline"></ion-icon>
+            <div class="file-details">
+              <span class="file-name">{{ selectedFile.name }}</span>
+              <span class="file-size">{{ (selectedFile.size / 1024).toFixed(2) }} KB</span>
+            </div>
+            <button class="btn-remove" (click)="clearFile()">
+              <ion-icon name="close-circle-outline"></ion-icon>
+            </button>
+          </div>
+
+          <div *ngIf="isUploading || uploadProgress > 0" class="progress-container">
+            <div class="progress-bar" [style.width.%]="uploadProgress">
+              {{ uploadProgress }}%
+            </div>
+          </div>
+        </div>
+
+        <button 
+          class="btn-upload"
+          [disabled]="!selectedFile || isUploading"
+          (click)="cargarArchivo()">
+          <ion-icon name="arrow-up-circle-outline"></ion-icon>
+          {{ isUploading ? 'Procesando...' : 'Iniciar Carga ETL' }}
+        </button>
+      </div>
+
+      <!-- Información de formatos -->
+      <div class="info-section" *ngIf="tiposDatos.length > 0">
+        <h3>
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Formatos Requeridos por Tipo
+        </h3>
+        <div class="format-grid">
+          <div *ngFor="let tipo of tiposDatos" class="format-card">
+            <h4>{{ tipo.nombre }}</h4>
+            <p>{{ tipo.descripcion }}</p>
+            <div class="campos">
+              <strong>Campos requeridos:</strong>
+              <div class="campos-list">
+                <span *ngFor="let campo of tipo.campos_requeridos" class="campo-tag">
+                  {{ campo }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Historial -->
+    <div *ngIf="tabActiva === 'historial'" class="tab-content">
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Historial de Cargas ETL</h3>
+          <div class="table-actions">
+            <select [(ngModel)]="filtroHistorial" (change)="cargarHistorial()" class="filter-select">
+              <option value="">Todos los tipos</option>
+              <option value="ocupacion">Ocupación</option>
+              <option value="clima">Clima</option>
+              <option value="feriados">Feriados</option>
+              <option value="encuestas">Encuestas</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="data-table" *ngIf="historial.length > 0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Archivo</th>
+                <th>Estado</th>
+                <th>Exitosos</th>
+                <th>Errores</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of historial">
+                <td>{{ item.id_etl }}</td>
+                <td>{{ item.nombre_archivo }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getEstadoClass(item.estado)">
+                    {{ item.estado }}
+                  </span>
+                </td>
+                <td>{{ item.registros_exitosos || 0 }}</td>
+                <td>{{ item.registros_error || 0 }}</td>
+                <td>{{ item.fecha_inicio | date:'short' }}</td>
+                <td>{{ item.fecha_fin | date:'short' }}</td>
+                
+                <!-- ✅ COLUMNA DE ACCIONES CORREGIDA -->
+                <td class="actions-cell">
+                  <!-- Botón Ver Reporte Detallado (solo si está completado) -->
+                  <button 
+                    *ngIf="item.estado === 'COMPLETADO'"
+                    class="btn-action btn-info"
+                    (click)="verReporteDetalle(item.id_etl)"
+                    title="Ver Reporte Detallado con Gráficos"
+                    style="margin-right: 5px;">
+                    <ion-icon name="bar-chart-outline"></ion-icon>
+                  </button>
+
+                  <!-- Botón Descargar PDF (solo si está completado) -->
+                  <button 
+                    *ngIf="item.estado === 'COMPLETADO'"
+                    class="btn-action btn-primary"
+                    (click)="descargarReportePDF(item.id_etl)"
+                    title="Descargar Reporte PDF"
+                    style="margin-right: 5px;">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                  </button>
+
+                  <!-- Botón Reintentar (solo si hay error) -->
+                  <button 
+                    *ngIf="item.estado === 'ERROR'" 
+                    class="btn-action btn-retry"
+                    (click)="reintentar(item.id_etl)"
+                    title="Reintentar"
+                    style="margin-right: 5px;">
+                    <ion-icon name="refresh-outline"></ion-icon>
+                  </button>
+                  
+                  <!-- Botón Eliminar -->
+                  <button 
+                    class="btn-action btn-delete"
+                    (click)="confirmarEliminar(item.id_etl)"
+                    title="Eliminar">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="historial.length === 0" class="no-data">
+            <ion-icon name="folder-open-outline"></ion-icon>
+            <p>No hay registros en el historial</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Programadas -->
+    <div *ngIf="tabActiva === 'programadas'" class="tab-content">
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Ejecuciones Programadas</h3>
+        </div>
+        <div class="table-container">
+          <table class="data-table" *ngIf="ejecucionesProgramadas.length > 0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Fecha Programada</th>
+                <th>Repeticion</th>
+                <th>Usuario</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of ejecucionesProgramadas">
+                <td>{{ item.id_etl }}</td>
+                <td>{{ item.tipo_datos }}</td>
+                <td>{{ item.fecha_programada | date:'medium' }}</td>
+                <td>{{ item.repeticion }}</td>
+                <td>{{ item.usuario?.nombres || 'N/A' }}</td>
+                <td>
+                  <button 
+                    class="btn-action btn-delete"
+                    (click)="cancelarProgramacion(item.id_etl)">
+                    <ion-icon name="close-circle-outline"></ion-icon>
+                    Cancelar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="ejecucionesProgramadas.length === 0" class="no-data">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <p>No hay ejecuciones programadas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Logs -->
+    <div *ngIf="tabActiva === 'logs'" class="tab-content">
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Logs de Errores</h3>
+        </div>
+        <div class="table-container">
+          <table class="data-table" *ngIf="logsErrores.length > 0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Archivo</th>
+                <th>Observación</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of logsErrores">
+                <td>{{ item.id_etl }}</td>
+                <td>{{ item.nombre_archivo }}</td>
+                <td class="error-text">{{ item.observacion }}</td>
+                <td>{{ item.fecha_fin | date:'short' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="logsErrores.length === 0" class="no-data">
+            <ion-icon name="checkmark-done-outline"></ion-icon>
+            <p>No hay errores registrados</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-sidebar>

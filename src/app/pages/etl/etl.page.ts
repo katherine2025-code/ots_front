@@ -1,0 +1,401 @@
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { IonicModule, AlertController } from '@ionic/angular';
+import { SidebarComponent } from 'src/app/shared/components/sidebar/sidebar.component';
+import { EtlService } from 'src/app/core/services/etl.service';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { HttpEventType } from '@angular/common/http';
+import { Router } from '@angular/router';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+@Component({
+  selector: 'app-etl',
+  templateUrl: './etl.page.html',
+  styleUrls: ['./etl.page.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule, IonicModule, SidebarComponent]
+})
+export class EtlPage implements OnInit {
+  @ViewChild('fileInput') fileInput!: ElementRef;
+
+  usuario: any = null;
+  selectedFile: File | null = null;
+  uploadProgress: number = 0;
+  isUploading: boolean = false;
+  uploadSuccess: boolean = false;
+  uploadError: string = '';
+  resultadoCarga: any = null;
+  
+  tiposDatos: any[] = [];
+  historial: any[] = [];
+  estadisticas: any = null;
+  estadoProcesos: any = null;
+  logsErrores: any[] = [];
+  ejecucionesProgramadas: any[] = [];
+  
+  tipoCarga: string = 'ocupacion';
+  filtroHistorial: string = '';
+  isDragging: boolean = false;
+  tabActiva: string = 'cargar';
+
+  constructor(
+    private etlService: EtlService,
+    private authService: AuthService,
+    private alertController: AlertController,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    console.log('Inicializando página ETL');
+    this.authService.currentUser$.subscribe(user => {
+      console.log('👤 Usuario actual:', user);
+      this.usuario = user;
+    });
+    this.cargarDatosIniciales();
+  }
+
+  verReporteDetalle(id: number) {
+  this.router.navigate([`/reporte-detalle/${id}`]);
+}
+
+  cargarDatosIniciales() {
+    this.cargarTiposDatos();
+    this.cargarHistorial();
+    this.cargarEstadisticas();
+    this.cargarEstadoProcesos();
+    this.cargarLogsErrores();
+    this.cargarEjecucionesProgramadas();
+  }
+
+  cargarTiposDatos() {
+    this.etlService.getTiposDatos().subscribe({
+      next: (data) => {
+        console.log('Tipos de datos cargados:', data);
+        this.tiposDatos = data;
+      },
+      error: (err) => {
+        console.error('Error cargando tipos, usando defaults:', err);
+        this.tiposDatos = [
+          { tipo: 'ocupacion', nombre: 'Ocupación Hotelera', descripcion: 'Datos de ocupación de hoteles', campos_requeridos: ['fecha', 'id_hotel', 'habitaciones_ocupadas', 'ocupacion_porcentaje'] },
+          { tipo: 'clima', nombre: 'Datos Climáticos', descripcion: 'Temperatura, humedad, precipitación', campos_requeridos: ['fecha', 'temperatura', 'humedad', 'precipitacion'] },
+          { tipo: 'feriados', nombre: 'Días Feriados', descripcion: 'Calendario de feriados', campos_requeridos: ['nombre', 'fecha_inicio', 'fecha_fin'] },
+          { tipo: 'encuestas', nombre: 'Encuestas Turísticas', descripcion: 'Datos de encuestas a turistas', campos_requeridos: ['fecha_encuesta', 'genero', 'edad', 'pais_residencia'] }
+        ];
+      }
+    });
+  }
+
+  cargarHistorial() {
+    this.etlService.getHistorial(1, 20, this.filtroHistorial).subscribe({
+      next: (data: any) => this.historial = data.data || data,
+      error: (err) => console.error('Error historial:', err)
+    });
+  }
+
+  cargarEstadisticas() {
+    this.etlService.getEstadisticasDatos().subscribe({
+      next: (data) => this.estadisticas = data,
+      error: (err) => console.error('Error estadísticas:', err)
+    });
+  }
+
+  cargarEstadoProcesos() {
+    this.etlService.getEstadoProcesos().subscribe({
+      next: (data) => this.estadoProcesos = data,
+      error: (err) => console.error('Error estado:', err)
+    });
+  }
+
+  cargarLogsErrores() {
+    this.etlService.getLogsErrores(10).subscribe({
+      next: (data) => this.logsErrores = data,
+      error: (err) => console.error('Error logs:', err)
+    });
+  }
+
+  cargarEjecucionesProgramadas() {
+    this.etlService.getEjecucionesProgramadas().subscribe({
+      next: (data) => this.ejecucionesProgramadas = data,
+      error: (err) => console.error('Error programadas:', err)
+    });
+  }
+
+  abrirSelectorArchivos() {
+    if (this.fileInput && this.fileInput.nativeElement) {
+      this.fileInput.nativeElement.click();
+    }
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = false;
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.validarYSeleccionarArchivo(files[0]);
+    }
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.validarYSeleccionarArchivo(file);
+    }
+  }
+
+  validarYSeleccionarArchivo(file: File) {
+    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+      this.uploadError = 'Solo se permiten archivos CSV';
+      this.selectedFile = null;
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      this.uploadError = 'El archivo no puede superar 10MB';
+      this.selectedFile = null;
+      return;
+    }
+    this.selectedFile = file;
+    this.uploadError = '';
+  }
+
+  async cargarArchivo() {
+    if (!this.selectedFile) {
+      this.uploadError = 'Selecciona un archivo primero';
+      return;
+    }
+    if (!this.tipoCarga) {
+      this.uploadError = 'Selecciona el tipo de datos';
+      return;
+    }
+
+    this.isUploading = true;
+    this.uploadProgress = 0;
+    this.uploadError = '';
+    this.uploadSuccess = false;
+    this.resultadoCarga = null;
+
+    this.etlService.cargarArchivo(this.selectedFile, this.tipoCarga).subscribe({
+      next: (event: any) => {
+        if (event.type === HttpEventType.UploadProgress && event.total) {
+          this.uploadProgress = Math.round(100 * event.loaded / event.total);
+        } else if (event.type === HttpEventType.Response) {
+          this.uploadProgress = 100;
+          this.uploadSuccess = true;
+          this.resultadoCarga = event.body;
+          this.selectedFile = null;
+          this.isUploading = false;
+          this.cargarHistorial();
+          this.cargarEstadisticas();
+          this.cargarEstadoProcesos();
+        }
+      },
+      error: (err) => {
+        this.uploadError = err.error?.error || err.message || 'Error al procesar el archivo';
+        this.isUploading = false;
+      }
+    });
+  }
+
+  clearFile() {
+    this.selectedFile = null;
+    this.uploadProgress = 0;
+    this.uploadError = '';
+    this.resultadoCarga = null;
+  }
+
+  cambiarTab(tab: string) {
+    this.tabActiva = tab;
+  }
+
+  // ==========================================
+  // ✅ MÉTODOS NUEVOS PARA REPORTE PDF
+  // ==========================================
+
+  async descargarReportePDF(idProceso: number) {
+    try {
+      console.log('Generando reporte PDF para proceso:', idProceso);
+      const response: any = await this.etlService.getProcesoDetalle(idProceso).toPromise();
+      
+      if (!response || !response.proceso) {
+        alert('No se encontró la información del proceso.');
+        return;
+      }
+      this.generarPDFReporte(response.proceso, response.estadisticas, response.datos_grafico);
+    } catch (error) {
+      console.error('Error al generar reporte:', error);
+      alert('Ocurrió un error al generar el reporte PDF.');
+    }
+  }
+
+  generarPDFReporte(proceso: any, estadisticas: any, datosGrafico: any[]) {
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    //ENCABEZADO
+    doc.setFontSize(20);
+    doc.setTextColor(41, 128, 185);
+    doc.text('OBSERVATORIO TURÍSTICO SOSTENIBLE - UPSE', 15, 15);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(100);
+    doc.text('Reporte Estadístico de Proceso ETL', 15, 22);
+    
+    doc.setDrawColor(41, 128, 185);
+    doc.setLineWidth(0.5);
+    doc.line(15, 25, 280, 25);
+
+    //INFORMACION DEL PROCESO
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text('INFORMACIÓN DEL PROCESO', 15, 35);
+    
+    const infoProceso = [
+      ['ID Proceso:', proceso.id_etl.toString()],
+      ['Archivo:', proceso.nombre_archivo],
+      ['Fecha de Carga:', new Date(proceso.fecha_fin).toLocaleString()],
+      ['Estado:', proceso.estado],
+      ['Total Registros:', (proceso.registros_procesados || 0).toString()],
+      ['Registros Exitosos:', (proceso.registros_exitosos || 0).toString()],
+      ['Registros con Error:', (proceso.registros_error || 0).toString()]
+    ];
+    
+    autoTable(doc, {
+      startY: 38,
+      head: [['Campo', 'Valor']],
+      body: infoProceso,
+      theme: 'striped',
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      styles: { fontSize: 10 }
+    });
+    
+    //ESTADISTICAS PRINCIPALES 
+    let currentY = (doc as any).lastAutoTable.finalY + 10;
+    
+    doc.setFontSize(14);
+    doc.setTextColor(41, 128, 185);
+    doc.text('ESTADÍSTICAS', 15, currentY);
+    currentY += 5;
+    
+    if (estadisticas) {
+      const statsData = [];
+
+      //Estadisticas de encuestas
+      if (estadisticas.total_registros !== undefined) 
+      statsData.push(['Total de Registros', estadisticas.total_registros]);
+      if (estadisticas.registros_exitosos !== undefined) 
+      statsData.push(['Registros Exitosos', estadisticas.registros_exitosos]);
+      if (estadisticas.tasa_exito !== undefined) 
+      statsData.push(['Tasa de Éxito', `${estadisticas.tasa_exito}%`]);
+
+      // Datos específicos
+      if (estadisticas.paises_diferentes !== undefined) 
+      statsData.push(['Países Diferentes', estadisticas.paises_diferentes]);
+      if (estadisticas.noches_promedio !== undefined && estadisticas.noches_promedio !== null) 
+      statsData.push(['Noches Promedio', parseFloat(estadisticas.noches_promedio).toFixed(1)]);
+      if (estadisticas.gasto_promedio !== undefined && estadisticas.gasto_promedio !== null) 
+      statsData.push(['Gasto Promedio (USD)', `$${parseFloat(estadisticas.gasto_promedio).toFixed(2)}`]);
+      if (estadisticas.satisfaccion_promedio !== undefined && estadisticas.satisfaccion_promedio !== null) 
+      statsData.push(['Satisfacción Promedio', `${parseFloat(estadisticas.satisfaccion_promedio).toFixed(1)} / 5`]);
+    
+    // Datos de ocupación hotelera
+      if (estadisticas.ocupacion_promedio !== undefined && estadisticas.ocupacion_promedio !== null) 
+      statsData.push(['Ocupación Promedio', `${parseFloat(estadisticas.ocupacion_promedio).toFixed(1)}%`]);
+      if (estadisticas.tarifa_promedio !== undefined && estadisticas.tarifa_promedio !== null) 
+      statsData.push(['Tarifa Promedio (USD)', `$${parseFloat(estadisticas.tarifa_promedio).toFixed(2)}`]);
+      if (estadisticas.total_huespedes !== undefined) 
+      statsData.push(['Total Huéspedes', estadisticas.total_huespedes]);
+    
+      
+      autoTable(doc, {
+        startY: currentY,
+        head: [['Indicador', 'Valor']],
+        body: statsData,
+        theme: 'striped',
+        headStyles: { fillColor: [52, 152, 219], textColor: 255 },
+        styles: { fontSize: 10 }
+      });
+    }
+      
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(
+        `Generado por: Observatorio Turístico Sostenible - UPSE | Página ${i} de ${pageCount}`,
+        15,
+        doc.internal.pageSize.getHeight() - 10
+      );
+    }
+    
+    const nombreArchivo = `reporte-etl-${proceso.id_etl}-${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(nombreArchivo);
+    console.log('Reporte PDF generado:', nombreArchivo);
+  }
+
+  // ==========================================
+  // MÉTODOS EXISTENTES (Mantenidos y mejorados)
+  // ==========================================
+
+  async confirmarEliminar(id: number) {
+    const alerta = await this.alertController.create({
+      header: 'Confirmar',
+      message: '¿Estás seguro de eliminar este registro del historial?',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => {
+            this.etlService.eliminarRegistro(id).subscribe({
+              next: () => {
+                this.cargarHistorial();
+                this.cargarEstadoProcesos();
+              },
+              error: (err) => window.alert(err.error?.error || 'Error al eliminar')
+            });
+          }
+        }
+      ]
+    });
+    await alerta.present();
+  }
+
+  reintentar(id: number) {
+    this.etlService.reintentarProceso(id).subscribe({
+      next: () => {
+        this.cargarHistorial();
+        this.cargarEstadoProcesos();
+      },
+      error: (err) => alert(err.error?.error || 'Error al reintentar')
+    });
+  }
+
+  cancelarProgramacion(id: number) {
+    this.etlService.cancelarEjecucion(id).subscribe({
+      next: () => this.cargarEjecucionesProgramadas(),
+      error: (err) => alert(err.error?.error || 'Error al cancelar')
+    });
+  }
+
+  getEstadoClass(estado: string): string {
+    const map: any = {
+      'COMPLETADO': 'completado',
+      'EN_PROCESO': 'procesando',
+      'ERROR': 'error',
+      'PROGRAMADO': 'programado',
+      'CANCELADO': 'cancelado'
+    };
+    return map[estado] || '';
+  }
+}

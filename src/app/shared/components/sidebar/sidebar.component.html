@@ -1,0 +1,129 @@
+<div class="sidebar-layout">
+  <!-- Sidebar Vertical -->
+  <aside class="sidebar">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <img src="assets/icon/logo-ots.png" alt="OTS Logo" class="logo-img" (error)="onLogoError($event)">
+      <span class="logo-text">OTS</span>
+    </div>
+
+    <!-- Menú de Navegación -->
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <li class="nav-item" [class.active]="isActive('/dashboard')">
+          <a routerLink="/dashboard" class="nav-link">
+            <ion-icon name="grid-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="isActive('/hoteles')">
+          <a routerLink="/hoteles" class="nav-link">
+            <ion-icon name="business-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Hoteles</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="isActive('/ocupacion')">
+          <a routerLink="/ocupacion" class="nav-link">
+            <ion-icon name="people-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Ocupación</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="isActive('/predicciones')">
+          <a routerLink="/predicciones" class="nav-link">
+            <ion-icon name="analytics-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Predicciones</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="isActive('/reportes')">
+          <a routerLink="/reportes" class="nav-link">
+            <ion-icon name="document-text-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Reportes</span>
+          </a>
+        </li>
+
+        <!-- Separador para Admin -->
+        <li class="nav-divider" *ngIf="isAdmin"></li>
+        <li class="nav-section-title" *ngIf="isAdmin">Administración</li>
+
+        <li class="nav-item" [class.active]="isActive('/usuarios')" *ngIf="isAdmin">
+          <a routerLink="/usuarios" class="nav-link">
+            <ion-icon name="people-circle-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Usuarios</span>
+          </a>
+        </li>
+
+        <!-- ✅ SECCIÓN ENCUESTAS (Admin e Investigador) -->
+        <li class="nav-item" [class.active]="isActive('/encuestas')" *ngIf="isAdmin || isInvestigador">
+          <a routerLink="/encuestas" class="nav-link">
+            <ion-icon name="clipboard-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Encuestas</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="isActive('/etl')" *ngIf="isAdmin">
+          <a routerLink="/etl" class="nav-link">
+            <ion-icon name="cloud-upload-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Carga ETL</span>
+          </a>
+        </li>
+
+        <li class="nav-item" [class.active]="isActive('/perfil')" *ngIf="isAdmin">
+          <a routerLink="/perfil" class="nav-link">
+            <ion-icon name="settings-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Configuración</span>
+          </a>
+        </li>
+
+        <!-- Mi Perfil (Investigador) -->
+        <li class="nav-divider" *ngIf="isInvestigador"></li>
+        <li class="nav-section-title" *ngIf="isInvestigador">Mi Cuenta</li>
+        
+        <li class="nav-item" [class.active]="isActive('/perfil')" *ngIf="isInvestigador">
+          <a routerLink="/perfil" class="nav-link">
+            <ion-icon name="person-outline" class="nav-icon"></ion-icon>
+            <span class="nav-text">Mi Perfil</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Footer con perfil y botón cerrar sesión -->
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <!-- Avatar con icono de fallback -->
+        <div class="user-avatar">
+          <img 
+            *ngIf="fotoPerfil && fotoCargada" 
+            [src]="fotoPerfil" 
+            alt="Foto" 
+            (error)="onImageError($event)">
+          <!-- Icono de fallback si no hay foto -->
+          <ion-icon 
+            *ngIf="!fotoPerfil || !fotoCargada" 
+            name="person-circle-outline" 
+            class="avatar-icon">
+          </ion-icon>
+        </div>
+        <div class="user-info">
+          <span class="user-name">{{ usuario?.nombres }}</span>
+          <span class="user-role">{{ rolNombre }}</span>
+        </div>
+      </div>
+      
+      <!-- Botón Cerrar Sesión -->
+      <button class="btn-logout" (click)="logout()" title="Cerrar Sesión">
+        <ion-icon name="log-out-outline"></ion-icon>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Contenido Principal -->
+  <main class="main-content">
+    <ng-content></ng-content>
+  </main>
+</div>

@@ -1,0 +1,399 @@
+.login-content {
+  --background: linear-gradient(135deg, #1a5276 0%, #2e86c1 50%, #764ba2 100%);
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logo-section {
+  background: white;
+  padding: 24px 20px 16px 20px;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+
+  .logo-image {
+    max-width: 280px;
+    width: 90%;
+    height: auto;
+    margin: 0 auto 12px auto;
+    display: block;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #1a5276;
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.login-form {
+  padding: 24px 20px 20px 20px;
+}
+
+.input-wrapper {
+  margin-bottom: 20px;
+}
+
+.input-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #1a5276;
+  font-size: 14px;
+
+  ion-icon {
+    color: #2e86c1;
+    font-size: 16px;
+  }
+}
+
+.input-field {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all 0.2s ease;
+  min-height: 48px;
+
+  &:focus-within {
+    border-color: #2e86c1;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(46, 134, 193, 0.1);
+  }
+
+  .field-icon {
+    color: #2e86c1;
+    font-size: 20px;
+    margin-right: 10px;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+  }
+
+  .custom-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    padding: 0;
+    outline: none;
+    width: 100%;
+    color: #2d3748;
+
+    &::placeholder {
+      color: #a0aec0;
+    }
+  }
+}
+
+.error-message-small {
+  color: #e53e3e;
+  font-size: 12px;
+  margin-top: 6px;
+  margin-left: 4px;
+  display: block;
+  font-weight: 500;
+}
+
+.login-button {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1a5276 0%, #2e86c1 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+
+  &:not(:disabled) {
+    &:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+  }
+
+  &:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .btn-icon {
+    font-size: 18px;
+  }
+}
+
+.error-alert {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fff5f5;
+  border-left: 4px solid #e53e3e;
+  border-radius: 8px;
+  color: #e53e3e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+
+  ion-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+}
+
+.footer-text {
+  text-align: center;
+  padding: 16px;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+
+  p {
+    margin: 0;
+    color: #1a5276;
+    font-size: 11px;
+    font-weight: 500;
+  }
+}
+
+// Móvil pequeño (hasta 375px)
+@media (max-width: 375px) {
+  .login-wrapper {
+    padding: 12px;
+  }
+
+  .login-container {
+    border-radius: 12px;
+  }
+
+  .logo-section {
+    padding: 20px 16px 12px 16px;
+
+    .logo-image {
+      max-width: 240px;
+    }
+  }
+
+  .login-form {
+    padding: 20px 16px 16px 16px;
+  }
+
+  .input-field {
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+
+  .login-button {
+    height: 44px;
+    font-size: 15px;
+  }
+}
+
+// Móvil mediano (376px - 480px)
+@media (min-width: 376px) and (max-width: 480px) {
+  .login-wrapper {
+    padding: 16px;
+  }
+
+  .logo-section {
+    .logo-image {
+      max-width: 260px;
+    }
+  }
+}
+
+// Tablet (768px - 1024px)
+@media (min-width: 768px) and (max-width: 1024px) {
+  .login-container {
+    max-width: 400px;
+  }
+
+  .logo-section {
+    .logo-image {
+      max-width: 300px;
+    }
+  }
+}
+
+// Desktop grande (1440px+)
+@media (min-width: 1440px) {
+  .login-container {
+    max-width: 450px;
+  }
+
+  .logo-section {
+    .logo-image {
+      max-width: 340px;
+    }
+  }
+
+  .login-form {
+    padding: 32px 28px 28px 28px;
+  }
+}
+
+// Pantallas muy pequeñas (menos de 320px)
+@media (max-width: 320px) {
+  .login-wrapper {
+    padding: 8px;
+  }
+
+  .logo-section {
+    padding: 16px 12px 10px 12px;
+
+    .logo-image {
+      max-width: 220px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+    }
+  }
+
+  .login-form {
+    padding: 16px 12px 12px 12px;
+  }
+
+  .input-label {
+    font-size: 13px;
+  }
+
+  .custom-input {
+    font-size: 14px;
+  }
+
+  .login-button {
+    height: 42px;
+    font-size: 14px;
+  }
+}
+
+// Orientación landscape en móvil
+@media (max-height: 500px) and (orientation: landscape) {
+  .login-wrapper {
+    padding: 8px;
+  }
+
+  .logo-section {
+    padding: 12px 16px 8px 16px;
+
+    .logo-image {
+      max-width: 180px;
+      margin-bottom: 8px;
+    }
+  }
+
+  .login-form {
+    padding: 12px 16px 8px 16px;
+  }
+
+  .input-wrapper {
+    margin-bottom: 12px;
+  }
+
+  .footer-text {
+    padding: 8px;
+  }
+}
+
+// Asegurar que funcione en iOS
+@supports (-webkit-touch-callout: none) {
+  .login-wrapper {
+    min-height: -webkit-fill-available;
+  }
+}
+.register-section {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+
+  p {
+    margin: 0 0 10px 0;
+    color: #4a5568;
+    font-size: 14px;
+  }
+}
+
+.register-button {
+  width: 100%;
+  height: 44px;
+  border: 2px solid #667eea;
+  border-radius: 10px;
+  background: white;
+  color: #667eea;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}

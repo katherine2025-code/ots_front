@@ -1,0 +1,12 @@
+<app-header [title]="'Ocupación'"></app-header>
+
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-item *ngFor="let item of ocupacion">
+      <ion-label>
+        <h2>{{ item.fecha }}</h2>
+        <p>Ocupación: {{ item.porcentaje_ocupacion }}%</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

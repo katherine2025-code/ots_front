@@ -1,0 +1,91 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ encuesta?.nombre }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <div *ngIf="encuesta" class="detalle-container">
+    
+    <!-- Encabezado de la encuesta -->
+    <div class="encuesta-header">
+      <p class="descripcion">{{ encuesta.descripcion }}</p>
+      <div class="badges">
+        <span class="badge" [ngClass]="encuesta.tipo">
+          {{ encuesta.tipo === 'turista' ? '👤 Turista' : '🏨 Hotel' }}
+        </span>
+        <span class="badge info">{{ encuesta.preguntas?.length || 0 }} preguntas</span>
+        <span class="badge" [ngClass]="encuesta.activa ? 'success' : 'danger'">
+          {{ encuesta.activa ? 'Activa' : 'Inactiva' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Secciones de preguntas -->
+    <div class="secciones-container">
+      <ng-container *ngFor="let seccion of obtenerSecciones()">
+        <div class="seccion-card">
+          <h3 class="seccion-titulo">{{ seccion }}</h3>
+          
+          <div *ngFor="let pregunta of obtenerPreguntasPorSeccion(seccion)" class="pregunta-card">
+            <div class="pregunta-header">
+              <span class="codigo">{{ pregunta.codigo }}</span>
+              <span class="tipo">{{ pregunta.tipo }}</span>
+              <span class="obligatoria" *ngIf="pregunta.obligatoria">*</span>
+            </div>
+            <p class="texto">{{ pregunta.texto }}</p>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Tabla MINTUR para hoteles -->
+    <div *ngIf="encuesta.tipo === 'hotel'" class="tabla-mintur">
+      <h3 class="seccion-titulo">📊 Tabla de Demanda Turística (Metodología MINTUR)</h3>
+      <div class="tabla-container">
+        <table class="tabla-mintur-real">
+          <thead>
+            <tr>
+              <th>FECHA</th>
+              <th colspan="2">Check-in</th>
+              <th>Pernoctaciones</th>
+              <th>Habitaciones ocupadas</th>
+              <th>Tarifa cobrada</th>
+            </tr>
+            <tr>
+              <th></th>
+              <th>Nacionales</th>
+              <th>Extranjeros</th>
+              <th></th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let fecha of [1, 2, 3, 4, 5]">
+              <td><strong>Fecha {{ fecha }}</strong></td>
+              <td><input type="number" placeholder="0"></td>
+              <td><input type="number" placeholder="0"></td>
+              <td><input type="number" placeholder="0"></td>
+              <td><input type="number" placeholder="0"></td>
+              <td><input type="number" placeholder="0.00"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Botón volver -->
+    <ion-button expand="block" (click)="volver()" color="medium" style="margin-top: 20px;">
+      <ion-icon name="arrow-back" slot="start"></ion-icon>
+      Volver al listado
+    </ion-button>
+
+  </div>
+</ion-content>

@@ -1,0 +1,99 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Gestión de Encuestas</ion-title>
+    <ion-buttons slot="end">
+      <!-- ✅ SOLO ADMIN PUEDE VER ESTE BOTÓN -->
+      <ion-button (click)="nuevaEncuesta()" color="light" *ngIf="isAdmin">
+        <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+        Nueva
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <!-- Tarjetas de resumen -->
+  <div class="resumen-grid">
+    <div class="resumen-card">
+      <ion-icon name="people-outline" color="primary"></ion-icon>
+      <div>
+        <h3>{{ totalTuristas }}</h3>
+        <p>Encuestas Turísticas</p>
+      </div>
+    </div>
+    
+    <div class="resumen-card">
+      <ion-icon name="business-outline" color="secondary"></ion-icon>
+      <div>
+        <h3>{{ totalHoteles }}</h3>
+        <p>Encuestas Hoteles</p>
+      </div>
+    </div>
+    
+    <div class="resumen-card">
+      <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+      <div>
+        <h3>{{ totalActivas }}</h3>
+        <p>Encuestas Activas</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de encuestas -->
+  <div class="encuestas-container">
+    <h2>Encuestas Configuradas</h2>
+    
+    <div *ngFor="let encuesta of encuestas" class="encuesta-card">
+      <div class="encuesta-header">
+        <div class="encuesta-info">
+          <h3>{{ encuesta.nombre }}</h3>
+          <p>{{ encuesta.descripcion }}</p>
+          <div class="encuesta-meta">
+            <span class="badge" [ngClass]="encuesta.tipo">
+              {{ encuesta.tipo === 'turista' ? ' Turista' : '🏨 Hotel' }}
+            </span>
+            <span class="badge info">
+              {{ encuesta.preguntas }} preguntas
+            </span>
+            <span class="badge" [ngClass]="encuesta.activa ? 'success' : 'danger'">
+              {{ encuesta.activa ? 'Activa' : 'Inactiva' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="encuesta-actions">
+        <!-- ✅ ESTE BOTÓN LO VEN TODOS (Admin e Investigador) -->
+        <ion-button fill="outline" size="small" (click)="verDetalles(encuesta.id)">
+          <ion-icon name="eye-outline"></ion-icon>
+          Ver
+        </ion-button>
+        
+        <!-- ✅ BOTÓN RESPONDER - Visible para todos (Admin e Investigador) -->
+        <ion-button fill="outline" size="small" (click)="responderEncuesta(encuesta.id)" color="success">
+          <ion-icon name="create-outline"></ion-icon>
+          Responder
+        </ion-button>
+        
+        <!-- ✅ SOLO ADMIN PUEDE VER ESTE BOTÓN -->
+        <ion-button fill="outline" size="small" (click)="editarEncuesta(encuesta.id)" *ngIf="isAdmin">
+          <ion-icon name="create-outline"></ion-icon>
+          Editar
+        </ion-button>
+        
+        <!-- ✅ SOLO ADMIN PUEDE VER ESTE BOTÓN -->
+        <ion-button 
+          fill="outline" 
+          size="small" 
+          [color]="encuesta.activa ? 'warning' : 'success'"
+          (click)="activarDesactivar(encuesta.id)"
+          *ngIf="isAdmin">
+          <ion-icon [name]="encuesta.activa ? 'pause-circle-outline' : 'play-circle-outline'"></ion-icon>
+          {{ encuesta.activa ? 'Desactivar' : 'Activar' }}
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+</ion-content>

@@ -1,0 +1,12 @@
+<app-header [title]="'Hoteles'"></app-header>
+
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-item *ngFor="let hotel of hoteles">
+      <ion-label>
+        <h2>{{ hotel.nombre }}</h2>
+        <p>{{ hotel.direccion }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

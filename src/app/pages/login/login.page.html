@@ -1,0 +1,79 @@
+<ion-content class="login-content" scrollY="true">
+  <div class="login-wrapper">
+    <div class="login-container">
+      <div class="logo-section">
+        <img src="assets/icon/logo-ots.png" alt="Logo OTS - UPSE" class="logo-image">
+        <p class="subtitle">Sistema del Observatorio Turistico Sostenible </p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <div class="input-wrapper">
+          <label class="input-label">
+            <ion-icon name="mail-outline"></ion-icon>
+            Correo Electrónico
+          </label>
+          <div class="input-field">
+            <ion-icon name="person-outline" class="field-icon"></ion-icon>
+            <input 
+              formControlName="correo" 
+              type="email" 
+              placeholder="correo@ejemplo.com"
+              class="custom-input"
+              autocomplete="email">
+          </div>
+          <div *ngIf="f['correo'].invalid && f['correo'].touched" class="error-message-small">
+            <span *ngIf="f['correo'].errors?.['required']">El correo es requerido</span>
+            <span *ngIf="f['correo'].errors?.['email']">Ingrese un correo válido</span>
+          </div>
+        </div>
+
+        <div class="input-wrapper">
+          <label class="input-label">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            Contraseña
+          </label>
+          <div class="input-field">
+            <ion-icon name="lock-closed-outline" class="field-icon"></ion-icon>
+            <input 
+              formControlName="password" 
+              type="password" 
+              placeholder="password"
+              class="custom-input"
+              autocomplete="current-password">
+          </div>
+          <div *ngIf="f['password'].invalid && f['password'].touched" class="error-message-small">
+            <span *ngIf="f['password'].errors?.['required']">La contraseña es requerida</span>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          [disabled]="loading || loginForm.invalid"
+          class="login-button">
+          <span *ngIf="loading" class="spinner"></span>
+          <span *ngIf="!loading">
+            <ion-icon name="log-in-outline" class="btn-icon"></ion-icon>
+            Iniciar Sesión
+          </span>
+        </button>
+
+        <div *ngIf="error" class="error-alert">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          {{ error }}
+        </div>
+
+        <!-- Botón para registrarse -->
+        <div class="register-section">
+          <p>¿No tienes una cuenta?</p>
+          <button type="button" class="register-button" (click)="irARegistro()">
+            Crear nueva cuenta
+          </button>
+        </div>
+      </form>
+
+      <div class="footer-text">
+        <p>© 2026 OTS - UPSE - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancelar()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Editar Encuesta</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardarCambios()" color="light">
+        <ion-icon name="save-outline"></ion-icon>
+        Guardar
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="encuesta-form">
+    <h2>Información General</h2>
+    
+    <ion-item>
+      <ion-label position="floating">Nombre de la Encuesta</ion-label>
+      <ion-input [(ngModel)]="encuesta.nombre"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="floating">Descripción</ion-label>
+      <ion-textarea [(ngModel)]="encuesta.descripcion" rows="3"></ion-textarea>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Tipo</ion-label>
+      <ion-select [(ngModel)]="encuesta.tipo">
+        <ion-select-option value="turista">Turista</ion-select-option>
+        <ion-select-option value="hotel">Hotel</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Estado</ion-label>
+      <ion-toggle [(ngModel)]="encuesta.activa">
+        {{ encuesta.activa ? 'Activa' : 'Inactiva' }}
+      </ion-toggle>
+    </ion-item>
+
+    <div class="preguntas-section">
+      <div class="section-header">
+        <h2>Preguntas ({{ encuesta.preguntas?.length || 0 }})</h2>
+        <ion-button (click)="agregarPregunta()" size="small">
+          <ion-icon name="add"></ion-icon>
+          Agregar
+        </ion-button>
+      </div>
+
+      <div *ngFor="let pregunta of encuesta.preguntas" class="pregunta-item">
+        <div class="pregunta-header">
+          <span class="codigo">{{ pregunta.codigo }}</span>
+          <span class="tipo">{{ pregunta.tipo }}</span>
+        </div>
+        
+        <ion-item>
+          <ion-label position="floating">Texto de la pregunta</ion-label>
+          <ion-input [(ngModel)]="pregunta.texto"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Tipo de respuesta</ion-label>
+          <ion-select [(ngModel)]="pregunta.tipo">
+            <ion-select-option value="texto">Texto</ion-select-option>
+            <ion-select-option value="numero">Número</ion-select-option>
+            <ion-select-option value="seleccion">Selección</ion-select-option>
+            <ion-select-option value="escala">Escala</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Obligatoria</ion-label>
+          <ion-toggle [(ngModel)]="pregunta.obligatoria"></ion-toggle>
+        </ion-item>
+
+        <ion-button fill="outline" color="danger" (click)="eliminarPregunta(pregunta.id)">
+          <ion-icon name="trash"></ion-icon>
+          Eliminar
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>
