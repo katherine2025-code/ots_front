@@ -1,0 +1,199 @@
+.training-section, .prediction-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.section-header {
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #2c3e50;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    
+    ion-icon {
+      font-size: 1.3em;
+      color: #3498db;
+    }
+  }
+  
+  p {
+    color: #7f8c8d;
+    font-size: 0.95em;
+    margin-bottom: 20px;
+  }
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.metric-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+  
+  &.rf-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  &.xgb-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    
+    ion-icon {
+      font-size: 1.5em;
+    }
+    
+    h3 {
+      margin: 0;
+      font-size: 1.3em;
+    }
+    
+    .badge {
+      margin-left: auto;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      background: rgba(255,255,255,0.3);
+      
+      &.winner {
+        background: #f1c40f;
+        color: #2c3e50;
+        font-weight: bold;
+      }
+    }
+  }
+  
+  .metric-values {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .metric-item {
+    display: flex;
+    flex-direction: column;
+    
+    .metric-label {
+      font-size: 0.85em;
+      opacity: 0.9;
+    }
+    
+    .metric-value {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.prediction-result {
+  margin-top: 30px;
+}
+
+.result-card {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border-radius: 12px;
+  padding: 25px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  margin-bottom: 20px;
+  
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    
+    ion-icon {
+      font-size: 2em;
+    }
+    
+    h3 {
+      margin: 0;
+      font-size: 1.3em;
+    }
+  }
+  
+  .result-value {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    
+    .value-label {
+      font-size: 1.1em;
+    }
+    
+    .value-number {
+      font-size: 2.5em;
+      font-weight: bold;
+    }
+  }
+  
+  .result-range {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    
+    .range-item {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+      
+      .range-label {
+        font-size: 0.85em;
+        opacity: 0.9;
+      }
+      
+      .range-value {
+        font-size: 1.3em;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+.chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 20px;
+  
+  canvas {
+    max-height: 400px;
+  }
+}

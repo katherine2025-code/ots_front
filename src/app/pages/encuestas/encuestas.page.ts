@@ -4,9 +4,15 @@ import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { addIcons } from 'ionicons';
-import { createOutline } from 'ionicons/icons';
+import { clipboardOutline, eyeOutline, createOutline, pauseCircleOutline, playCircleOutline } from 'ionicons/icons';
 
-addIcons ({ 'create-outline' : createOutline });
+addIcons({
+  'clipboard-outline': clipboardOutline,
+  'eye-outline': eyeOutline,
+  'create-outline': createOutline,
+  'pause-circle-outline': pauseCircleOutline,
+  'play-circle-outline': playCircleOutline
+});
 
 @Component({
   selector: 'app-encuestas',
@@ -81,6 +87,7 @@ export class EncuestasPage implements OnInit {
     responderEncuesta(id: number) {
     const encuesta = this.encuestas.find(e => e.id === id);
     const tipo = encuesta?.tipo === 'hotel' ? 'hotel' : 'turista';
+    console.log(' Navegando a responder encuesta:', tipo); 
     this.router.navigate([`/responder-encuesta/${tipo}`]);
   }
 

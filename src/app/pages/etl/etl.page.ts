@@ -50,10 +50,14 @@ export class EtlPage implements OnInit {
   ngOnInit() {
     console.log('Inicializando página ETL');
     this.authService.currentUser$.subscribe(user => {
-      console.log('👤 Usuario actual:', user);
+      console.log(' Usuario actual:', user);
       this.usuario = user;
     });
     this.cargarDatosIniciales();
+
+    setInterval(() => {
+      this.cargarEstadoProcesos();
+    }, 5000);
   }
 
   verReporteDetalle(id: number) {
@@ -195,16 +199,39 @@ export class EtlPage implements OnInit {
           this.resultadoCarga = event.body;
           this.selectedFile = null;
           this.isUploading = false;
-          this.cargarHistorial();
-          this.cargarEstadisticas();
-          this.cargarEstadoProcesos();
+          
+          setTimeout(() => {
+            this.cargarDatosIniciales();
+            this.mostrarResultadoProcesamiento();
+          }, 1000);
         }
       },
       error: (err) => {
         this.uploadError = err.error?.error || err.message || 'Error al procesar el archivo';
         this.isUploading = false;
+
+         setTimeout(() => {
+          this.cargarDatosIniciales();
+        }, 1000);
       }
     });
+  }
+  mostrarResultadoProcesamiento() {
+    if (this.resultadoCarga) {
+      const exitosos = this.resultadoCarga.exitosos || this.resultadoCarga.registros_insertados || 0;
+      const errores = this.resultadoCarga.errores || this.resultadoCarga.registros_error || 0;
+      
+      if (exitosos > 0 && errores === 0) {
+        // Éxito total
+        alert(` Proceso completado exitosamente\n\n Registros insertados: ${exitosos}\n Errores: ${errores}`);
+      } else if (exitosos > 0 && errores > 0) {
+        // Éxito parcial
+        alert(` Proceso completado con errores\n\n Exitosos: ${exitosos}\n Errores: ${errores}`);
+      } else {
+        // Fallido total
+        alert(` Proceso fallido\n\n Errores: ${errores}\n\nRevisa los logs para más detalles`);
+      }
+    }
   }
 
   clearFile() {
@@ -238,10 +265,14 @@ export class EtlPage implements OnInit {
     }
   }
 
-  generarPDFReporte(proceso: any, estadisticas: any, datosGrafico: any[]) {
+  async generarPDFReporte(proceso: any, estadisticas: any, datosGrafico: any[]) {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+    const html2canvas = (await import('html2canvas')).default;
+
     const doc = new jsPDF('l', 'mm', 'a4');
     
-    //ENCABEZADO
+    // ENCABEZADO
     doc.setFontSize(20);
     doc.setTextColor(41, 128, 185);
     doc.text('OBSERVATORIO TURÍSTICO SOSTENIBLE - UPSE', 15, 15);
@@ -254,7 +285,7 @@ export class EtlPage implements OnInit {
     doc.setLineWidth(0.5);
     doc.line(15, 25, 280, 25);
 
-    //INFORMACION DEL PROCESO
+    // INFORMACIÓN DEL PROCESO
     doc.setFontSize(12);
     doc.setTextColor(0);
     doc.text('INFORMACIÓN DEL PROCESO', 15, 35);
@@ -278,7 +309,7 @@ export class EtlPage implements OnInit {
       styles: { fontSize: 10 }
     });
     
-    //ESTADISTICAS PRINCIPALES 
+    // ESTADÍSTICAS PRINCIPALES
     let currentY = (doc as any).lastAutoTable.finalY + 10;
     
     doc.setFontSize(14);
@@ -289,33 +320,29 @@ export class EtlPage implements OnInit {
     if (estadisticas) {
       const statsData = [];
 
-      //Estadisticas de encuestas
       if (estadisticas.total_registros !== undefined) 
-      statsData.push(['Total de Registros', estadisticas.total_registros]);
+        statsData.push(['Total de Registros', estadisticas.total_registros]);
       if (estadisticas.registros_exitosos !== undefined) 
-      statsData.push(['Registros Exitosos', estadisticas.registros_exitosos]);
+        statsData.push(['Registros Exitosos', estadisticas.registros_exitosos]);
       if (estadisticas.tasa_exito !== undefined) 
-      statsData.push(['Tasa de Éxito', `${estadisticas.tasa_exito}%`]);
+        statsData.push(['Tasa de Éxito', `${estadisticas.tasa_exito}%`]);
 
-      // Datos específicos
       if (estadisticas.paises_diferentes !== undefined) 
-      statsData.push(['Países Diferentes', estadisticas.paises_diferentes]);
+        statsData.push(['Países Diferentes', estadisticas.paises_diferentes]);
       if (estadisticas.noches_promedio !== undefined && estadisticas.noches_promedio !== null) 
-      statsData.push(['Noches Promedio', parseFloat(estadisticas.noches_promedio).toFixed(1)]);
+        statsData.push(['Noches Promedio', parseFloat(estadisticas.noches_promedio).toFixed(1)]);
       if (estadisticas.gasto_promedio !== undefined && estadisticas.gasto_promedio !== null) 
-      statsData.push(['Gasto Promedio (USD)', `$${parseFloat(estadisticas.gasto_promedio).toFixed(2)}`]);
+        statsData.push(['Gasto Promedio (USD)', `$${parseFloat(estadisticas.gasto_promedio).toFixed(2)}`]);
       if (estadisticas.satisfaccion_promedio !== undefined && estadisticas.satisfaccion_promedio !== null) 
-      statsData.push(['Satisfacción Promedio', `${parseFloat(estadisticas.satisfaccion_promedio).toFixed(1)} / 5`]);
+        statsData.push(['Satisfacción Promedio', `${parseFloat(estadisticas.satisfaccion_promedio).toFixed(1)} / 5`]);
     
-    // Datos de ocupación hotelera
       if (estadisticas.ocupacion_promedio !== undefined && estadisticas.ocupacion_promedio !== null) 
-      statsData.push(['Ocupación Promedio', `${parseFloat(estadisticas.ocupacion_promedio).toFixed(1)}%`]);
+        statsData.push(['Ocupación Promedio', `${parseFloat(estadisticas.ocupacion_promedio).toFixed(1)}%`]);
       if (estadisticas.tarifa_promedio !== undefined && estadisticas.tarifa_promedio !== null) 
-      statsData.push(['Tarifa Promedio (USD)', `$${parseFloat(estadisticas.tarifa_promedio).toFixed(2)}`]);
+        statsData.push(['Tarifa Promedio (USD)', `$${parseFloat(estadisticas.tarifa_promedio).toFixed(2)}`]);
       if (estadisticas.total_huespedes !== undefined) 
-      statsData.push(['Total Huéspedes', estadisticas.total_huespedes]);
+        statsData.push(['Total Huéspedes', estadisticas.total_huespedes]);
     
-      
       autoTable(doc, {
         startY: currentY,
         head: [['Indicador', 'Valor']],
@@ -325,7 +352,33 @@ export class EtlPage implements OnInit {
         styles: { fontSize: 10 }
       });
     }
+
+    // CAPTURAR GRÁFICOS COMO IMAGEN (SOLUCIÓN CLAVE)
+    const graficos = document.querySelectorAll('canvas');
+    if (graficos.length > 0) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setTextColor(41, 128, 185);
+      doc.text('GRÁFICOS ESTADÍSTICOS', 15, 15);
       
+      let imgY = 20;
+      for (let i = 0; i < graficos.length; i++) {
+        const canvas = graficos[i];
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 260;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        if (imgY + imgHeight > 190) {
+          doc.addPage();
+          imgY = 15;
+        }
+        
+        doc.addImage(imgData, 'PNG', 15, imgY, imgWidth, imgHeight);
+        imgY += imgHeight + 10;
+      }
+    }
+      
+    // PIE DE PÁGINA
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -340,7 +393,7 @@ export class EtlPage implements OnInit {
     
     const nombreArchivo = `reporte-etl-${proceso.id_etl}-${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(nombreArchivo);
-    console.log('Reporte PDF generado:', nombreArchivo);
+    console.log(' Reporte PDF generado:', nombreArchivo);
   }
 
   // ==========================================

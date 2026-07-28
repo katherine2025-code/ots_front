@@ -1,231 +1,29 @@
 <app-sidebar>
-  <div class="dashboard-page">
-    <!-- Header Superior -->
-    <header class="page-header">
-      <div class="header-left">
-        <h1>Dashboard</h1>
-        <p class="subtitle">Observatorio Turístico Sostenible - UPSE</p>
-      </div>
-      <div class="header-right">
-        <div class="user-badge">
-          <span class="user-name">{{ usuario?.nombres }} {{ usuario?.apellidos }}</span>
-          <span class="user-role-badge">{{ rolNombre }}</span>
+  <ion-content class="ion-padding" scrollY="true" forceOverscroll="false">
+    <div class="dashboard-page">
+      
+      <!-- Header Superior -->
+      <header class="page-header">
+        <div class="header-left">
+          <h1>Dashboard</h1>
+          <p class="subtitle">Observatorio Turístico Sostenible - UPSE</p>
         </div>
-      </div>
-    </header>
+        <div class="header-right">
+          <div class="user-badge">
+            <span class="user-name">Katherine Gabriela Mujica Tomalá</span>
+            <span class="user-role-badge">Administrador</span>
+          </div>
+        </div>
+      </header>
 
-    <!-- DASHBOARD PARA INVESTIGADOR -->
-    <div *ngIf="isInvestigador" class="investigador-dashboard">
-      <!-- Mensaje de bienvenida -->
-      <div class="welcome-banner">
-        <div class="welcome-content">
-          <h2>Bienvenido/a, {{ usuario?.nombres }}</h2>
-          <p>Panel de análisis y consulta de datos turísticos</p>
-        </div>
-        <div class="welcome-icon">
-          <ion-icon name="analytics-outline"></ion-icon>
-        </div>
-      </div>
-
-      <!-- KPIs de Análisis (Solo lectura) -->
+      <!-- KPIs Grid -->
       <div class="kpi-grid">
         <div class="kpi-card kpi-primary">
           <div class="kpi-icon">
             <ion-icon name="business-outline"></ion-icon>
           </div>
           <div class="kpi-content">
-            <h3>{{ metricas.totalHoteles || 0 }}</h3>
-            <p>Hoteles Registrados</p>
-            <span class="kpi-trend">
-              <ion-icon name="information-circle-outline"></ion-icon>
-              Datos actualizados
-            </span>
-          </div>
-        </div>
-
-        <div class="kpi-card kpi-success">
-          <div class="kpi-icon">
-            <ion-icon name="people-outline"></ion-icon>
-          </div>
-          <div class="kpi-content">
-            <h3>{{ metricas.ocupacionPromedio || 0 }}%</h3>
-            <p>Ocupación Promedio</p>
-            <span class="kpi-trend">
-              <ion-icon name="trending-up-outline"></ion-icon>
-              +5.3% vs mes anterior
-            </span>
-          </div>
-        </div>
-
-        <div class="kpi-card kpi-warning">
-          <div class="kpi-icon">
-            <ion-icon name="analytics-outline"></ion-icon>
-          </div>
-          <div class="kpi-content">
-            <h3>{{ metricas.prediccionesHoy || 0 }}</h3>
-            <p>Predicciones Disponibles</p>
-            <span class="kpi-trend">
-              <ion-icon name="eye-outline"></ion-icon>
-              Solo consulta
-            </span>
-          </div>
-        </div>
-
-        <div class="kpi-card kpi-info">
-          <div class="kpi-icon">
-            <ion-icon name="checkmark-circle-outline"></ion-icon>
-          </div>
-          <div class="kpi-content">
-            <h3>{{ metricas.precisionModelo || 0 }}%</h3>
-            <p>Precisión del Modelo</p>
-            <span class="kpi-trend">
-              <ion-icon name="trending-up-outline"></ion-icon>
-              +2.1% mejora
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Gráficos de Análisis -->
-      <div class="charts-row">
-        <div class="chart-card chart-large">
-          <div class="chart-header">
-            <h3>Análisis de Ocupación Hotelera - Últimos 30 Días</h3>
-            <div class="chart-actions">
-              <button class="btn-filter">
-                <ion-icon name="filter-outline"></ion-icon>
-                Filtrar
-              </button>
-            </div>
-          </div>
-          <div class="chart-container">
-            <app-chart-ocupacion [datos]="datosOcupacion"></app-chart-ocupacion>
-          </div>
-        </div>
-
-        <div class="chart-card chart-small">
-          <div class="chart-header">
-            <h3>Distribución por Temporada</h3>
-          </div>
-          <div class="chart-container">
-            <canvas #chartTemporada></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Gráficos adicionales para investigador -->
-      <div class="charts-row">
-        <div class="chart-card chart-medium">
-          <div class="chart-header">
-            <h3>Predicciones vs Valores Reales</h3>
-          </div>
-          <div class="chart-container">
-            <canvas #chartPredicciones></canvas>
-          </div>
-        </div>
-
-        <div class="chart-card chart-medium">
-          <div class="chart-header">
-            <h3>Ocupación por Parroquia</h3>
-          </div>
-          <div class="chart-container">
-            <canvas #chartParroquia></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabla de Predicciones (Solo lectura) -->
-      <div class="table-card">
-        <div class="table-header">
-          <h3>Predicciones de Ocupación Hotelera</h3>
-          <div class="table-actions">
-            <button class="btn-refresh" (click)="cargarDashboard()">
-              <ion-icon name="refresh-outline"></ion-icon>
-              Actualizar datos
-            </button>
-          </div>
-        </div>
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Hotel</th>
-                <th>Ocupación Predicha</th>
-                <th>Ocupación Real</th>
-                <th>Precisión</th>
-                <th>Modelo</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let pred of prediccionesRecientes">
-                <td>{{ pred.fecha_objetivo | date:'shortDate' }}</td>
-                <td>{{ pred.hotel_nombre || 'N/A' }}</td>
-                <td class="value-highlight">{{ pred.ocupacion_predicha }}%</td>
-                <td>{{ pred.ocupacion_real || 'Pendiente' }}</td>
-                <td>
-                  <span class="badge" [class]="getPrecisionClass(pred.precision_modelo)">
-                    {{ pred.precision_modelo }}%
-                  </span>
-                </td>
-                <td>{{ pred.modelo_utilizado }}</td>
-                <td>
-                  <span class="status-badge" [class]="pred.estado">
-                    {{ pred.estado }}
-                  </span>
-                </td>
-              </tr>
-              <tr *ngIf="prediccionesRecientes.length === 0">
-                <td colspan="7" class="no-data">No hay predicciones disponibles</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Panel de Información para Investigador -->
-      <div class="info-panel">
-        <h3>
-          <ion-icon name="information-circle-outline"></ion-icon>
-          Información del Panel
-        </h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <ion-icon name="eye-outline"></ion-icon>
-            <div>
-              <strong>Modo Consulta</strong>
-              <p>Tiene acceso de solo lectura a todos los datos y predicciones del sistema</p>
-            </div>
-          </div>
-          <div class="info-item">
-            <ion-icon name="download-outline"></ion-icon>
-            <div>
-              <strong>Exportar Reportes</strong>
-              <p>Puede descargar reportes y datos para su análisis e investigación</p>
-            </div>
-          </div>
-          <div class="info-item">
-            <ion-icon name="analytics-outline"></ion-icon>
-            <div>
-              <strong>Análisis Predictivo</strong>
-              <p>Los modelos de ML generan predicciones basadas en datos históricos</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- DASHBOARD PARA ADMINISTRADOR -->
-    <div *ngIf="isAdmin" class="admin-dashboard">
-      <!-- KPIs completos -->
-      <div class="kpi-grid">
-        <div class="kpi-card kpi-primary">
-          <div class="kpi-icon">
-            <ion-icon name="business-outline"></ion-icon>
-          </div>
-          <div class="kpi-content">
-            <h3>{{ metricas.totalHoteles || 0 }}</h3>
+            <h3>0</h3>
             <p>Hoteles Registrados</p>
             <span class="kpi-trend">
               <ion-icon name="trending-up-outline"></ion-icon>
@@ -239,7 +37,7 @@
             <ion-icon name="people-outline"></ion-icon>
           </div>
           <div class="kpi-content">
-            <h3>{{ metricas.ocupacionPromedio || 0 }}%</h3>
+            <h3>0.00%</h3>
             <p>Ocupación Promedio</p>
             <span class="kpi-trend">
               <ion-icon name="trending-up-outline"></ion-icon>
@@ -253,7 +51,7 @@
             <ion-icon name="analytics-outline"></ion-icon>
           </div>
           <div class="kpi-content">
-            <h3>{{ metricas.prediccionesHoy || 0 }}</h3>
+            <h3>8</h3>
             <p>Predicciones Hoy</p>
             <span class="kpi-trend">
               <ion-icon name="trending-up-outline"></ion-icon>
@@ -267,7 +65,7 @@
             <ion-icon name="checkmark-circle-outline"></ion-icon>
           </div>
           <div class="kpi-content">
-            <h3>{{ metricas.precisionModelo || 0 }}%</h3>
+            <h3>87.5%</h3>
             <p>Precisión del Modelo</p>
             <span class="kpi-trend">
               <ion-icon name="trending-up-outline"></ion-icon>
@@ -277,7 +75,7 @@
         </div>
       </div>
 
-      <!-- Gráficos -->
+      <!-- Charts Section -->
       <div class="charts-row">
         <div class="chart-card chart-large">
           <div class="chart-header">
@@ -290,7 +88,10 @@
             </div>
           </div>
           <div class="chart-container">
-            <app-chart-ocupacion [datos]="datosOcupacion"></app-chart-ocupacion>
+            <!-- Aquí va tu componente de gráfico real -->
+            <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#999;">
+              [Gráfico de Ocupación]
+            </div>
           </div>
         </div>
 
@@ -299,116 +100,13 @@
             <h3>Distribución por Temporada</h3>
           </div>
           <div class="chart-container">
-            <canvas #chartTemporada></canvas>
+            <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#999;">
+              [Gráfico de Temporada]
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="charts-row">
-        <div class="chart-card chart-medium">
-          <div class="chart-header">
-            <h3>Predicciones vs Real</h3>
-          </div>
-          <div class="chart-container">
-            <canvas #chartPredicciones></canvas>
-          </div>
-        </div>
-
-        <div class="chart-card chart-medium">
-          <div class="chart-header">
-            <h3>Ocupación por Parroquia</h3>
-          </div>
-          <div class="chart-container">
-            <canvas #chartParroquia></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabla con acciones -->
-      <div class="table-card">
-        <div class="table-header">
-          <h3>Predicciones Recientes</h3>
-          <div class="table-actions">
-            <button class="btn-export">
-              <ion-icon name="download-outline"></ion-icon>
-              Exportar
-            </button>
-            <button class="btn-refresh" (click)="cargarDashboard()">
-              <ion-icon name="refresh-outline"></ion-icon>
-              Actualizar
-            </button>
-          </div>
-        </div>
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Hotel</th>
-                <th>Ocupación Predicha</th>
-                <th>Ocupación Real</th>
-                <th>Precisión</th>
-                <th>Modelo</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let pred of prediccionesRecientes">
-                <td>{{ pred.fecha_objetivo | date:'shortDate' }}</td>
-                <td>{{ pred.hotel_nombre || 'N/A' }}</td>
-                <td class="value-highlight">{{ pred.ocupacion_predicha }}%</td>
-                <td>{{ pred.ocupacion_real || 'Pendiente' }}</td>
-                <td>
-                  <span class="badge" [class]="getPrecisionClass(pred.precision_modelo)">
-                    {{ pred.precision_modelo }}%
-                  </span>
-                </td>
-                <td>{{ pred.modelo_utilizado }}</td>
-                <td>
-                  <span class="status-badge" [class]="pred.estado">
-                    {{ pred.estado }}
-                  </span>
-                </td>
-                <td>
-                  <button class="btn-action" (click)="validarPrediccion(pred)">
-                    <ion-icon name="checkmark-outline"></ion-icon>
-                  </button>
-                  <button class="btn-action btn-danger" (click)="descartarPrediccion(pred)">
-                    <ion-icon name="close-outline"></ion-icon>
-                  </button>
-                </td>
-              </tr>
-              <tr *ngIf="prediccionesRecientes.length === 0">
-                <td colspan="8" class="no-data">No hay predicciones recientes</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Acciones Rápidas (Solo Admin) -->
-      <div class="quick-actions">
-        <h3>Acciones Rápidas</h3>
-        <div class="actions-grid">
-          <button class="action-card" (click)="navegarA('/hoteles')">
-            <ion-icon name="add-circle-outline"></ion-icon>
-            <span>Agregar Hotel</span>
-          </button>
-          <button class="action-card" (click)="navegarA('/usuarios')">
-            <ion-icon name="person-add-outline"></ion-icon>
-            <span>Crear Usuario</span>
-          </button>
-          <button class="action-card" (click)="navegarA('/etl')">
-            <ion-icon name="cloud-upload-outline"></ion-icon>
-            <span>Cargar Datos ETL</span>
-          </button>
-          <button class="action-card" (click)="generarReporte()">
-            <ion-icon name="document-text-outline"></ion-icon>
-            <span>Generar Reporte</span>
-          </button>
-        </div>
-      </div>
     </div>
-  </div>
+  </ion-content>
 </app-sidebar>

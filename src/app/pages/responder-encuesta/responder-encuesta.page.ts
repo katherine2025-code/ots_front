@@ -21,6 +21,15 @@ export class ResponderEncuestaPage implements OnInit {
 
   // PREGUNTAS REALES - ENCUESTA TURÍSTICA (Basado en CSV KoboToolbox)
   preguntasTurista: any[] = [
+    { 
+      id: 0, 
+      codigo: 'cedula_encuestador', 
+      texto: 'Cédula del Encuestador (10 dígitos)', 
+      tipo: 'text', 
+      seccion: 'Datos del Encuestador', 
+      obligatoria: true,
+      maxLength: 10 
+    },
     { id: 1, codigo: 'edad', texto: '¿Qué edad tiene usted?', tipo: 'select', seccion: 'Perfil Sociodemográfico', obligatoria: true,
       opciones: ['18 a 24 años', '25 a 34 años', '35 a 44 años', '45 a 54 años', '55 a 64 años', '65 años o más'] },
     { id: 2, codigo: 'genero', texto: '¿Con qué género se identifica usted?', tipo: 'select', seccion: 'Perfil Sociodemográfico', obligatoria: true,
@@ -96,6 +105,15 @@ export class ResponderEncuestaPage implements OnInit {
 
   // ✅ PREGUNTAS REALES - ESTABLECIMIENTOS DE ALOJAMIENTO (Basado en CSV MINTUR)
   preguntasHotel: any[] = [
+     { 
+      id: 0, 
+      codigo: 'cedula_encuestador', 
+      texto: 'Cédula del Encuestador (10 dígitos)', 
+      tipo: 'text', 
+      seccion: 'Datos del Encuestador', 
+      obligatoria: true,
+      maxLength: 10 
+    },
     { id: 1, codigo: 'provincia', texto: 'Provincia', tipo: 'text', seccion: 'Identificación del Establecimiento', obligatoria: true, valorDefault: 'Santa Elena' },
     { id: 2, codigo: 'nombre_establecimiento', texto: 'Nombre del establecimiento', tipo: 'text', seccion: 'Identificación del Establecimiento', obligatoria: true },
     { id: 3, codigo: 'direccion', texto: 'Dirección exacta', tipo: 'text', seccion: 'Identificación del Establecimiento', obligatoria: true },

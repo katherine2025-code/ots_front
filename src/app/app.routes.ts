@@ -91,14 +91,16 @@ export const routes: Routes = [
     path: 'encuestas/editor',
     loadComponent: () => import('./pages/encuestas-editor/encuestas-editor.page').then(m => m.EncuestasEditorPage)
   },
+  {
+  path: 'responder-encuesta/:tipo',
+  loadComponent: () => import('./pages/responder-encuesta/responder-encuesta.page').then(m => m.ResponderEncuestaPage),
+  canActivate:[authGuard]
+},
   
   // Ruta comodín al final
   {
     path: '**',
     redirectTo: 'dashboard'
   },
-  {
-    path: 'responder-encuesta',
-    loadComponent: () => import('./pages/responder-encuesta/responder-encuesta.page').then( m => m.ResponderEncuestaPage)
-  }
+  
 ];

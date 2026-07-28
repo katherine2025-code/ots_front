@@ -16,35 +16,29 @@
 
     <!-- Tarjetas de Estadísticas -->
     <div class="stats-grid" *ngIf="estadoProcesos">
-      <div class="stat-card stat-active">
-        <ion-icon name="server-outline"></ion-icon>
-        <div>
-          <h3>{{ estadoProcesos.procesos_activos }}</h3>
-          <p>Procesos Activos</p>
-        </div>
-      </div>
-      <div class="stat-card stat-success">
-        <ion-icon name="checkmark-circle-outline"></ion-icon>
-        <div>
-          <h3>{{ estadoProcesos.procesos_completados }}</h3>
-          <p>Completados</p>
-        </div>
-      </div>
-      <div class="stat-card stat-error">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        <div>
-          <h3>{{ estadoProcesos.procesos_fallidos }}</h3>
-          <p>Fallidos</p>
-        </div>
-      </div>
-      <div class="stat-card stat-info">
-        <ion-icon name="database-outline"></ion-icon>
-        <div>
-          <h3>{{ estadisticas?.total_registros || 0 }}</h3>
-          <p>Total Registros</p>
-        </div>
-      </div>
+  <div class="stat-card stat-active">
+    <ion-icon name="server-outline"></ion-icon>
+    <div>
+      <h3>{{ estadoProcesos.procesos_activos }}</h3>
+      <p>Procesos Activos</p>
     </div>
+  </div>
+  <div class="stat-card stat-success">
+    <ion-icon name="checkmark-circle-outline"></ion-icon>
+    <div>
+      <h3>{{ estadoProcesos.procesos_completados }}</h3>
+      <p>Completados</p>
+    </div>
+  </div>
+  <div class="stat-card stat-error">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <div>
+      <h3>{{ estadoProcesos.procesos_fallidos }}</h3>
+      <p>Fallidos</p>
+    </div>
+  </div>
+  <!-- ... -->
+</div>
 
     <!-- Tabs -->
     <div class="tabs-container">
@@ -110,9 +104,8 @@
         <div class="tipo-carga">
           <label class="input-label">Tipo de Datos a Cargar</label>
           <select [(ngModel)]="tipoCarga" class="custom-select">
-            <option *ngFor="let tipo of tiposDatos" [value]="tipo.tipo">
-              {{ tipo.nombre }} - {{ tipo.descripcion }}
-            </option>
+            <option value="ocupacion">Ocupación Hotelera</option>
+            <option value="encuestas">Encuestas Turisticas</option>
           </select>
         </div>
 

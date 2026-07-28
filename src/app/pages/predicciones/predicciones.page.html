@@ -1,12 +1,197 @@
-<app-header [title]="'Predicciones'"></app-header>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Predicciones de Ocupación Hotelera</ion-title>
+  </ion-toolbar>
+</ion-header>
 
 <ion-content class="ion-padding">
-  <ion-list>
-    <ion-item *ngFor="let p of predicciones">
-      <ion-label>
-        <h2>{{ p.modelo_utilizado }}</h2>
-        <p>Precisión: {{ p.precision_modelo }}%</p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+  
+  <!-- SECCIÓN 1: ENTRENAMIENTO COMPARATIVO -->
+  <div class="training-section">
+    <div class="section-header">
+      <h2>
+        <ion-icon name="analytics-outline"></ion-icon>
+        Entrenamiento Comparativo de Modelos
+      </h2>
+      <p>Se entrenan simultáneamente <strong>Random Forest</strong> y <strong>XGBoost</strong> con los mismos datos para comparar su precisión, RMSE, MAE y R² Score.</p>
+    </div>
+
+    <ion-button 
+      expand="block" 
+      color="success" 
+      size="large"
+      (click)="entrenarModelo()" 
+      [disabled]="entrenando">
+      <ion-icon name="play-circle-outline" slot="start"></ion-icon>
+      {{ entrenando ? 'ENTRENANDO MODELOS...' : 'ENTRENAR RANDOM FOREST VS XGBOOST' }}
+    </ion-button>
+
+    <!-- Tarjetas de Métricas Comparativas -->
+    <div class="metrics-grid" *ngIf="comparacion">
+      
+      <!-- Random Forest -->
+      <div class="metric-card rf-card">
+        <div class="card-header">
+          <ion-icon name="leaf-outline" color="primary"></ion-icon>
+          <h3>Random Forest</h3>
+          <span class="badge" [class.winner]="comparacion.ganador === 'Random Forest'">
+            {{ comparacion.ganador === 'Random Forest' ? '🏆 GANADOR' : 'Alternativo' }}
+          </span>
+        </div>
+        <div class="metric-values">
+          <div class="metric-item">
+            <span class="metric-label">Precisión</span>
+            <span class="metric-value">{{ comparacion.random_forest.precision }}%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">RMSE</span>
+            <span class="metric-value">{{ comparacion.random_forest.rmse }}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">MAE</span>
+            <span class="metric-value">{{ comparacion.random_forest.mae }}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">R² Score</span>
+            <span class="metric-value">{{ comparacion.random_forest.r2 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- XGBoost -->
+      <div class="metric-card xgb-card">
+        <div class="card-header">
+          <ion-icon name="flash-outline" color="warning"></ion-icon>
+          <h3>XGBoost</h3>
+          <span class="badge" [class.winner]="comparacion.ganador === 'XGBoost'">
+            {{ comparacion.ganador === 'XGBoost' ? '🏆 GANADOR' : 'Alternativo' }}
+          </span>
+        </div>
+        <div class="metric-values">
+          <div class="metric-item">
+            <span class="metric-label">Precisión</span>
+            <span class="metric-value">{{ comparacion.xgboost.precision }}%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">RMSE</span>
+            <span class="metric-value">{{ comparacion.xgboost.rmse }}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">MAE</span>
+            <span class="metric-value">{{ comparacion.xgboost.mae }}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">R² Score</span>
+            <span class="metric-value">{{ comparacion.xgboost.r2 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico Comparativo -->
+    <div class="chart-container" *ngIf="comparacion">
+      <canvas id="chartComparacion"></canvas>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 2: GENERAR PREDICCIÓN -->
+  <div class="prediction-section">
+    <div class="section-header">
+      <h2>
+        <ion-icon name="trending-up-outline"></ion-icon>
+        Generar Predicción (usando {{ comparacion?.ganador || 'mejor modelo' }})
+      </h2>
+      <p>Ingrese los parámetros futuros para predecir la tasa de ocupación hotelera.</p>
+    </div>
+
+    <div class="form-grid">
+      <ion-item>
+        <ion-label position="floating">Fecha Objetivo</ion-label>
+        <ion-input type="date" [(ngModel)]="fechaObjetivo"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Check-in Nacionales</ion-label>
+        <ion-input type="number" [(ngModel)]="checkinNacionales"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Check-in Extranjeros</ion-label>
+        <ion-input type="number" [(ngModel)]="checkinExtranjeros"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Tarifa Cobrada (USD)</ion-label>
+        <ion-input type="number" [(ngModel)]="tarifaCobrada"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Temperatura (°C)</ion-label>
+        <ion-input type="number" [(ngModel)]="temperatura"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Humedad (%)</ion-label>
+        <ion-input type="number" [(ngModel)]="humedad"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Precipitación (mm)</ion-label>
+        <ion-input type="number" [(ngModel)]="precipitacion"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Temporada</ion-label>
+        <ion-select [(ngModel)]="temporada">
+          <ion-select-option value="Alta">Alta (Feriados)</ion-select-option>
+          <ion-select-option value="Media">Media</ion-select-option>
+          <ion-select-option value="Baja">Baja</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+
+    <ion-button 
+      expand="block" 
+      color="primary" 
+      size="large"
+      (click)="predecir()" 
+      [disabled]="!comparacion">
+      <ion-icon name="analytics-outline" slot="start"></ion-icon>
+      GENERAR PREDICCIÓN
+    </ion-button>
+
+    <!-- Resultado de Predicción -->
+    <div class="prediction-result" *ngIf="prediccion">
+      <div class="result-card">
+        <div class="result-header">
+          <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+          <h3>Predicción Generada con {{ prediccion.modelo }}</h3>
+        </div>
+        <div class="result-value">
+          <span class="value-label">Tasa de Ocupación Predicha:</span>
+          <span class="value-number">{{ prediccion.ocupacion_predicha }}%</span>
+        </div>
+        <div class="result-range">
+          <div class="range-item">
+            <span class="range-label">Rango Mínimo:</span>
+            <span class="range-value">{{ prediccion.rango_prediccion.minimo }}%</span>
+          </div>
+          <div class="range-item">
+            <span class="range-label">Rango Máximo:</span>
+            <span class="range-value">{{ prediccion.rango_prediccion.maximo }}%</span>
+          </div>
+          <div class="range-item">
+            <span class="range-label">Error Estimado:</span>
+            <span class="range-value">±{{ prediccion.error_estimado }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfico de Predicción -->
+      <div class="chart-container">
+        <canvas id="chartPrediccion"></canvas>
+      </div>
+    </div>
+  </div>
+
 </ion-content>
