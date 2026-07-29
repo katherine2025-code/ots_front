@@ -96,6 +96,11 @@ export const routes: Routes = [
   loadComponent: () => import('./pages/responder-encuesta/responder-encuesta.page').then(m => m.ResponderEncuestaPage),
   canActivate:[authGuard]
 },
+
+{
+  path: 'perfil',
+  loadComponent: () => import('./pages/perfil/perfil.page').then(m => m.PerfilPage)
+},
   
   // Ruta comodín al final
   {

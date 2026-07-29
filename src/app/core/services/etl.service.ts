@@ -43,6 +43,11 @@ export class EtlService {
     return this.http.get(`${this.apiUrl}/ejecuciones-programadas`);
   }
 
+  // Agregar al final de la clase
+  getHistoricalPredictions(): Observable<any> {
+  return this.http.get(`${this.mlUrl}/predicciones-historicas`);
+}
+
   cargarArchivo(file: File, tipo: string): Observable<any> {
     const formData = new FormData();
     formData.append('archivo', file);

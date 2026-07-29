@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Chart, registerables } from 'chart.js';
+import { HttpClient } from '@angular/common/http';
 import { EtlService } from 'src/app/core/services/etl.service';
 
 Chart.register(...registerables);
@@ -23,6 +24,15 @@ export class PrediccionesPage implements OnInit {
   chartComparacion: any = null;
   chartPrediccion: any = null;
 
+  // NUEVAS VARIABLES PARA PREDICCIONES HISTÓRICAS
+  prediccionesHistoricas: any[] = [];
+  cargandoHistoricas: boolean = false;
+  chartHistoricas: any = null;
+  precisionPromedio: number = 0;
+  errorPromedio: number = 0;
+  totalRegistrosAnalizados: number = 0;
+  modeloUsado: string = '';
+
   // Datos para predicción
   fechaObjetivo: string = '2026-12-25';
   checkinNacionales: number = 50;
@@ -32,10 +42,11 @@ export class PrediccionesPage implements OnInit {
   humedad: number = 70;
   precipitacion: number = 0;
   temporada: string = 'Alta';
-  pernoctaciones: number = 150; 
-  habitacionesOcupadas: number = 75; 
 
-  constructor(private etlService: EtlService) {}
+  constructor(
+    private etlService: EtlService,
+    private http: HttpClient
+  ) {}
 
   ngOnInit() {
     this.cargarMetricas();
@@ -60,10 +71,9 @@ export class PrediccionesPage implements OnInit {
       this.metricas = response.metricas;
       this.comparacion = response.comparacion;
 
-      // Crear gráfico comparativo después de un pequeño delay
       setTimeout(() => this.crearGraficoComparacion(), 100);
 
-      alert(` Entrenamiento completado!\n\n🏆 Mejor modelo: ${response.mejor_modelo}\n` +
+      alert(` Entrenamiento completado!\n\n Mejor modelo: ${response.mejor_modelo}\n` +
             ` Random Forest - Precisión: ${response.metricas['Random Forest']?.precision}%\n` +
             ` XGBoost - Precisión: ${response.metricas['XGBoost']?.precision}%`);
     } catch (error) {
@@ -128,8 +138,6 @@ export class PrediccionesPage implements OnInit {
         fecha_objetivo: this.fechaObjetivo,
         checkin_nacionales: this.checkinNacionales,
         checkin_extranjeros: this.checkinExtranjeros,
-        pernoctaciones: this.pernoctaciones,
-        habitaciones_ocupadas: this.habitacionesOcupadas,
         tarifa_cobrada: this.tarifaCobrada,
         temperatura: this.temperatura,
         humedad: this.humedad,
@@ -187,6 +195,93 @@ export class PrediccionesPage implements OnInit {
             display: true,
             text: `Predicción con ${this.prediccion.modelo}`,
             font: { size: 16, weight: 'bold' }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: { display: true, text: 'Ocupación (%)' }
+          }
+        }
+      }
+    });
+  }
+
+  // ==========================================
+  // NUEVO MÉTODO: PREDICCIONES HISTÓRICAS
+  // ==========================================
+  async cargarPrediccionesHistoricas() {
+    this.cargandoHistoricas = true;
+    try {
+      // Usar http.get directamente
+      const response: any = await this.http.get('http://localhost:5000/predicciones-historicas').toPromise();
+      
+      this.prediccionesHistoricas = response.predicciones;
+      this.precisionPromedio = response.precision_promedio;
+      this.errorPromedio = response.error_promedio;
+      this.totalRegistrosAnalizados = response.total_registros;
+      this.modeloUsado = response.modelo_usado;
+      
+      console.log(' Predicciones históricas:', response);
+      
+      setTimeout(() => this.crearGraficoHistoricas(response), 100);
+      
+    } catch (error) {
+      console.error('Error cargando predicciones históricas:', error);
+      alert('Error cargando predicciones históricas. Asegúrate de haber entrenado el modelo primero.');
+    } finally {
+      this.cargandoHistoricas = false;
+    }
+  }
+
+  crearGraficoHistoricas(data: any) {
+    const ctx = document.getElementById('chartHistoricas') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    if (this.chartHistoricas) this.chartHistoricas.destroy();
+
+    // Ordenar por fecha
+    const predicciones: any[] = data.predicciones.sort((a: any, b: any) => 
+      new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
+    );
+
+    this.chartHistoricas = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: predicciones.map((p: any) => p.fecha),
+        datasets: [
+          {
+            label: 'Valor Real (%)',
+            data: predicciones.map((p: any) => p.valor_real),
+            borderColor: 'rgba(41, 128, 185, 1)',
+            backgroundColor: 'rgba(41, 128, 185, 0.1)',
+            tension: 0.4,
+            fill: false,
+            pointRadius: 4,
+            pointBackgroundColor: 'rgba(41, 128, 185, 1)'
+          },
+          {
+            label: 'Valor Predicho (%)',
+            data: predicciones.map((p: any) => p.valor_predicho),
+            borderColor: 'rgba(46, 204, 113, 1)',
+            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+            tension: 0.4,
+            fill: false,
+            pointRadius: 4,
+            pointBackgroundColor: 'rgba(46, 204, 113, 1)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' },
+          title: {
+            display: true,
+            text: `Comparación: Real vs Predicho (Precisión: ${data.precision_promedio}%)`,
+            font: { size: 14, weight: 'bold' }
           }
         },
         scales: {

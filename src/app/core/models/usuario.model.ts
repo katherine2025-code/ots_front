@@ -1,4 +1,5 @@
 export interface Usuario {
+  telefono: string;
   id_usuario: number;
   id_rol: number;
   nombres: string;

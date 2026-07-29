@@ -1,87 +1,69 @@
-<ion-content>
-  <app-sidebar></app-sidebar>
-  
-  <div class="main-content" id="main-content">
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Mi Perfil</ion-title>
-      </ion-toolbar>
-    </ion-header>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mi Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-    <ion-content class="ion-padding">
-      <div class="perfil-container">
-        <!-- Foto de Perfil -->
-        <div class="foto-perfil-section">
-          <div class="foto-container">
-            <img [src]="fotoPerfil" alt="Foto de perfil" class="foto-perfil">
-            <div class="foto-overlay">
-              <label for="file-input" class="btn-cambiar-foto">
-                <ion-icon name="camera-outline"></ion-icon>
-                <span>Cambiar foto</span>
-              </label>
-              <input 
-                type="file" 
-                id="file-input" 
-                accept="image/*" 
-                (change)="onFileSelected($event)"
-                style="display: none">
-            </div>
-          </div>
-          <h3>{{ usuario?.nombres }} {{ usuario?.apellidos }}</h3>
-          <p class="rol-badge">{{ rolNombre }}</p>
-          
-          <div class="foto-actions">
-            <ion-button 
-              (click)="guardarFoto()" 
-              [disabled]="!selectedFile || loading"
-              color="primary">
-              <ion-icon name="save-outline" slot="start"></ion-icon>
-              Guardar Foto
-            </ion-button>
-            <ion-button 
-              (click)="eliminarFoto()" 
-              fill="outline"
-              color="danger">
-              <ion-icon name="trash-outline" slot="start"></ion-icon>
-              Eliminar
-            </ion-button>
-          </div>
-        </div>
+<ion-content class="ion-padding">
+  <div class="profile-header" *ngIf="usuario">
+    <div class="avatar-large">
+      {{ usuario.nombres?.charAt(0) }}{{ usuario.apellidos?.charAt(0) }}
+    </div>
+    <h2>{{ usuario.nombres }} {{ usuario.apellidos }}</h2>
+    <ion-badge [color]="usuario.id_rol === 1 ? 'success' : 'secondary'">
+      {{ usuario.id_rol === 1 ? 'Administrador' : 'Investigador' }}
+    </ion-badge>
+  </div>
 
-        <!-- Formulario de Datos -->
-        <div class="datos-form-section">
-          <h3>Datos Personales</h3>
-          <form [formGroup]="perfilForm" class="perfil-form">
-            <ion-item>
-              <ion-label position="floating">Nombres</ion-label>
-              <ion-input formControlName="nombres" type="text"></ion-input>
-            </ion-item>
+  <div class="profile-section">
+    <h3>Información Personal</h3>
+    
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">Nombres</ion-label>
+        <ion-input [(ngModel)]="perfilForm.nombres" disabled></ion-input>
+      </ion-item>
 
-            <ion-item>
-              <ion-label position="floating">Apellidos</ion-label>
-              <ion-input formControlName="apellidos" type="text"></ion-input>
-            </ion-item>
+      <ion-item>
+        <ion-label position="floating">Apellidos</ion-label>
+        <ion-input [(ngModel)]="perfilForm.apellidos" disabled></ion-input>
+      </ion-item>
 
-            <ion-item>
-              <ion-label position="floating">Correo Electrónico</ion-label>
-              <ion-input formControlName="correo" type="email"></ion-input>
-            </ion-item>
+      <ion-item>
+        <ion-label position="floating">Correo Electrónico</ion-label>
+        <ion-input type="email" [(ngModel)]="perfilForm.correo" disabled></ion-input>
+      </ion-item>
 
-            <div class="form-actions">
-              <ion-button 
-                (click)="guardarCambios()" 
-                expand="block"
-                color="primary">
-                <ion-icon name="checkmark-outline" slot="start"></ion-icon>
-                Guardar Cambios
-              </ion-button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </ion-content>
+      <ion-item>
+        <ion-label position="floating">Teléfono</ion-label>
+        <ion-input type="tel" [(ngModel)]="perfilForm.telefono"></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" (click)="guardarCambios()" color="primary">
+      Guardar Cambios
+    </ion-button>
+  </div>
+
+  <div class="profile-section">
+    <h3>Seguridad</h3>
+    <ion-button expand="block" (click)="cambiarContrasena()" color="secondary">
+      Cambiar Contraseña
+    </ion-button>
+  </div>
+
+  <div class="profile-section">
+    <h3>Preferencias</h3>
+    <ion-item>
+      <ion-label>Notificaciones por Email</ion-label>
+      <ion-toggle checked></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-label>Modo Oscuro</ion-label>
+      <ion-toggle></ion-toggle>
+    </ion-item>
   </div>
 </ion-content>

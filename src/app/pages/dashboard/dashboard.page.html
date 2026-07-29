@@ -1,29 +1,45 @@
 <app-sidebar>
-  <ion-content class="ion-padding" scrollY="true" forceOverscroll="false">
+  <ion-content class="ion-padding" scrollY="true">
     <div class="dashboard-page">
       
-      <!-- Header Superior -->
+      <!-- Mensaje de bienvenida personalizado (Dinámico) -->
+      <div class="welcome-card" *ngIf="usuario">
+        <h1 *ngIf="isAdmin"> Bienvenida, {{ usuario.nombres }}</h1>
+        <h1 *ngIf="!isAdmin"> Bienvenido/a, {{ usuario.nombres }}</h1>
+        <p *ngIf="isAdmin">Panel de Administración - Observatorio Turístico Sostenible</p>
+        <p *ngIf="!isAdmin">Panel de Investigación - Acceso a Encuestas y Reportes</p>
+      </div>
+
+      <!-- Header Superior (Dinámico) -->
       <header class="page-header">
         <div class="header-left">
           <h1>Dashboard</h1>
           <p class="subtitle">Observatorio Turístico Sostenible - UPSE</p>
         </div>
         <div class="header-right">
-          <div class="user-badge">
-            <span class="user-name">Katherine Gabriela Mujica Tomalá</span>
-            <span class="user-role-badge">Administrador</span>
+          <div class="user-badge" *ngIf="usuario">
+            <span class="user-name">{{ usuario.nombres }} {{ usuario.apellidos }}</span>
+            <span class="user-role-badge" [ngClass]="isAdmin ? 'role-admin' : 'role-investigador'">
+              {{ rolNombre }}
+            </span>
           </div>
         </div>
       </header>
 
+      <!-- Estado de Carga -->
+      <div *ngIf="loading" class="loading-state">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando datos del dashboard...</p>
+      </div>
+
       <!-- KPIs Grid -->
-      <div class="kpi-grid">
+      <div class="kpi-grid" *ngIf="!loading">
         <div class="kpi-card kpi-primary">
           <div class="kpi-icon">
             <ion-icon name="business-outline"></ion-icon>
           </div>
           <div class="kpi-content">
-            <h3>0</h3>
+            <h3>{{ metricas.totalHoteles }}</h3>
             <p>Hoteles Registrados</p>
             <span class="kpi-trend">
               <ion-icon name="trending-up-outline"></ion-icon>
@@ -37,7 +53,7 @@
             <ion-icon name="people-outline"></ion-icon>
           </div>
           <div class="kpi-content">
-            <h3>0.00%</h3>
+            <h3>{{ metricas.ocupacionPromedio | number:'1.1-1' }}%</h3>
             <p>Ocupación Promedio</p>
             <span class="kpi-trend">
               <ion-icon name="trending-up-outline"></ion-icon>
@@ -51,7 +67,7 @@
             <ion-icon name="analytics-outline"></ion-icon>
           </div>
           <div class="kpi-content">
-            <h3>8</h3>
+            <h3>{{ metricas.prediccionesHoy }}</h3>
             <p>Predicciones Hoy</p>
             <span class="kpi-trend">
               <ion-icon name="trending-up-outline"></ion-icon>
@@ -65,9 +81,9 @@
             <ion-icon name="checkmark-circle-outline"></ion-icon>
           </div>
           <div class="kpi-content">
-            <h3>87.5%</h3>
+            <h3>{{ metricas.precisionModelo | number:'1.1-1' }}%</h3>
             <p>Precisión del Modelo</p>
-            <span class="kpi-trend">
+            <span class="kpi-trend" [ngClass]="getPrecisionClass(metricas.precisionModelo)">
               <ion-icon name="trending-up-outline"></ion-icon>
               +2.1% mejora
             </span>
@@ -76,22 +92,14 @@
       </div>
 
       <!-- Charts Section -->
-      <div class="charts-row">
+      <div class="charts-row" *ngIf="!loading">
         <div class="chart-card chart-large">
           <div class="chart-header">
             <h3>Ocupación Hotelera - Últimos 30 Días</h3>
-            <div class="chart-actions">
-              <button class="btn-filter">
-                <ion-icon name="filter-outline"></ion-icon>
-                Filtrar
-              </button>
-            </div>
           </div>
           <div class="chart-container">
-            <!-- Aquí va tu componente de gráfico real -->
-            <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#999;">
-              [Gráfico de Ocupación]
-            </div>
+            <!-- Usamos tu componente personalizado -->
+            <app-chart-ocupacion></app-chart-ocupacion>
           </div>
         </div>
 
@@ -100,11 +108,29 @@
             <h3>Distribución por Temporada</h3>
           </div>
           <div class="chart-container">
-            <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#999;">
-              [Gráfico de Temporada]
-            </div>
+            <!-- Canvas vinculado a tu @ViewChild('chartTemporada') -->
+            <canvas #chartTemporada></canvas>
           </div>
         </div>
+      </div>
+
+      <!-- Predicciones Recientes (Opcional, basado en tu TS) -->
+      <div class="recent-predictions" *ngIf="!loading && prediccionesRecientes.length > 0">
+        <h3>Predicciones Recientes</h3>
+        <ion-list>
+          <ion-item *ngFor="let pred of prediccionesRecientes">
+            <ion-label>
+              <h2>{{ pred.fecha_objetivo | date:'dd/MM/yyyy' }}</h2>
+              <p>Ocupación predicha: {{ pred.ocupacion_predicha }}% (Precisión: {{ pred.precision }}%)</p>
+            </ion-label>
+            <ion-button fill="clear" color="success" (click)="validarPrediccion(pred)">
+              <ion-icon name="checkmark-outline"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" color="danger" (click)="descartarPrediccion(pred)">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
       </div>
 
     </div>

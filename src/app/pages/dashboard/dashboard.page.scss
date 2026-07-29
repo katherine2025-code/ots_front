@@ -41,6 +41,28 @@
   }
 }
 
+// ✅ NUEVO: Tarjeta de Bienvenida
+.welcome-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+  h1 {
+    margin: 0 0 8px 0;
+    font-size: 1.6em;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1em;
+  }
+}
+
 // Header Styles
 .page-header {
   display: flex;
@@ -48,7 +70,7 @@
   align-items: center;
   margin-bottom: 32px;
   padding-bottom: 16px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
 
   .header-left {
     h1 {
@@ -56,7 +78,6 @@
       font-size: 28px;
       font-weight: 700;
       color: #1a1a1a;
-      
     }
 
     .subtitle {
@@ -77,15 +98,40 @@
         color: #1f2937;
       }
 
+      // ✅ ACTUALIZADO: Badges de rol con colores específicos
       .user-role-badge {
-        background: #eef2ff;
-        color: #667eea;
         padding: 4px 12px;
         border-radius: 12px;
         font-size: 12px;
         font-weight: 600;
+        color: white;
+        
+        &.role-admin {
+          background: #10b981; // Verde para Administrador
+        }
+        
+        &.role-investigador {
+          background: #667eea; // Azul/Morado para Investigador
+        }
       }
     }
+  }
+}
+
+// ✅ NUEVO: Estado de Carga
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #6b7280;
+  
+  ion-spinner {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 16px;
+    color: #667eea;
   }
 }
 
@@ -149,6 +195,9 @@
       display: flex;
       align-items: center;
       gap: 4px;
+      
+      &.medium { color: #f59e0b; }
+      &.low { color: #ef4444; }
     }
   }
 
@@ -205,6 +254,40 @@
 
   .chart-container {
     height: 300px;
+  }
+}
+
+// ✅ NUEVO: Lista de Predicciones Recientes
+.recent-predictions {
+  margin-top: 20px;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  ion-item {
+    --background: transparent;
+    --border-color: #e5e7eb;
+    
+    h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    
+    p {
+      font-size: 13px;
+      color: #6b7280;
+      margin: 0;
+    }
   }
 }
 

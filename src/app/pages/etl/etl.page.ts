@@ -270,114 +270,153 @@ export class EtlPage implements OnInit {
     const { default: autoTable } = await import('jspdf-autotable');
     const html2canvas = (await import('html2canvas')).default;
 
-    const doc = new jsPDF('l', 'mm', 'a4');
+    const doc = new jsPDF('l', 'mm', 'a4'); // Horizontal
     
     // ENCABEZADO
-    doc.setFontSize(20);
+    doc.setFontSize(16);
     doc.setTextColor(41, 128, 185);
-    doc.text('OBSERVATORIO TURÍSTICO SOSTENIBLE - UPSE', 15, 15);
+    doc.text('OBSERVATORIO TURÍSTICO SOSTENIBLE - UPSE', 140, 15, { align: 'center' });
     
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setTextColor(100);
-    doc.text('Reporte Estadístico de Proceso ETL', 15, 22);
+    const tipoReporte = proceso.tipo_datos === 'encuestas' ? 
+      'Reporte de Encuestas Turísticas' : 'Reporte de Ocupación Hotelera';
+    doc.text(tipoReporte, 140, 22, { align: 'center' });
     
     doc.setDrawColor(41, 128, 185);
     doc.setLineWidth(0.5);
     doc.line(15, 25, 280, 25);
 
     // INFORMACIÓN DEL PROCESO
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(0);
-    doc.text('INFORMACIÓN DEL PROCESO', 15, 35);
+    doc.text('INFORMACIÓN DEL PROCESO ETL', 15, 32);
     
     const infoProceso = [
       ['ID Proceso:', proceso.id_etl.toString()],
-      ['Archivo:', proceso.nombre_archivo],
+      ['Archivo:', proceso.nombre_archivo.substring(0, 50)],
       ['Fecha de Carga:', new Date(proceso.fecha_fin).toLocaleString()],
       ['Estado:', proceso.estado],
-      ['Total Registros:', (proceso.registros_procesados || 0).toString()],
-      ['Registros Exitosos:', (proceso.registros_exitosos || 0).toString()],
-      ['Registros con Error:', (proceso.registros_error || 0).toString()]
+      ['Total Registros:', (estadisticas.total_registros || 0).toString()],
+      ['Tasa de Éxito:', `${estadisticas.tasa_exito || 100}%`]
     ];
     
     autoTable(doc, {
-      startY: 38,
+      startY: 35,
       head: [['Campo', 'Valor']],
       body: infoProceso,
       theme: 'striped',
       headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      styles: { fontSize: 10 }
+      styles: { fontSize: 9 },
+      columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 220 } }
     });
     
-    // ESTADÍSTICAS PRINCIPALES
-    let currentY = (doc as any).lastAutoTable.finalY + 10;
+    // INDICADORES CLAVE
+    let currentY = (doc as any).lastAutoTable.finalY + 8;
     
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setTextColor(41, 128, 185);
-    doc.text('ESTADÍSTICAS', 15, currentY);
+    doc.text('INDICADORES CLAVE', 15, currentY);
     currentY += 5;
     
     if (estadisticas) {
       const statsData = [];
 
-      if (estadisticas.total_registros !== undefined) 
-        statsData.push(['Total de Registros', estadisticas.total_registros]);
-      if (estadisticas.registros_exitosos !== undefined) 
-        statsData.push(['Registros Exitosos', estadisticas.registros_exitosos]);
-      if (estadisticas.tasa_exito !== undefined) 
-        statsData.push(['Tasa de Éxito', `${estadisticas.tasa_exito}%`]);
-
-      if (estadisticas.paises_diferentes !== undefined) 
-        statsData.push(['Países Diferentes', estadisticas.paises_diferentes]);
-      if (estadisticas.noches_promedio !== undefined && estadisticas.noches_promedio !== null) 
-        statsData.push(['Noches Promedio', parseFloat(estadisticas.noches_promedio).toFixed(1)]);
-      if (estadisticas.gasto_promedio !== undefined && estadisticas.gasto_promedio !== null) 
-        statsData.push(['Gasto Promedio (USD)', `$${parseFloat(estadisticas.gasto_promedio).toFixed(2)}`]);
-      if (estadisticas.satisfaccion_promedio !== undefined && estadisticas.satisfaccion_promedio !== null) 
-        statsData.push(['Satisfacción Promedio', `${parseFloat(estadisticas.satisfaccion_promedio).toFixed(1)} / 5`]);
-    
-      if (estadisticas.ocupacion_promedio !== undefined && estadisticas.ocupacion_promedio !== null) 
-        statsData.push(['Ocupación Promedio', `${parseFloat(estadisticas.ocupacion_promedio).toFixed(1)}%`]);
-      if (estadisticas.tarifa_promedio !== undefined && estadisticas.tarifa_promedio !== null) 
-        statsData.push(['Tarifa Promedio (USD)', `$${parseFloat(estadisticas.tarifa_promedio).toFixed(2)}`]);
-      if (estadisticas.total_huespedes !== undefined) 
-        statsData.push(['Total Huéspedes', estadisticas.total_huespedes]);
-    
+      if (proceso.tipo_datos === 'encuestas') {
+        statsData.push(['Total Encuestas', estadisticas.total_registros?.toString() || '0', 'Registros procesados']);
+        statsData.push(['Países Diferentes', estadisticas.paises_diferentes?.toString() || '0', 'Origen de turistas']);
+        statsData.push(['Satisfacción Promedio', `${estadisticas.satisfaccion_promedio || 0} / 5`, 'Nivel de satisfacción']);
+        statsData.push(['Gasto Promedio', `$${estadisticas.gasto_promedio || 0}`, 'Gasto por turista']);
+        statsData.push(['Edad Promedio', `${estadisticas.edad_promedio || 0} años`, 'Edad de turistas']);
+        statsData.push(['Género Femenino', `${estadisticas.genero_femenino || 0} (${((estadisticas.genero_femenino || 0) / (estadisticas.total_registros || 1) * 100).toFixed(1)}%)`, 'Distribución por género']);
+        statsData.push(['Género Masculino', `${estadisticas.genero_masculino || 0} (${((estadisticas.genero_masculino || 0) / (estadisticas.total_registros || 1) * 100).toFixed(1)}%)`, 'Distribución por género']);
+        statsData.push(['Satisfechos', `${estadisticas.satisfechos || 0} (${((estadisticas.satisfechos || 0) / (estadisticas.total_registros || 1) * 100).toFixed(1)}%)`, 'Satisfacción >= 4']);
+      } else {
+        statsData.push(['Total Registros', estadisticas.total_registros?.toString() || '0', 'Registros procesados']);
+        statsData.push(['Ocupación Promedio', `${estadisticas.ocupacion_promedio || 0}%`, 'Habitaciones ocupadas']);
+        statsData.push(['Tarifa Promedio', `$${estadisticas.tarifa_promedio || 0}`, 'Ingreso por habitación']);
+        statsData.push(['Total Huéspedes', estadisticas.total_huespedes?.toString() || '0', 'Nacionales + Extranjeros']);
+        statsData.push(['Habitaciones Promedio', estadisticas.habitaciones_promedio?.toString() || '0', 'Por día']);
+        statsData.push(['Ocupación Mínima', `${estadisticas.ocupacion_minima || 0}%`, 'Mínimo histórico']);
+        statsData.push(['Ocupación Máxima', `${estadisticas.ocupacion_maxima || 0}%`, 'Máximo histórico']);
+      }
+      
       autoTable(doc, {
         startY: currentY,
-        head: [['Indicador', 'Valor']],
+        head: [['Indicador', 'Valor', 'Descripción']],
         body: statsData,
         theme: 'striped',
         headStyles: { fillColor: [52, 152, 219], textColor: 255 },
-        styles: { fontSize: 10 }
+        styles: { fontSize: 9 },
+        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 60 }, 2: { cellWidth: 140 } }
       });
     }
 
-    // CAPTURAR GRÁFICOS COMO IMAGEN (SOLUCIÓN CLAVE)
-    const graficos = document.querySelectorAll('canvas');
-    if (graficos.length > 0) {
-      doc.addPage();
-      doc.setFontSize(14);
-      doc.setTextColor(41, 128, 185);
-      doc.text('GRÁFICOS ESTADÍSTICOS', 15, 15);
-      
-      let imgY = 20;
-      for (let i = 0; i < graficos.length; i++) {
-        const canvas = graficos[i];
-        const imgData = canvas.toDataURL('image/png');
-        const imgWidth = 260;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    // DATOS DETALLADOS POR CATEGORÍA
+    if (datosGrafico && datosGrafico.length > 0) {
+      for (const grafico of datosGrafico) {
+        currentY = (doc as any).lastAutoTable.finalY + 8;
         
-        if (imgY + imgHeight > 190) {
+        // Si no hay espacio, nueva página
+        if (currentY > 180) {
           doc.addPage();
-          imgY = 15;
+          currentY = 15;
         }
         
-        doc.addImage(imgData, 'PNG', 15, imgY, imgWidth, imgHeight);
-        imgY += imgHeight + 10;
+        // Título según tipo
+        let titulo = '';
+        switch(grafico.tipo) {
+          case 'paises': titulo = 'DISTRIBUCIÓN POR PAÍS DE RESIDENCIA'; break;
+          case 'satisfaccion': titulo = 'NIVEL DE SATISFACCIÓN'; break;
+          case 'genero': titulo = 'DISTRIBUCIÓN POR GÉNERO'; break;
+          case 'gasto_pais': titulo = 'GASTO PROMEDIO POR PAÍS'; break;
+          case 'ocupacion_tiempo': titulo = 'OCUPACIÓN POR FECHA'; break;
+          case 'ocupacion_hotel': titulo = 'OCUPACIÓN POR HOTEL'; break;
+          default: titulo = 'DATOS DETALLADOS';
+        }
+        
+        doc.setFontSize(11);
+        doc.setTextColor(41, 128, 185);
+        doc.text(titulo, 15, currentY);
+        currentY += 5;
+        
+        // Convertir datos a tabla
+        const tablaDatos = grafico.datos.map((d: any) => {
+          if (d.pais) {
+            return [d.pais, d.cantidad?.toString() || '0', `${d.porcentaje || 0}%`];
+          } else if (d.nivel_satisfaccion) {
+            return [`Nivel ${d.nivel_satisfaccion}`, d.cantidad?.toString() || '0', `${d.porcentaje || 0}%`];
+          } else if (d.genero) {
+            return [d.genero, d.cantidad?.toString() || '0', `${d.porcentaje || 0}%`];
+          } else if (d.fecha) {
+            return [d.fecha, d.checkin_nacionales?.toString() || '0', `${d.ocupacion_promedio || 0}%`];
+          } else if (d.id_hotel) {
+            return [`Hotel ${d.id_hotel}`, d.total_registros?.toString() || '0', `${d.ocupacion_promedio || 0}%`];
+          }
+          return [Object.values(d)[0]?.toString() || '', Object.values(d)[1]?.toString() || '0', ''];
+        });
+        
+        autoTable(doc, {
+          startY: currentY,
+          head: grafico.tipo === 'gasto_pais' ? [['País', 'Encuestas', 'Gasto Promedio', 'Mín', 'Máx']] :
+                grafico.tipo === 'ocupacion_tiempo' ? [['Fecha', 'Check-ins', 'Ocupación %']] :
+                grafico.tipo === 'ocupacion_hotel' ? [['Hotel', 'Registros', 'Ocupación %', 'Tarifa']] :
+                [['Categoría', 'Cantidad', 'Porcentaje']],
+          body: grafico.tipo === 'gasto_pais' ? 
+            grafico.datos.map((d: any) => [d.pais, d.total_encuestas, `$${d.gasto_promedio}`, `$${d.gasto_minimo}`, `$${d.gasto_maximo}`]) :
+            grafico.tipo === 'ocupacion_hotel' ?
+            grafico.datos.map((d: any) => [`Hotel ${d.id_hotel}`, d.total_registros, `${d.ocupacion_promedio}%`, `$${d.tarifa_promedio}`]) :
+            tablaDatos,
+          theme: 'striped',
+          headStyles: { fillColor: [46, 204, 113], textColor: 255 },
+          styles: { fontSize: 8 },
+          columnStyles: grafico.tipo === 'gasto_pais' ? 
+            { 0: { cellWidth: 70 }, 1: { cellWidth: 40 }, 2: { cellWidth: 50 }, 3: { cellWidth: 40 }, 4: { cellWidth: 40 } } :
+            { 0: { cellWidth: 100 }, 1: { cellWidth: 60 }, 2: { cellWidth: 60 } }
+        });
       }
     }
-      
+    
     // PIE DE PÁGINA
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
@@ -385,13 +424,14 @@ export class EtlPage implements OnInit {
       doc.setFontSize(8);
       doc.setTextColor(150);
       doc.text(
-        `Generado por: Observatorio Turístico Sostenible - UPSE | Página ${i} de ${pageCount}`,
-        15,
-        doc.internal.pageSize.getHeight() - 10
+        `Generado: ${new Date().toLocaleString()} | Página ${i} de ${pageCount}`,
+        140,
+        doc.internal.pageSize.getHeight() - 8,
+        { align: 'center' }
       );
     }
     
-    const nombreArchivo = `reporte-etl-${proceso.id_etl}-${new Date().toISOString().split('T')[0]}.pdf`;
+    const nombreArchivo = `reporte-${proceso.id_etl}-${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(nombreArchivo);
     console.log(' Reporte PDF generado:', nombreArchivo);
   }

@@ -23,7 +23,7 @@
       (click)="entrenarModelo()" 
       [disabled]="entrenando">
       <ion-icon name="play-circle-outline" slot="start"></ion-icon>
-      {{ entrenando ? 'ENTRENANDO MODELOS...' : 'ENTRENAR RANDOM FOREST VS XGBOOST' }}
+      {{ entrenando ? 'ENTRENANDO ...' : 'ENTRENAR ALGORITMOS' }}
     </ion-button>
 
     <!-- Tarjetas de Métricas Comparativas -->
@@ -32,10 +32,10 @@
       <!-- Random Forest -->
       <div class="metric-card rf-card">
         <div class="card-header">
-          <ion-icon name="leaf-outline" color="primary"></ion-icon>
+          <ion-icon name="leaf-outline" color="light"></ion-icon>
           <h3>Random Forest</h3>
           <span class="badge" [class.winner]="comparacion.ganador === 'Random Forest'">
-            {{ comparacion.ganador === 'Random Forest' ? '🏆 GANADOR' : 'Alternativo' }}
+            {{ comparacion.ganador === 'Random Forest' ? ' RANDOM FOREST ' : 'Alternativo' }}
           </span>
         </div>
         <div class="metric-values">
@@ -61,10 +61,10 @@
       <!-- XGBoost -->
       <div class="metric-card xgb-card">
         <div class="card-header">
-          <ion-icon name="flash-outline" color="warning"></ion-icon>
+          <ion-icon name="flash-outline" color="light"></ion-icon>
           <h3>XGBoost</h3>
           <span class="badge" [class.winner]="comparacion.ganador === 'XGBoost'">
-            {{ comparacion.ganador === 'XGBoost' ? '🏆 GANADOR' : 'Alternativo' }}
+            {{ comparacion.ganador === 'XGBoost' ? ' XGBOOST' : 'Alternativo' }}
           </span>
         </div>
         <div class="metric-values">
@@ -164,7 +164,7 @@
     <div class="prediction-result" *ngIf="prediccion">
       <div class="result-card">
         <div class="result-header">
-          <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+          <ion-icon name="checkmark-circle-outline" color="light"></ion-icon>
           <h3>Predicción Generada con {{ prediccion.modelo }}</h3>
         </div>
         <div class="result-value">
@@ -191,6 +191,79 @@
       <div class="chart-container">
         <canvas id="chartPrediccion"></canvas>
       </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 3: PREDICCIONES HISTÓRICAS (NUEVA - VALIDACIÓN) -->
+  <div class="historical-section">
+    <div class="section-header">
+      <h2>
+        <ion-icon name="time-outline"></ion-icon>
+        Validación con Datos Históricos
+      </h2>
+      <p>El sistema predice valores para fechas pasadas y los compara con los valores reales, demostrando su precisión en tiempo real.</p>
+    </div>
+
+    <ion-button 
+      expand="block" 
+      color="secondary" 
+      size="large"
+      (click)="cargarPrediccionesHistoricas()" 
+      [disabled]="cargandoHistoricas">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      {{ cargandoHistoricas ? 'CARGANDO...' : 'VALIDAR PREDICCIONES HISTÓRICAS' }}
+    </ion-button>
+
+    <!-- Métricas de Validación -->
+    <div class="validation-metrics" *ngIf="prediccionesHistoricas.length > 0">
+      <div class="metric-box">
+        <h3>{{ totalRegistrosAnalizados }}</h3>
+        <p>Registros Analizados</p>
+      </div>
+      <div class="metric-box success">
+        <h3>{{ precisionPromedio }}%</h3>
+        <p>Precisión Promedio</p>
+      </div>
+      <div class="metric-box warning">
+        <h3>±{{ errorPromedio }}%</h3>
+        <p>Error Promedio</p>
+      </div>
+    </div>
+
+    <!-- Gráfico Comparativo -->
+    <div class="chart-container" *ngIf="prediccionesHistoricas.length > 0">
+      <canvas id="chartHistoricas"></canvas>
+    </div>
+
+    <!-- Tabla de Detalles -->
+    <div class="table-container" *ngIf="prediccionesHistoricas.length > 0">
+      <h3>Detalle de Predicciones</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Valor Real</th>
+            <th>Valor Predicho</th>
+            <th>Error</th>
+            <th>Precisión</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let pred of prediccionesHistoricas | slice:0:10">
+            <td>{{ pred.fecha }}</td>
+            <td>{{ pred.valor_real }}%</td>
+            <td [class.success]="pred.error < 5" [class.error]="pred.error >= 5">
+              {{ pred.valor_predicho }}%
+            </td>
+            <td>±{{ pred.error }}%</td>
+            <td>
+              <ion-badge [color]="pred.precision >= 90 ? 'success' : 'warning'">
+                {{ pred.precision }}%
+              </ion-badge>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
