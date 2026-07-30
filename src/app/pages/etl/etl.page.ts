@@ -59,7 +59,10 @@ export class EtlPage implements OnInit {
       this.cargarEstadoProcesos();
     }, 5000);
   }
-
+onTipoCargaChange(event: any) {
+  this.tipoCarga = event.target.value;
+  console.log('Tipo de carga cambiado a:', this.tipoCarga);
+}
   verReporteDetalle(id: number) {
   this.router.navigate([`/reporte-detalle/${id}`]);
 }

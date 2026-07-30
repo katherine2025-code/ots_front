@@ -103,7 +103,7 @@
         <!-- Selector de tipo -->
         <div class="tipo-carga">
           <label class="input-label">Tipo de Datos a Cargar</label>
-          <select [(ngModel)]="tipoCarga" class="custom-select">
+          <select [value]="tipoCarga" class="custom-select" (change)="onTipoCargaChange($event)" >
             <option value="ocupacion">Ocupación Hotelera</option>
             <option value="encuestas">Encuestas Turisticas</option>
           </select>
@@ -121,7 +121,7 @@
             <ion-icon name="cloud-upload-outline" class="upload-icon"></ion-icon>
             <h3>Arrastra tu archivo CSV aquí</h3>
             <p>o haz clic para explorar archivos</p>
-            <span class="file-types">Formato: .csv | Tamaño máximo: 10MB</span>
+            <span class="file-types">Formato: .csv | Tamaño máximo: 600MB</span>
           </div>
           <input 
             #fileInput
