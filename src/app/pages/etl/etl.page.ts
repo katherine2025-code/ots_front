@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController } from '@ionic/angular';
@@ -17,7 +17,7 @@ import autoTable from 'jspdf-autotable';
   standalone: true,
   imports: [CommonModule, FormsModule, IonicModule, SidebarComponent]
 })
-export class EtlPage implements OnInit {
+export class EtlPage implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   usuario: any = null;
@@ -40,6 +40,12 @@ export class EtlPage implements OnInit {
   isDragging: boolean = false;
   tabActiva: string = 'cargar';
 
+  //  NUEVAS VARIABLES PARA VALIDACIÓN ML
+  resultadoValidacion: any = null;
+  cargandoValidacion: boolean = false;
+  modoValidacion: string = 'todos';
+  private procesoIntervalo: any;
+
   constructor(
     private etlService: EtlService,
     private authService: AuthService,
@@ -55,17 +61,25 @@ export class EtlPage implements OnInit {
     });
     this.cargarDatosIniciales();
 
-    setInterval(() => {
+    this.procesoIntervalo = setInterval(() => {
       this.cargarEstadoProcesos();
     }, 5000);
   }
-onTipoCargaChange(event: any) {
-  this.tipoCarga = event.target.value;
-  console.log('Tipo de carga cambiado a:', this.tipoCarga);
-}
+
+  ngOnDestroy() {
+    if (this.procesoIntervalo) {
+      clearInterval(this.procesoIntervalo);
+    }
+  }
+
+  onTipoCargaChange(event: any) {
+    this.tipoCarga = event.target.value;
+    console.log('Tipo de carga cambiado a:', this.tipoCarga);
+  }
+
   verReporteDetalle(id: number) {
-  this.router.navigate([`/reporte-detalle/${id}`]);
-}
+    this.router.navigate([`/reporte-detalle/${id}`]);
+  }
 
   cargarDatosIniciales() {
     this.cargarTiposDatos();
@@ -219,19 +233,17 @@ onTipoCargaChange(event: any) {
       }
     });
   }
+
   mostrarResultadoProcesamiento() {
     if (this.resultadoCarga) {
       const exitosos = this.resultadoCarga.exitosos || this.resultadoCarga.registros_insertados || 0;
       const errores = this.resultadoCarga.errores || this.resultadoCarga.registros_error || 0;
       
       if (exitosos > 0 && errores === 0) {
-        // Éxito total
         alert(` Proceso completado exitosamente\n\n Registros insertados: ${exitosos}\n Errores: ${errores}`);
       } else if (exitosos > 0 && errores > 0) {
-        // Éxito parcial
         alert(` Proceso completado con errores\n\n Exitosos: ${exitosos}\n Errores: ${errores}`);
       } else {
-        // Fallido total
         alert(` Proceso fallido\n\n Errores: ${errores}\n\nRevisa los logs para más detalles`);
       }
     }
@@ -242,6 +254,9 @@ onTipoCargaChange(event: any) {
     this.uploadProgress = 0;
     this.uploadError = '';
     this.resultadoCarga = null;
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
   }
 
   cambiarTab(tab: string) {
@@ -249,7 +264,38 @@ onTipoCargaChange(event: any) {
   }
 
   // ==========================================
-  // ✅ MÉTODOS NUEVOS PARA REPORTE PDF
+  // ✅ NUEVO MÉTODO: VALIDACIÓN HISTÓRICA ML
+  // ==========================================
+  validarModeloConHistorico(modo: 'todos' | 'limite' | 'dias') {
+    this.modoValidacion = modo;
+    this.cargandoValidacion = true;
+    this.resultadoValidacion = null;
+
+    let limite = modo === 'limite' ? 100 : undefined;
+    let dias = modo === 'dias' ? 90 : undefined;
+
+    console.log(` Iniciando validación histórica. Modo: ${modo}`);
+
+    this.etlService.getHistoricalPredictions(limite, dias).subscribe({
+      next: (data) => {
+        this.resultadoValidacion = data;
+        this.cargandoValidacion = false;
+        console.log(' Validación histórica completada:', data);
+      },
+      error: (err) => {
+        console.error(' Error en validación histórica:', err);
+        this.cargandoValidacion = false;
+        this.alertController.create({
+          header: 'Error',
+          message: 'No se pudo realizar la validación. Asegúrate de haber entrenado el modelo primero.',
+          buttons: ['OK']
+        }).then(alert => alert.present());
+      }
+    });
+  }
+
+  // ==========================================
+  // ✅ MÉTODOS PARA REPORTE PDF
   // ==========================================
 
   async descargarReportePDF(idProceso: number) {
@@ -271,11 +317,9 @@ onTipoCargaChange(event: any) {
   async generarPDFReporte(proceso: any, estadisticas: any, datosGrafico: any[]) {
     const { default: jsPDF } = await import('jspdf');
     const { default: autoTable } = await import('jspdf-autotable');
-    const html2canvas = (await import('html2canvas')).default;
 
-    const doc = new jsPDF('l', 'mm', 'a4'); // Horizontal
+    const doc = new jsPDF('l', 'mm', 'a4');
     
-    // ENCABEZADO
     doc.setFontSize(16);
     doc.setTextColor(41, 128, 185);
     doc.text('OBSERVATORIO TURÍSTICO SOSTENIBLE - UPSE', 140, 15, { align: 'center' });
@@ -290,7 +334,6 @@ onTipoCargaChange(event: any) {
     doc.setLineWidth(0.5);
     doc.line(15, 25, 280, 25);
 
-    // INFORMACIÓN DEL PROCESO
     doc.setFontSize(11);
     doc.setTextColor(0);
     doc.text('INFORMACIÓN DEL PROCESO ETL', 15, 32);
@@ -314,7 +357,6 @@ onTipoCargaChange(event: any) {
       columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 220 } }
     });
     
-    // INDICADORES CLAVE
     let currentY = (doc as any).lastAutoTable.finalY + 8;
     
     doc.setFontSize(12);
@@ -355,18 +397,15 @@ onTipoCargaChange(event: any) {
       });
     }
 
-    // DATOS DETALLADOS POR CATEGORÍA
     if (datosGrafico && datosGrafico.length > 0) {
       for (const grafico of datosGrafico) {
         currentY = (doc as any).lastAutoTable.finalY + 8;
         
-        // Si no hay espacio, nueva página
         if (currentY > 180) {
           doc.addPage();
           currentY = 15;
         }
         
-        // Título según tipo
         let titulo = '';
         switch(grafico.tipo) {
           case 'paises': titulo = 'DISTRIBUCIÓN POR PAÍS DE RESIDENCIA'; break;
@@ -383,7 +422,6 @@ onTipoCargaChange(event: any) {
         doc.text(titulo, 15, currentY);
         currentY += 5;
         
-        // Convertir datos a tabla
         const tablaDatos = grafico.datos.map((d: any) => {
           if (d.pais) {
             return [d.pais, d.cantidad?.toString() || '0', `${d.porcentaje || 0}%`];
@@ -420,7 +458,6 @@ onTipoCargaChange(event: any) {
       }
     }
     
-    // PIE DE PÁGINA
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -436,11 +473,11 @@ onTipoCargaChange(event: any) {
     
     const nombreArchivo = `reporte-${proceso.id_etl}-${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(nombreArchivo);
-    console.log(' Reporte PDF generado:', nombreArchivo);
+    console.log('📄 Reporte PDF generado:', nombreArchivo);
   }
 
   // ==========================================
-  // MÉTODOS EXISTENTES (Mantenidos y mejorados)
+  // MÉTODOS EXISTENTES
   // ==========================================
 
   async confirmarEliminar(id: number) {

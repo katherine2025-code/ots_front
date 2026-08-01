@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -12,7 +12,7 @@ export class EtlService {
   constructor(private http: HttpClient) {}
 
   // ==========================================
-  // MÉTODOS ETL (Node.js Backend) - ORIGINALES
+  // MÉTODOS ETL (Node.js Backend)
   // ==========================================
 
   getTiposDatos(): Observable<any> {
@@ -43,10 +43,19 @@ export class EtlService {
     return this.http.get(`${this.apiUrl}/ejecuciones-programadas`);
   }
 
-  // Agregar al final de la clase
-  getHistoricalPredictions(): Observable<any> {
-  return this.http.get(`${this.mlUrl}/predicciones-historicas`);
-}
+  // ✅ MÉTODO MEJORADO: Validación histórica con parámetros opcionales
+  getHistoricalPredictions(limite?: number, dias?: number): Observable<any> {
+    let params = new HttpParams();
+    
+    if (limite) {
+      params = params.set('limite', limite.toString());
+    }
+    if (dias) {
+      params = params.set('dias', dias.toString());
+    }
+
+    return this.http.get(`${this.mlUrl}/predicciones-historicas`, { params });
+  }
 
   cargarArchivo(file: File, tipo: string): Observable<any> {
     const formData = new FormData();
@@ -83,7 +92,7 @@ export class EtlService {
   }
 
   // ==========================================
-  // MÉTODOS ML (Microservicio Python) - NUEVOS
+  // MÉTODOS ML (Microservicio Python)
   // ==========================================
 
   entrenarModelo(): Observable<any> {
