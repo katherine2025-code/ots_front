@@ -6,12 +6,12 @@
 
 <ion-content class="ion-padding">
   
-  <!-- SECCIÓN 1: ENTRENAMIENTO COMPARATIVO -->
-  <div class="training-section">
+  <!-- SECCIÓN 1: ENTRENAMIENTO COMPARATIVO (SOLO ADMINISTRADOR / TÉCNICO) -->
+  <div class="training-section" *ngIf="isAdmin">
     <div class="section-header">
       <h2>
         <ion-icon name="analytics-outline"></ion-icon>
-        Entrenamiento Comparativo de Modelos
+        Entrenamiento Comparativo de Modelos ML
       </h2>
       <p>Se entrenan simultáneamente <strong>Random Forest</strong> y <strong>XGBoost</strong> con los mismos datos para comparar su precisión.</p>
     </div>
@@ -22,8 +22,9 @@
       size="large"
       (click)="entrenarModelo()" 
       [disabled]="entrenando">
-      <ion-icon name="play-circle-outline" slot="start"></ion-icon>
-      {{ entrenando ? 'ENTRENANDO ...' : 'ENTRENAR ALGORITMOS' }}
+      <ion-spinner name="crescent" *ngIf="entrenando" slot="start"></ion-spinner>
+      <ion-icon name="play-circle-outline" slot="start" *ngIf="!entrenando"></ion-icon>
+      {{ entrenando ? 'ENTRENANDO MODELOS ...' : 'ENTRENAR ALGORITMOS' }}
     </ion-button>
 
     <!-- Tarjetas de Métricas Comparativas -->
@@ -35,7 +36,7 @@
           <ion-icon name="leaf-outline" color="light"></ion-icon>
           <h3>Random Forest</h3>
           <span class="badge" [class.winner]="comparacion.ganador === 'Random Forest'">
-            {{ comparacion.ganador === 'Random Forest' ? ' RANDOM FOREST ' : 'Alternativo' }}
+            {{ comparacion.ganador === 'Random Forest' ? ' GANADOR ' : 'Alternativo' }}
           </span>
         </div>
         <div class="metric-values">
@@ -64,7 +65,7 @@
           <ion-icon name="flash-outline" color="light"></ion-icon>
           <h3>XGBoost</h3>
           <span class="badge" [class.winner]="comparacion.ganador === 'XGBoost'">
-            {{ comparacion.ganador === 'XGBoost' ? ' XGBOOST' : 'Alternativo' }}
+            {{ comparacion.ganador === 'XGBoost' ? ' GANADOR ' : 'Alternativo' }}
           </span>
         </div>
         <div class="metric-values">
@@ -94,112 +95,252 @@
     </div>
   </div>
 
-  <!-- SECCIÓN 2: GENERAR PREDICCIÓN -->
+  <!-- SECCIÓN 2: GENERAR PREDICCIÓN (CON MODO INVESTIGADOR POR RANGO) -->
   <div class="prediction-section">
     <div class="section-header">
       <h2>
         <ion-icon name="trending-up-outline"></ion-icon>
-        Generar Predicción 
+        Módulo de Proyección y Análisis Turístico
       </h2>
-      <p>Ingrese los parámetros futuros para predecir la tasa de ocupación hotelera.</p>
+      <p *ngIf="isAdmin">Seleccione la modalidad de cálculo: estimación puntual por simulador manual o proyección por rango de fechas (Investigación).</p>
+      <p *ngIf="isInvestigador">Proyección inteligente de afluencia turística por rango de fechas basada en modelos de Machine Learning entrenados.</p>
     </div>
 
-    <div class="form-grid">
-      <ion-item>
-        <ion-label position="floating">Fecha Objetivo</ion-label>
-        <ion-input type="date" [(ngModel)]="fechaObjetivo"></ion-input>
-      </ion-item>
+    <!-- SELECTOR DE MODO (Solo visible para Admin o selector libre) -->
+    <ion-segment [(ngModel)]="modoPrediccion" color="tertiary" style="margin-bottom: 20px;" *ngIf="isAdmin">
+      <ion-segment-button value="simulador">
+        <ion-icon name="options-outline"></ion-icon>
+        <ion-label>Simulador Manual (1 Día)</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="rango">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-label>Proyección por Rango (Investigación)</ion-label>
+      </ion-segment-button>
+    </ion-segment>
 
-      <ion-item>
-        <ion-label position="floating">Check-in Nacionales</ion-label>
-        <ion-input type="number" [(ngModel)]="checkinNacionales"></ion-input>
-      </ion-item>
+    <!-- MODO 1: SIMULADOR MANUAL (1 DÍA) -->
+    <div *ngIf="modoPrediccion === 'simulador'">
+      <div class="form-grid">
+        <ion-item>
+          <ion-label position="floating">Fecha Objetivo</ion-label>
+          <ion-input type="date" [(ngModel)]="fechaObjetivo"></ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="floating">Check-in Extranjeros</ion-label>
-        <ion-input type="number" [(ngModel)]="checkinExtranjeros"></ion-input>
-      </ion-item>
+        <ion-item>
+          <ion-label position="floating">Check-in Nacionales</ion-label>
+          <ion-input type="number" min="0" [(ngModel)]="checkinNacionales"></ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="floating">Tarifa Cobrada (USD)</ion-label>
-        <ion-input type="number" [(ngModel)]="tarifaCobrada"></ion-input>
-      </ion-item>
+        <ion-item>
+          <ion-label position="floating">Check-in Extranjeros</ion-label>
+          <ion-input type="number" min="0" [(ngModel)]="checkinExtranjeros"></ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="floating">Temperatura (°C)</ion-label>
-        <ion-input type="number" [(ngModel)]="temperatura"></ion-input>
-      </ion-item>
+        <ion-item>
+          <ion-label position="floating">Tarifa Cobrada (USD)</ion-label>
+          <ion-input type="number" min="0" [(ngModel)]="tarifaCobrada"></ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="floating">Humedad (%)</ion-label>
-        <ion-input type="number" [(ngModel)]="humedad"></ion-input>
-      </ion-item>
+        <ion-item>
+          <ion-label position="floating">Temperatura (°C)</ion-label>
+          <ion-input type="number" [(ngModel)]="temperatura"></ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="floating">Precipitación (mm)</ion-label>
-        <ion-input type="number" [(ngModel)]="precipitacion"></ion-input>
-      </ion-item>
+        <ion-item>
+          <ion-label position="floating">Humedad (%)</ion-label>
+          <ion-input type="number" min="0" max="100" [(ngModel)]="humedad"></ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label>Temporada</ion-label>
-        <ion-select [(ngModel)]="temporada">
-          <ion-select-option value="Alta">Alta (Feriados)</ion-select-option>
-          <ion-select-option value="Media">Media</ion-select-option>
-          <ion-select-option value="Baja">Baja</ion-select-option>
-        </ion-select>
-      </ion-item>
-    </div>
+        <ion-item>
+          <ion-label position="floating">Precipitación (mm)</ion-label>
+          <ion-input type="number" min="0" [(ngModel)]="precipitacion"></ion-input>
+        </ion-item>
 
-    <ion-button 
-      expand="block" 
-      color="primary" 
-      size="large"
-      (click)="predecir()" 
-      [disabled]="!comparacion">
-      <ion-icon name="analytics-outline" slot="start"></ion-icon>
-      GENERAR PREDICCIÓN
-    </ion-button>
-
-    <!-- Resultado de Predicción -->
-    <div class="prediction-result" *ngIf="prediccion">
-      <div class="result-card">
-        <div class="result-header">
-          <ion-icon name="checkmark-circle-outline" color="light"></ion-icon>
-          <h3>Predicción Generada con {{ prediccion.modelo }}</h3>
-        </div>
-        <div class="result-value">
-          <span class="value-label">Tasa de Ocupación Predicha:</span>
-          <span class="value-number">{{ prediccion.ocupacion_predicha }}%</span>
-        </div>
-        <div class="result-range">
-          <div class="range-item">
-            <span class="range-label">Rango Mínimo:</span>
-            <span class="range-value">{{ prediccion.rango_prediccion.minimo }}%</span>
-          </div>
-          <div class="range-item">
-            <span class="range-label">Rango Máximo:</span>
-            <span class="range-value">{{ prediccion.rango_prediccion.maximo }}%</span>
-          </div>
-          <div class="range-item">
-            <span class="range-label">Error Estimado:</span>
-            <span class="range-value">±{{ prediccion.error_estimado }}%</span>
-          </div>
-        </div>
+        <ion-item>
+          <ion-label>Temporada</ion-label>
+          <ion-select [(ngModel)]="temporada">
+            <ion-select-option value="Alta">Alta (Feriados)</ion-select-option>
+            <ion-select-option value="Media">Media</ion-select-option>
+            <ion-select-option value="Baja">Baja</ion-select-option>
+          </ion-select>
+        </ion-item>
       </div>
 
-      <!-- Gráfico de Predicción -->
-      <div class="chart-container">
-        <canvas id="chartPrediccion"></canvas>
+      <ion-button 
+        expand="block" 
+        color="primary" 
+        size="large"
+        (click)="predecir()" 
+        [disabled]="prediciendo">
+        <ion-spinner name="crescent" *ngIf="prediciendo" slot="start"></ion-spinner>
+        <ion-icon name="analytics-outline" slot="start" *ngIf="!prediciendo"></ion-icon>
+        {{ prediciendo ? 'CALCULANDO PREDICCIÓN ...' : 'GENERAR PREDICCIÓN' }}
+      </ion-button>
+
+      <!-- Resultado de Predicción Punto -->
+      <div class="prediction-result" *ngIf="prediccion">
+        <div class="result-card">
+          <div class="result-header">
+            <ion-icon name="checkmark-circle-outline" color="light"></ion-icon>
+            <h3>Predicción Generada con {{ prediccion.modelo }}</h3>
+          </div>
+          <div class="result-value">
+            <span class="value-label">Tasa de Ocupación Predicha:</span>
+            <span class="value-number">{{ prediccion.ocupacion_predicha }}%</span>
+          </div>
+          <div class="result-range">
+            <div class="range-item">
+              <span class="range-label">Rango Mínimo:</span>
+              <span class="range-value">{{ prediccion.rango_prediccion.minimo }}%</span>
+            </div>
+            <div class="range-item">
+              <span class="range-label">Rango Máximo:</span>
+              <span class="range-value">{{ prediccion.rango_prediccion.maximo }}%</span>
+            </div>
+            <div class="range-item">
+              <span class="range-label">Error Estimado:</span>
+              <span class="range-value">±{{ prediccion.error_estimado }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="chartPrediccion"></canvas>
+        </div>
       </div>
     </div>
+
+    <!-- MODO 2: PROYECCIÓN POR RANGO (INVESTIGADOR TURISMO) -->
+    <div *ngIf="modoPrediccion === 'rango'">
+      
+      <!-- BOTONES DE ACCESO RÁPIDO DE RANGOS EDITABLES -->
+      <div class="quick-ranges" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <ion-chip color="tertiary" (click)="seleccionarRangoRapido(7)">
+          <ion-icon name="time-outline"></ion-icon>
+          <ion-label>Próximos 7 días</ion-label>
+        </ion-chip>
+        <ion-chip color="tertiary" (click)="seleccionarRangoRapido(15)">
+          <ion-icon name="time-outline"></ion-icon>
+          <ion-label>Próximos 15 días</ion-label>
+        </ion-chip>
+        <ion-chip color="tertiary" (click)="seleccionarRangoRapido(30)">
+          <ion-icon name="time-outline"></ion-icon>
+          <ion-label>Próximos 30 días</ion-label>
+        </ion-chip>
+      </div>
+
+      <div class="form-grid">
+        <ion-item>
+          <ion-label position="floating">Fecha Inicio Rango (Editable)</ion-label>
+          <ion-input type="date" [(ngModel)]="fechaInicioRango" (change)="onFechaRangoChange()"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Fecha Fin Rango (Editable)</ion-label>
+          <ion-input type="date" [(ngModel)]="fechaFinRango" (change)="onFechaRangoChange()"></ion-input>
+        </ion-item>
+      </div>
+
+      <ion-button 
+        expand="block" 
+        color="tertiary" 
+        size="large"
+        (click)="predecirRango()" 
+        [disabled]="calculandoRango">
+        <ion-spinner name="crescent" *ngIf="calculandoRango" slot="start"></ion-spinner>
+        <ion-icon name="calendar-outline" slot="start" *ngIf="!calculandoRango"></ion-icon>
+        {{ calculandoRango ? 'PROYECTANDO RANGO ...' : 'GENERAR / ACTUALIZAR PROYECCIÓN DE RANGO' }}
+      </ion-button>
+
+      <!-- RESULTADO DE PROYECCIÓN POR RANGO (PANEL ÉPICO DE ESTADÍSTICAS E INVESTIGACIÓN) -->
+      <div class="prediction-result" *ngIf="resultadoRango">
+        
+        <!-- GRILLA 1: MÉTRICAS GENERALES -->
+        <div class="validation-metrics" style="margin-top: 20px;">
+          <div class="metric-box">
+            <h3>{{ resultadoRango.total_dias }}</h3>
+            <p>Días Analizados</p>
+          </div>
+          <div class="metric-box success">
+            <h3>{{ resultadoRango.ocupacion_promedio }}%</h3>
+            <p>Promedio Ocupación Esperada</p>
+          </div>
+          <div class="metric-box warning">
+            <h3>{{ resultadoRango.dia_pico.fecha }}</h3>
+            <p>Pico de Ocupación ({{ resultadoRango.dia_pico.ocupacion_predicha }}%)</p>
+          </div>
+        </div>
+
+        <!-- GRILLA 2: IMPACTO ECONÓMICO Y TURÍSTICO PROYECTADO -->
+        <div class="validation-metrics" style="margin-top: 15px;">
+          <div class="metric-box primary" style="background: rgba(142, 68, 173, 0.1); border-left: 4px solid #8e44ad;">
+            <h3 style="color: #8e44ad;">~{{ resultadoRango.turistas_estimados_totales }}</h3>
+            <p>Turistas Proyectados en el Período</p>
+          </div>
+          <div class="metric-box success" style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid #2ecc71;">
+            <h3 style="color: #2ecc71;">${{ resultadoRango.ingresos_estimados_usd }} USD</h3>
+            <p>Recaudación Estimada (USD)</p>
+          </div>
+          <div class="metric-box warning" style="background: rgba(241, 196, 15, 0.1); border-left: 4px solid #f1c40f;">
+            <h3 style="color: #f39c12;">{{ resultadoRango.dias_alta_demanda }} Días</h3>
+            <p>Días con Ocupación &ge; 60%</p>
+          </div>
+        </div>
+
+        <!-- GRÁFICO PRINCIPAL: TENDENCIA DIARIA EN LÍNEA -->
+        <div class="chart-container" style="margin-top: 20px;">
+          <canvas id="chartRango"></canvas>
+        </div>
+
+        <!-- GRILLA DE GRÁFICOS COMPLEMENTARIOS (DÍA DE LA SEMANA Y TEMPORADA) -->
+        <div style="display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
+          <div class="chart-container" style="flex: 1; min-width: 280px; height: 280px;">
+            <canvas id="chartDiaSemana"></canvas>
+          </div>
+          <div class="chart-container" style="flex: 1; min-width: 280px; height: 280px;">
+            <canvas id="chartTemporada"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabla Desglosada por Día -->
+        <div class="table-container">
+          <h3>Desglose Diario de la Proyección Turística</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Día</th>
+                <th>Temporada</th>
+                <th>Clima Est.</th>
+                <th>Ocupación Esperada</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of resultadoRango.predicciones_diarias">
+                <td>{{ item.fecha }}</td>
+                <td>{{ item.dia_semana }}</td>
+                <td>
+                  <ion-badge [color]="item.temporada === 'Alta' ? 'danger' : 'medium'">
+                    {{ item.temporada }}
+                  </ion-badge>
+                </td>
+                <td>{{ item.temperatura }}°C</td>
+                <td class="success"><strong>{{ item.ocupacion_predicha }}%</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- SECCIÓN 3: PREDICCIONES HISTÓRICAS (NUEVA - VALIDACIÓN) -->
-  <div class="historical-section">
+  <!-- SECCIÓN 3: PREDICCIONES HISTÓRICAS (SOLO ADMINISTRADOR / TÉCNICO) -->
+  <div class="historical-section" *ngIf="isAdmin">
     <div class="section-header">
       <h2>
         <ion-icon name="time-outline"></ion-icon>
-        Validación con Datos Históricos
+        Validación Técnica con Datos Históricos
       </h2>
       <p>El sistema predice valores para fechas pasadas y los compara con los valores reales, demostrando su precisión en tiempo real.</p>
     </div>
@@ -210,8 +351,9 @@
       size="large"
       (click)="cargarPrediccionesHistoricas()" 
       [disabled]="cargandoHistoricas">
-      <ion-icon name="refresh-outline" slot="start"></ion-icon>
-      {{ cargandoHistoricas ? 'CARGANDO...' : 'VALIDAR PREDICCIONES HISTÓRICAS' }}
+      <ion-spinner name="crescent" *ngIf="cargandoHistoricas" slot="start"></ion-spinner>
+      <ion-icon name="refresh-outline" slot="start" *ngIf="!cargandoHistoricas"></ion-icon>
+      {{ cargandoHistoricas ? 'VALIDANDO REGISTROS ...' : 'VALIDAR PREDICCIONES HISTÓRICAS' }}
     </ion-button>
 
     <!-- Métricas de Validación -->

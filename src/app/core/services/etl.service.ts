@@ -103,6 +103,13 @@ export class EtlService {
     return this.http.post(`${this.mlUrl}/predecir`, datos);
   }
 
+  predecirOcupacionRango(fechaInicio: string, fechaFin: string): Observable<any> {
+    return this.http.post(`${this.mlUrl}/predecir-rango`, {
+      fecha_inicio: fechaInicio,
+      fecha_fin: fechaFin
+    });
+  }
+
   getMetricas(): Observable<any> {
     return this.http.get(`${this.mlUrl}/metricas`);
   }

@@ -34,8 +34,8 @@
           </a>
         </li>
 
-        <!--  PREDICCIONES - SOLO ADMIN (AQUÍ ESTÁ EL CAMBIO CLAVE) -->
-        <li class="nav-item" [class.active]="isActive('/predicciones')" *ngIf="isAdmin">
+        <!--  PREDICCIONES - ADMIN E INVESTIGADOR -->
+        <li class="nav-item" [class.active]="isActive('/predicciones')" *ngIf="isAdmin || isInvestigador">
           <a routerLink="/predicciones" class="nav-link">
             <ion-icon name="analytics-outline" class="nav-icon"></ion-icon>
             <span class="nav-text">Predicciones</span>
