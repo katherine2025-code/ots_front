@@ -2,7 +2,6 @@ import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController } from '@ionic/angular';
-import { SidebarComponent } from 'src/app/shared/components/sidebar/sidebar.component';
 import { EtlService } from 'src/app/core/services/etl.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { HttpEventType } from '@angular/common/http';
@@ -15,7 +14,7 @@ import autoTable from 'jspdf-autotable';
   templateUrl: './etl.page.html',
   styleUrls: ['./etl.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, SidebarComponent]
+  imports: [CommonModule, FormsModule, IonicModule]
 })
 export class EtlPage implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef;
@@ -27,14 +26,14 @@ export class EtlPage implements OnInit, OnDestroy {
   uploadSuccess: boolean = false;
   uploadError: string = '';
   resultadoCarga: any = null;
-  
+
   tiposDatos: any[] = [];
   historial: any[] = [];
   estadisticas: any = null;
   estadoProcesos: any = null;
   logsErrores: any[] = [];
   ejecucionesProgramadas: any[] = [];
-  
+
   tipoCarga: string = 'ocupacion';
   filtroHistorial: string = '';
   isDragging: boolean = false;
@@ -51,7 +50,7 @@ export class EtlPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private alertController: AlertController,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     console.log('Inicializando página ETL');
@@ -216,7 +215,7 @@ export class EtlPage implements OnInit, OnDestroy {
           this.resultadoCarga = event.body;
           this.selectedFile = null;
           this.isUploading = false;
-          
+
           setTimeout(() => {
             this.cargarDatosIniciales();
             this.mostrarResultadoProcesamiento();
@@ -227,7 +226,7 @@ export class EtlPage implements OnInit, OnDestroy {
         this.uploadError = err.error?.error || err.message || 'Error al procesar el archivo';
         this.isUploading = false;
 
-         setTimeout(() => {
+        setTimeout(() => {
           this.cargarDatosIniciales();
         }, 1000);
       }
@@ -238,7 +237,7 @@ export class EtlPage implements OnInit, OnDestroy {
     if (this.resultadoCarga) {
       const exitosos = this.resultadoCarga.exitosos || this.resultadoCarga.registros_insertados || 0;
       const errores = this.resultadoCarga.errores || this.resultadoCarga.registros_error || 0;
-      
+
       if (exitosos > 0 && errores === 0) {
         alert(` Proceso completado exitosamente\n\n Registros insertados: ${exitosos}\n Errores: ${errores}`);
       } else if (exitosos > 0 && errores > 0) {
@@ -302,7 +301,7 @@ export class EtlPage implements OnInit, OnDestroy {
     try {
       console.log('Generando reporte PDF para proceso:', idProceso);
       const response: any = await this.etlService.getProcesoDetalle(idProceso).toPromise();
-      
+
       if (!response || !response.proceso) {
         alert('No se encontró la información del proceso.');
         return;
@@ -319,17 +318,17 @@ export class EtlPage implements OnInit, OnDestroy {
     const { default: autoTable } = await import('jspdf-autotable');
 
     const doc = new jsPDF('l', 'mm', 'a4');
-    
+
     doc.setFontSize(16);
     doc.setTextColor(41, 128, 185);
     doc.text('OBSERVATORIO TURÍSTICO SOSTENIBLE - UPSE', 140, 15, { align: 'center' });
-    
+
     doc.setFontSize(12);
     doc.setTextColor(100);
-    const tipoReporte = proceso.tipo_datos === 'encuestas' ? 
+    const tipoReporte = proceso.tipo_datos === 'encuestas' ?
       'Reporte de Encuestas Turísticas' : 'Reporte de Ocupación Hotelera';
     doc.text(tipoReporte, 140, 22, { align: 'center' });
-    
+
     doc.setDrawColor(41, 128, 185);
     doc.setLineWidth(0.5);
     doc.line(15, 25, 280, 25);
@@ -337,7 +336,7 @@ export class EtlPage implements OnInit, OnDestroy {
     doc.setFontSize(11);
     doc.setTextColor(0);
     doc.text('INFORMACIÓN DEL PROCESO ETL', 15, 32);
-    
+
     const infoProceso = [
       ['ID Proceso:', proceso.id_etl.toString()],
       ['Archivo:', proceso.nombre_archivo.substring(0, 50)],
@@ -346,7 +345,7 @@ export class EtlPage implements OnInit, OnDestroy {
       ['Total Registros:', (estadisticas.total_registros || 0).toString()],
       ['Tasa de Éxito:', `${estadisticas.tasa_exito || 100}%`]
     ];
-    
+
     autoTable(doc, {
       startY: 35,
       head: [['Campo', 'Valor']],
@@ -356,14 +355,14 @@ export class EtlPage implements OnInit, OnDestroy {
       styles: { fontSize: 9 },
       columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 220 } }
     });
-    
+
     let currentY = (doc as any).lastAutoTable.finalY + 8;
-    
+
     doc.setFontSize(12);
     doc.setTextColor(41, 128, 185);
     doc.text('INDICADORES CLAVE', 15, currentY);
     currentY += 5;
-    
+
     if (estadisticas) {
       const statsData = [];
 
@@ -385,7 +384,7 @@ export class EtlPage implements OnInit, OnDestroy {
         statsData.push(['Ocupación Mínima', `${estadisticas.ocupacion_minima || 0}%`, 'Mínimo histórico']);
         statsData.push(['Ocupación Máxima', `${estadisticas.ocupacion_maxima || 0}%`, 'Máximo histórico']);
       }
-      
+
       autoTable(doc, {
         startY: currentY,
         head: [['Indicador', 'Valor', 'Descripción']],
@@ -400,14 +399,14 @@ export class EtlPage implements OnInit, OnDestroy {
     if (datosGrafico && datosGrafico.length > 0) {
       for (const grafico of datosGrafico) {
         currentY = (doc as any).lastAutoTable.finalY + 8;
-        
+
         if (currentY > 180) {
           doc.addPage();
           currentY = 15;
         }
-        
+
         let titulo = '';
-        switch(grafico.tipo) {
+        switch (grafico.tipo) {
           case 'paises': titulo = 'DISTRIBUCIÓN POR PAÍS DE RESIDENCIA'; break;
           case 'satisfaccion': titulo = 'NIVEL DE SATISFACCIÓN'; break;
           case 'genero': titulo = 'DISTRIBUCIÓN POR GÉNERO'; break;
@@ -416,12 +415,12 @@ export class EtlPage implements OnInit, OnDestroy {
           case 'ocupacion_hotel': titulo = 'OCUPACIÓN POR HOTEL'; break;
           default: titulo = 'DATOS DETALLADOS';
         }
-        
+
         doc.setFontSize(11);
         doc.setTextColor(41, 128, 185);
         doc.text(titulo, 15, currentY);
         currentY += 5;
-        
+
         const tablaDatos = grafico.datos.map((d: any) => {
           if (d.pais) {
             return [d.pais, d.cantidad?.toString() || '0', `${d.porcentaje || 0}%`];
@@ -436,28 +435,28 @@ export class EtlPage implements OnInit, OnDestroy {
           }
           return [Object.values(d)[0]?.toString() || '', Object.values(d)[1]?.toString() || '0', ''];
         });
-        
+
         autoTable(doc, {
           startY: currentY,
           head: grafico.tipo === 'gasto_pais' ? [['País', 'Encuestas', 'Gasto Promedio', 'Mín', 'Máx']] :
-                grafico.tipo === 'ocupacion_tiempo' ? [['Fecha', 'Check-ins', 'Ocupación %']] :
-                grafico.tipo === 'ocupacion_hotel' ? [['Hotel', 'Registros', 'Ocupación %', 'Tarifa']] :
+            grafico.tipo === 'ocupacion_tiempo' ? [['Fecha', 'Check-ins', 'Ocupación %']] :
+              grafico.tipo === 'ocupacion_hotel' ? [['Hotel', 'Registros', 'Ocupación %', 'Tarifa']] :
                 [['Categoría', 'Cantidad', 'Porcentaje']],
-          body: grafico.tipo === 'gasto_pais' ? 
+          body: grafico.tipo === 'gasto_pais' ?
             grafico.datos.map((d: any) => [d.pais, d.total_encuestas, `$${d.gasto_promedio}`, `$${d.gasto_minimo}`, `$${d.gasto_maximo}`]) :
             grafico.tipo === 'ocupacion_hotel' ?
-            grafico.datos.map((d: any) => [`Hotel ${d.id_hotel}`, d.total_registros, `${d.ocupacion_promedio}%`, `$${d.tarifa_promedio}`]) :
-            tablaDatos,
+              grafico.datos.map((d: any) => [`Hotel ${d.id_hotel}`, d.total_registros, `${d.ocupacion_promedio}%`, `$${d.tarifa_promedio}`]) :
+              tablaDatos,
           theme: 'striped',
           headStyles: { fillColor: [46, 204, 113], textColor: 255 },
           styles: { fontSize: 8 },
-          columnStyles: grafico.tipo === 'gasto_pais' ? 
+          columnStyles: grafico.tipo === 'gasto_pais' ?
             { 0: { cellWidth: 70 }, 1: { cellWidth: 40 }, 2: { cellWidth: 50 }, 3: { cellWidth: 40 }, 4: { cellWidth: 40 } } :
             { 0: { cellWidth: 100 }, 1: { cellWidth: 60 }, 2: { cellWidth: 60 } }
         });
       }
     }
-    
+
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -470,7 +469,7 @@ export class EtlPage implements OnInit, OnDestroy {
         { align: 'center' }
       );
     }
-    
+
     const nombreArchivo = `reporte-${proceso.id_etl}-${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(nombreArchivo);
     console.log('📄 Reporte PDF generado:', nombreArchivo);

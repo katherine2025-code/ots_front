@@ -1,151 +1,198 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Reportes y Estadísticas</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="descargarPDF()">
-        <ion-icon name="download-outline"></ion-icon>
+<ion-content class="ion-padding">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Reportes y Estadísticas</h1>
+      <p class="subtitle">Análisis completo de datos turísticos del Observatorio</p>
+    </div>
+    <div class="header-right">
+      <ion-button color="primary" fill="solid" size="default" (click)="descargarPDF()">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
         PDF
       </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+      <ion-button color="medium" fill="outline" size="default" (click)="cargarEstadisticas()">
+        <ion-icon name="refresh-outline" slot="start"></ion-icon>
+        Actualizar
+      </ion-button>
+    </div>
+  </div>
 
-<ion-content class="ion-padding" style="background: #f5f5f5;">
-  
   <!-- Estado de carga -->
-  <div *ngIf="!estadisticas" class="ion-text-center ion-padding">
+  <div *ngIf="!estadisticas && !cargando" class="loading-state">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
     <p>Cargando estadísticas del sistema...</p>
   </div>
 
-  <div *ngIf="estadisticas">
-    
+  <div *ngIf="cargando" class="loading-state">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Actualizando datos...</p>
+  </div>
+
+  <div *ngIf="estadisticas && !cargando">
+
+    <!-- RESUMEN RÁPIDO -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon">
+          <ion-icon name="clipboard-outline"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ estadisticas?.encuestas?.total || 0 }}</span>
+          <span class="metric-label">Total Encuestas</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon success">
+          <ion-icon name="flag-outline"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ estadisticas?.encuestas?.paises || 0 }}</span>
+          <span class="metric-label">Países Origen</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon warning">
+          <ion-icon name="star-outline"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ estadisticas?.encuestas?.satisfaccion_promedio | number:'1.1-1' }}</span>
+          <span class="metric-label">Satisfacción (1-5)</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon danger">
+          <ion-icon name="business-outline"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-value">{{ estadisticas?.ocupacion?.ocupacion_promedio | number:'1.1-1' }}%</span>
+          <span class="metric-label">Ocupación Promedio</span>
+        </div>
+      </div>
+    </div>
+
     <!-- TARJETA 1: GASTO PROMEDIO -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title color="primary">
-          <ion-icon name="wallet-outline" style="vertical-align: middle; margin-right: 8px;"></ion-icon>
+        <ion-card-title>
+          <ion-icon name="wallet-outline" class="card-icon"></ion-icon>
           Gasto Promedio por Persona por Día
         </ion-card-title>
         <ion-card-subtitle>Según categoría de alojamiento (USD)</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <canvas id="gastoChart"></canvas>
+        <div class="chart-container">
+          <canvas id="gastoChart"></canvas>
+        </div>
       </ion-card-content>
     </ion-card>
 
     <!-- TARJETA 2: OCUPACIÓN HOTELERA -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title color="danger">
-          <ion-icon name="business-outline" style="vertical-align: middle; margin-right: 8px;"></ion-icon>
+        <ion-card-title>
+          <ion-icon name="business-outline" class="card-icon"></ion-icon>
           Ocupación Hotelera - Metodología MINTUR
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="12" size-md="6">
-              <canvas id="ocupacionChart"></canvas>
-            </ion-col>
-            <ion-col size="12" size-md="6">
-              <div style="padding: 20px;">
-                <h2 style="color: var(--ion-color-primary); font-size: 48px; font-weight: bold;">
-                  {{ estadisticas.ocupacion?.ocupacion_promedio | number:'1.1-1' }}%
-                </h2>
-                <p style="font-size: 18px;">Ocupación Promedio</p>
-                <hr>
-                <p><strong>Total Huéspedes:</strong> {{ estadisticas.ocupacion?.total_huespedes || 0 }}</p>
-                <p><strong>Tarifa Promedio:</strong> ${{ estadisticas.ocupacion?.tarifa_promedio | number:'1.2-2' }}</p>
-                <p><strong>Total Registros:</strong> {{ estadisticas.ocupacion?.total || 0 }}</p>
-              </div>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
+        <div class="ocupacion-grid">
+          <div class="chart-container">
+            <canvas id="ocupacionChart"></canvas>
+          </div>
+          <div class="stats-summary">
+            <h2 class="main-value">{{ estadisticas?.ocupacion?.ocupacion_promedio | number:'1.1-1' }}%</h2>
+            <p class="main-label">Ocupación Promedio</p>
+            <hr>
+            <div class="detail-item">
+              <span class="detail-label">Total Huéspedes:</span>
+              <span class="detail-value">{{ estadisticas?.ocupacion?.total_huespedes || 0 }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Tarifa Promedio:</span>
+              <span class="detail-value">${{ estadisticas?.ocupacion?.tarifa_promedio | number:'1.2-2' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Total Registros:</span>
+              <span class="detail-value">{{ estadisticas?.ocupacion?.total || 0 }}</span>
+            </div>
+          </div>
+        </div>
       </ion-card-content>
     </ion-card>
 
     <!-- TARJETA 3: DISTRIBUCIÓN POR PAÍSES -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title color="tertiary">
-          <ion-icon name="globe-outline" style="vertical-align: middle; margin-right: 8px;"></ion-icon>
+        <ion-card-title>
+          <ion-icon name="globe-outline" class="card-icon"></ion-icon>
           Distribución de Turistas por País de Origen
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="12" size-md="6">
-              <canvas id="paisesChart"></canvas>
-            </ion-col>
-            <ion-col size="12" size-md="6">
-              <div style="padding: 20px;">
-                <h3 style="color: var(--ion-color-success);">
-                  <ion-icon name="flag-outline"></ion-icon>
-                  {{ estadisticas.encuestas?.paises || 0 }} Países Diferentes
-                </h3>
-                <p>Total de Encuestas: <strong>{{ estadisticas.encuestas?.total || 0 }}</strong></p>
-                <ion-list>
-                  <ion-item>
-                    <ion-icon name="checkmark-circle" color="success" slot="start"></ion-icon>
-                    <ion-label>Principales mercados emisores</ion-label>
-                  </ion-item>
-                  <ion-item>
-                    <ion-icon name="checkmark-circle" color="success" slot="start"></ion-icon>
-                    <ion-label>Turismo nacional e internacional</ion-label>
-                  </ion-item>
-                </ion-list>
-              </div>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
+        <div class="paises-grid">
+          <div class="chart-container">
+            <canvas id="paisesChart"></canvas>
+          </div>
+          <div class="stats-summary">
+            <h3 class="highlight">
+              <ion-icon name="flag-outline"></ion-icon>
+              {{ estadisticas?.encuestas?.paises || 0 }} Países
+            </h3>
+            <p>Total de Encuestas: <strong>{{ estadisticas?.encuestas?.total || 0 }}</strong></p>
+            <ion-list class="detail-list">
+              <ion-item>
+                <ion-icon name="checkmark-circle" color="success" slot="start"></ion-icon>
+                <ion-label>Principales mercados emisores</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="checkmark-circle" color="success" slot="start"></ion-icon>
+                <ion-label>Turismo nacional e internacional</ion-label>
+              </ion-item>
+            </ion-list>
+          </div>
+        </div>
       </ion-card-content>
     </ion-card>
 
     <!-- TARJETA 4: SATISFACCIÓN -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title color="secondary">
-          <ion-icon name="star-outline" style="vertical-align: middle; margin-right: 8px;"></ion-icon>
+        <ion-card-title>
+          <ion-icon name="star-outline" class="card-icon"></ion-icon>
           Satisfacción del Turista
         </ion-card-title>
         <ion-card-subtitle>Escala 1-5 (1=Muy Insatisfecho, 5=Muy Satisfecho)</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="12" size-md="6">
-              <canvas id="satisfaccionChart"></canvas>
-            </ion-col>
-            <ion-col size="12" size-md="6">
-              <div style="padding: 20px; text-align: center;">
-                <h1 style="color: var(--ion-color-secondary); font-size: 72px; font-weight: bold;">
-                  {{ estadisticas.encuestas?.satisfaccion_promedio | number:'1.1-1' }}
-                </h1>
-                <p style="font-size: 20px;">/ 5.0</p>
-                <p style="font-size: 16px;"><strong>Satisfacción Promedio</strong></p>
-                <hr>
-                <p><strong>Gasto Promedio:</strong> ${{ estadisticas.encuestas?.gasto_promedio | number:'1.2-2' }}</p>
-                <p><strong>Noches Promedio:</strong> {{ estadisticas.encuestas?.noches_promedio | number:'1.1-1' }}</p>
-              </div>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
+        <div class="satisfaccion-grid">
+          <div class="chart-container">
+            <canvas id="satisfaccionChart"></canvas>
+          </div>
+          <div class="stats-summary center">
+            <h1 class="big-number">{{ estadisticas?.encuestas?.satisfaccion_promedio | number:'1.1-1' }}</h1>
+            <p class="big-label">/ 5.0</p>
+            <p class="sub-label"><strong>Satisfacción Promedio</strong></p>
+            <hr>
+            <div class="detail-item">
+              <span class="detail-label">Gasto Promedio:</span>
+              <span class="detail-value">${{ estadisticas?.encuestas?.gasto_promedio | number:'1.2-2' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Noches Promedio:</span>
+              <span class="detail-value">{{ estadisticas?.encuestas?.noches_promedio | number:'1.1-1' }}</span>
+            </div>
+          </div>
+        </div>
       </ion-card-content>
     </ion-card>
 
-    <!-- BOTÓN ACTUALIZAR -->
-    <ion-button expand="block" color="medium" (click)="cargarEstadisticas()" style="margin: 20px 0;">
-      <ion-icon name="refresh-outline" slot="start"></ion-icon>
-      ACTUALIZAR DATOS
-    </ion-button>
-
     <!-- FOOTER -->
-    <div style="text-align: center; padding: 20px; color: #666;">
+    <div class="report-footer">
       <p><strong>Universidad Estatal Península de Santa Elena - UPSE</strong></p>
       <p>Observatorio Turístico Sostenible (OTS)</p>
       <p>Período: {{ periodoReporte }}</p>
+      <p class="generated">Generado: {{ fechaGeneracion | date:'dd/MM/yyyy HH:mm' }}</p>
     </div>
 
   </div>

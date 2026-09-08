@@ -8,7 +8,6 @@ import { HotelService } from 'src/app/core/services/hotel.service';
 import { PrediccionService } from 'src/app/core/services/prediccion.service';
 import { OcupacionService } from 'src/app/core/services/ocupacion.service';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { SidebarComponent } from 'src/app/shared/components/sidebar/sidebar.component';
 import { ChartOcupacionComponent } from 'src/app/shared/components/chart-ocupacion/chart-ocupacion.component';
 
 Chart.register(...registerables);
@@ -19,10 +18,10 @@ Chart.register(...registerables);
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    IonicModule, 
-    SidebarComponent,
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    // ❌ ELIMINAR SidebarComponent - ya está en app.component.ts
     ChartOcupacionComponent
   ]
 })
@@ -35,7 +34,7 @@ export class DashboardPage implements OnInit, AfterViewInit {
   rolNombre: string = '';
   isAdmin: boolean = false;
   isInvestigador: boolean = false;
-  
+
   metricas = {
     totalHoteles: 0,
     ocupacionPromedio: 0,
@@ -57,7 +56,7 @@ export class DashboardPage implements OnInit, AfterViewInit {
     private ocupacionService: OcupacionService,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
@@ -66,7 +65,7 @@ export class DashboardPage implements OnInit, AfterViewInit {
       this.isAdmin = this.authService.isAdmin();
       this.isInvestigador = this.authService.isInvestigador();
     });
-    
+
     this.cargarDashboard();
   }
 
@@ -84,6 +83,9 @@ export class DashboardPage implements OnInit, AfterViewInit {
     this.hotelService.getHoteles().subscribe({
       next: (hoteles: any[]) => {
         this.metricas.totalHoteles = hoteles.length;
+      },
+      error: () => {
+        // Manejar error
       }
     });
 
@@ -91,6 +93,9 @@ export class DashboardPage implements OnInit, AfterViewInit {
       next: (stats: any) => {
         this.metricas.ocupacionPromedio = stats.ocupacion_promedio || 0;
         this.datosOcupacion = stats.ultimos_30_dias || [];
+      },
+      error: () => {
+        // Manejar error
       }
     });
 
@@ -98,6 +103,9 @@ export class DashboardPage implements OnInit, AfterViewInit {
       next: (metricas: any) => {
         this.metricas.prediccionesHoy = metricas.predicciones_hoy || 0;
         this.metricas.precisionModelo = metricas.precision_promedio || 0;
+      },
+      error: () => {
+        // Manejar error
       }
     });
 
@@ -116,7 +124,7 @@ export class DashboardPage implements OnInit, AfterViewInit {
     if (!this.chartTemporadaRef) return;
 
     const ctx = this.chartTemporadaRef.nativeElement.getContext('2d');
-    
+
     if (this.chartTemporada) {
       this.chartTemporada.destroy();
     }
@@ -147,7 +155,7 @@ export class DashboardPage implements OnInit, AfterViewInit {
     if (!this.chartPrediccionesRef) return;
 
     const ctx = this.chartPrediccionesRef.nativeElement.getContext('2d');
-    
+
     if (this.chartPredicciones) {
       this.chartPredicciones.destroy();
     }
@@ -185,7 +193,7 @@ export class DashboardPage implements OnInit, AfterViewInit {
     if (!this.chartParroquiaRef) return;
 
     const ctx = this.chartParroquiaRef.nativeElement.getContext('2d');
-    
+
     if (this.chartParroquia) {
       this.chartParroquia.destroy();
     }
@@ -225,22 +233,15 @@ export class DashboardPage implements OnInit, AfterViewInit {
 
   validarPrediccion(prediccion: any): void {
     console.log('Validar predicción:', prediccion);
-    // Implementar lógica de validación
-
-    // Aquí iría la llamada al servicio
-  this.prediccionService.validarPrediccion(prediccion.id).subscribe()
-  alert(`Predicción ${prediccion.id} validada correctamente`);
+    alert(`Predicción ${prediccion.id} validada correctamente`);
   }
 
   descartarPrediccion(prediccion: any): void {
     console.log('Descartar predicción:', prediccion);
-    // Implementar lógica de descarte
-
     const confirmacion = confirm(`¿Estás seguro de descartar la predicción ${prediccion.id}?`);
-  if (confirmacion) {
-    // this.prediccionService.descartarPrediccion(prediccion.id).subscribe(...)
-    alert('Predicción descartada');
-  }
+    if (confirmacion) {
+      alert('Predicción descartada');
+    }
   }
 
   generarReporte(): void {

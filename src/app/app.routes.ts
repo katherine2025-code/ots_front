@@ -54,6 +54,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/perfil/perfil.page').then(m => m.PerfilPage),
     canActivate: [authGuard]
   },
+  // ✅ RUTA DE USUARIOS - AGREGADA
+  {
+    path: 'usuarios',
+    loadComponent: () => import('./pages/usuarios/usuarios.page').then(m => m.UsuariosPage),
+    canActivate: [authGuard, adminGuard]  // Solo admin puede acceder
+  },
   {
     path: 'etl',
     loadComponent: () => import('./pages/etl/etl.page').then(m => m.EtlPage),
@@ -67,9 +73,9 @@ export const routes: Routes = [
     path: 'reporte-detalle/:id',
     loadComponent: () => import('./pages/reporte-detalles/reporte-detalles.page').then(m => m.ReporteDetallePage)
   },
-  
+
   // ==========================================
-  // ✅ RUTAS DE ENCUESTAS - CORREGIDAS
+  // RUTAS DE ENCUESTAS
   // ==========================================
   {
     path: 'encuestas',
@@ -92,20 +98,14 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/encuestas-editor/encuestas-editor.page').then(m => m.EncuestasEditorPage)
   },
   {
-  path: 'responder-encuesta/:tipo',
-  loadComponent: () => import('./pages/responder-encuesta/responder-encuesta.page').then(m => m.ResponderEncuestaPage),
-  canActivate:[authGuard]
-},
+    path: 'responder-encuesta/:tipo',
+    loadComponent: () => import('./pages/responder-encuesta/responder-encuesta.page').then(m => m.ResponderEncuestaPage),
+    canActivate: [authGuard]
+  },
 
-{
-  path: 'perfil',
-  loadComponent: () => import('./pages/perfil/perfil.page').then(m => m.PerfilPage)
-},
-  
-  // Ruta comodín al final
+  // Ruta comodín al final - redirige a dashboard
   {
     path: '**',
     redirectTo: 'dashboard'
-  },
-  
+  }
 ];

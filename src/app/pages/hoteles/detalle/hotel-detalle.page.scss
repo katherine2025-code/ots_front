@@ -1,0 +1,245 @@
+// hotel-detalle.page.scss
+:host {
+    display: block;
+}
+
+.back-button-container {
+    margin-bottom: 16px;
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6b7280;
+
+    ion-spinner {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 16px;
+    }
+}
+
+.hotel-detail-card {
+    margin: 0;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.hotel-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+
+    .hotel-icon-large {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        ion-icon {
+            font-size: 32px;
+        }
+    }
+
+    .hotel-titulo {
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .hotel-categoria {
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .star {
+                color: #fbbf24;
+                font-size: 18px;
+            }
+
+            .categoria-label {
+                font-size: 14px;
+                opacity: 0.9;
+            }
+        }
+    }
+}
+
+.info-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #f3f4f6;
+
+    &:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+    }
+
+    h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 16px;
+    }
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+
+        ion-icon {
+            font-size: 20px;
+            color: var(--ion-color-primary);
+            margin-top: 2px;
+        }
+
+        strong {
+            display: block;
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        p {
+            margin: 2px 0 0 0;
+            font-size: 14px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+
+            &.activo {
+                background: #d1fae5;
+                color: #059669;
+            }
+
+            &.inactivo {
+                background: #fee2e2;
+                color: #dc2626;
+            }
+        }
+    }
+}
+
+.servicios-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    ion-chip {
+        --background: #f3f4f6;
+        --color: #1f2937;
+    }
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+
+    .stat-card {
+        background: #f8fafc;
+        padding: 16px;
+        border-radius: 8px;
+        text-align: center;
+
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ion-color-primary);
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+    }
+}
+
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+
+    .error-icon {
+        font-size: 64px;
+        color: #f59e0b;
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    p {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+}
+
+// Responsive
+@media (max-width: 576px) {
+    .hotel-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+
+        .hotel-titulo {
+            h1 {
+                font-size: 20px;
+            }
+        }
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (min-width: 768px) {
+    .hotel-header {
+        padding: 32px;
+    }
+}

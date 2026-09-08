@@ -1,29 +1,411 @@
-ion-card {
-  margin: 15px 0;
+// reportes.page.scss
+:host {
+  display: block;
+}
+
+// HEADER
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .header-left {
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+  }
+
+  .header-right {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+}
+
+// LOADING
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6b7280;
+
+  ion-spinner {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 16px;
+  }
+}
+
+// METRICS GRID (Resumen rápido)
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 400px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metric-card {
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  .metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(52, 152, 219, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 24px;
+      color: var(--ion-color-primary);
+    }
+
+    &.success {
+      background: rgba(46, 204, 113, 0.15);
+
+      ion-icon {
+        color: #27ae60;
+      }
+    }
+
+    &.warning {
+      background: rgba(241, 196, 15, 0.15);
+
+      ion-icon {
+        color: #f39c12;
+      }
+    }
+
+    &.danger {
+      background: rgba(231, 76, 60, 0.15);
+
+      ion-icon {
+        color: #e74c3c;
+      }
+    }
+  }
+
+  .metric-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .metric-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .metric-label {
+      font-size: 13px;
+      color: #6b7280;
+    }
+  }
+}
+
+// CARDS
+ion-card {
+  margin: 0 0 16px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 ion-card-header {
-  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-tint));
-  color: white;
+  --background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+  padding: 16px 20px;
+  border-radius: 12px 12px 0 0;
+
+  ion-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .card-icon {
+      font-size: 22px;
+    }
+  }
+
+  ion-card-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    margin-top: 4px;
+  }
 }
 
-ion-card-title {
-  font-size: 18px;
-  font-weight: bold;
+ion-card-content {
+  padding: 20px;
 }
 
-canvas {
-  max-height: 300px;
+// CHART CONTAINER
+.chart-container {
+  width: 100%;
+
+  canvas {
+    max-height: 280px;
+    width: 100% !important;
+  }
 }
 
-h1, h2, h3 {
-  margin: 10px 0;
+// OCUPACION GRID
+.ocupacion-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-hr {
-  border: none;
-  border-top: 2px solid #ddd;
-  margin: 15px 0;
+// PAISES GRID
+.paises-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// SATISFACCION GRID
+.satisfaccion-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// STATS SUMMARY
+.stats-summary {
+  padding: 12px;
+
+  .main-value {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    margin: 0;
+  }
+
+  .main-label {
+    font-size: 18px;
+    color: #6b7280;
+    margin: 4px 0 0 0;
+  }
+
+  .big-number {
+    font-size: 72px;
+    font-weight: 700;
+    color: var(--ion-color-secondary);
+    margin: 0;
+    line-height: 1;
+  }
+
+  .big-label {
+    font-size: 20px;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .sub-label {
+    font-size: 16px;
+    color: #4b5563;
+    margin: 8px 0 0 0;
+  }
+
+  .highlight {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ion-color-success);
+    margin: 0 0 8px 0;
+
+    ion-icon {
+      font-size: 28px;
+    }
+  }
+
+  &.center {
+    text-align: center;
+  }
+
+  hr {
+    border: none;
+    border-top: 2px solid #e5e7eb;
+    margin: 12px 0;
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+
+    .detail-label {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: #1f2937;
+      font-size: 14px;
+    }
+  }
+}
+
+.detail-list {
+  margin-top: 12px;
+  background: transparent;
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    --background: transparent;
+    --min-height: 36px;
+
+    ion-label {
+      font-size: 14px;
+      color: #4b5563;
+    }
+  }
+}
+
+// FOOTER
+.report-footer {
+  text-align: center;
+  padding: 24px 0 12px 0;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 12px;
+
+  p {
+    margin: 4px 0;
+    font-size: 13px;
+
+    &.generated {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+  }
+
+  strong {
+    color: #1f2937;
+  }
+}
+
+// RESPONSIVE
+@media (max-width: 576px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .header-left {
+      h1 {
+        font-size: 20px;
+      }
+    }
+
+    .header-right {
+      width: 100%;
+
+      ion-button {
+        flex: 1;
+        font-size: 12px;
+        --padding-start: 8px;
+        --padding-end: 8px;
+      }
+    }
+  }
+
+  ion-card-header {
+    padding: 14px 16px;
+
+    ion-card-title {
+      font-size: 16px;
+    }
+  }
+
+  ion-card-content {
+    padding: 16px;
+  }
+
+  .stats-summary {
+    .main-value {
+      font-size: 36px;
+    }
+
+    .big-number {
+      font-size: 48px;
+    }
+  }
+
+  .metrics-grid {
+    gap: 10px;
+  }
+
+  .metric-card {
+    padding: 12px;
+
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+
+    .metric-info {
+      .metric-value {
+        font-size: 18px;
+      }
+
+      .metric-label {
+        font-size: 12px;
+      }
+    }
+  }
 }

@@ -1,3 +1,172 @@
-.main-content {
-  margin-left: 0;
+// usuarios.page.scss
+:host {
+  display: block;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .header-left {
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6b7280;
+
+  ion-spinner {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 16px;
+  }
+}
+
+ion-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  ion-card-content {
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.usuarios-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  thead {
+    background: #f8fafc;
+
+    th {
+      padding: 14px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #4b5563;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #e5e7eb;
+      white-space: nowrap;
+
+      &.text-center {
+        text-align: center;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background 0.2s ease;
+      cursor: default;
+
+      &:hover {
+        background: #f8fafc;
+      }
+
+      td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+        white-space: nowrap;
+
+        &.text-center {
+          text-align: center;
+        }
+      }
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b7280;
+
+  .empty-icon {
+    font-size: 64px;
+    color: #d1d5db;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 14px;
+  }
+}
+
+// Responsive
+@media (max-width: 576px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .header-left {
+      h1 {
+        font-size: 20px;
+      }
+
+      .subtitle {
+        font-size: 13px;
+      }
+    }
+
+    .header-right {
+      width: 100%;
+
+      ion-button {
+        width: 100%;
+      }
+    }
+  }
+
+  .usuarios-table {
+    font-size: 12px;
+
+    thead th,
+    tbody td {
+      padding: 8px 10px;
+    }
+  }
 }

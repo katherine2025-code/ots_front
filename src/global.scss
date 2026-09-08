@@ -9,29 +9,580 @@
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
 
-/* Core CSS required for Ionic components to work properly */
+/* ============================================
+   CORE CSS DE IONIC
+   ============================================ */
 @import "@ionic/angular/css/core.css";
 
-/* Basic CSS for apps built with Ionic */
+/* ============================================
+   CSS BÁSICO PARA APPS IONIC
+   ============================================ */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
 
-/* Optional CSS utils that can be commented out */
+/* ============================================
+   CSS UTILITARIOS OPCIONALES
+   ============================================ */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+/* ============================================
+   DARK MODE
+   ============================================ */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* ============================================
+   RESET Y ESTILOS BASE - OTS
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   LAYOUT PRINCIPAL - RESPONSIVE
+   ============================================ */
+
+ion-app {
+    height: 100%;
+    background: var(--ion-background-color, #f5f7fa);
+}
+
+// Contenido principal con padding responsive
+ion-content {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+
+    @media (min-width: 576px) {
+        --padding-start: 16px;
+        --padding-end: 16px;
+        --padding-top: 16px;
+        --padding-bottom: 16px;
+    }
+
+    @media (min-width: 768px) {
+        --padding-start: 24px;
+        --padding-end: 24px;
+        --padding-top: 24px;
+        --padding-bottom: 24px;
+    }
+
+    @media (min-width: 992px) {
+        --padding-start: 32px;
+        --padding-end: 32px;
+        --padding-top: 32px;
+        --padding-bottom: 32px;
+    }
+}
+
+// Split Pane responsive
+ion-split-pane {
+    --side-width: 280px;
+    --side-max-width: 320px;
+
+    @media (max-width: 576px) {
+        --side-width: 260px;
+    }
+}
+
+/* ============================================
+   HEADER Y TITULOS RESPONSIVE
+   ============================================ */
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+
+    .header-left {
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ion-color-dark);
+
+            @media (max-width: 576px) {
+                font-size: 20px;
+            }
+        }
+
+        .subtitle {
+            margin: 4px 0 0 0;
+            font-size: 14px;
+            color: var(--ion-color-medium);
+
+            @media (max-width: 576px) {
+                font-size: 13px;
+            }
+        }
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+
+        @media (max-width: 576px) {
+            width: 100%;
+
+            ion-button {
+                flex: 1;
+                --padding-start: 12px;
+                --padding-end: 12px;
+                font-size: 13px;
+            }
+        }
+    }
+}
+
+/* ============================================
+   GRIDS RESPONSIVE - OTS
+   ============================================ */
+
+// Grid de cards
+.ots-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 576px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 992px) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (min-width: 1200px) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+// Grid de KPIs
+.kpi-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 576px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 992px) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ============================================
+   CARDS Y TARJETAS RESPONSIVE
+   ============================================ */
+
+ion-card {
+    margin: 0 0 16px 0;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    @media (max-width: 576px) {
+        margin: 0 0 12px 0;
+        border-radius: 10px;
+    }
+}
+
+ion-card-header {
+    padding: 16px 20px;
+
+    @media (max-width: 576px) {
+        padding: 14px 16px;
+    }
+}
+
+ion-card-content {
+    padding: 16px 20px;
+
+    @media (max-width: 576px) {
+        padding: 12px 16px;
+    }
+}
+
+/* ============================================
+   TABLAS RESPONSIVE
+   ============================================ */
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -4px;
+
+    table {
+        width: 100%;
+        min-width: 600px;
+        border-collapse: collapse;
+        font-size: 14px;
+
+        @media (max-width: 576px) {
+            font-size: 12px;
+            min-width: 500px;
+        }
+
+        th,
+        td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+            @media (max-width: 576px) {
+                padding: 8px 10px;
+            }
+        }
+
+        th {
+            background: var(--ion-color-light);
+            font-weight: 600;
+            color: var(--ion-color-dark);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: var(--ion-color-light);
+        }
+    }
+}
+
+/* ============================================
+   BADGES Y ETIQUETAS
+   ============================================ */
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+
+    &.success {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    &.warning {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    &.danger {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    &.info {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    &.primary {
+        background: #e0e7ff;
+        color: #4f46e5;
+    }
+
+    &.secondary {
+        background: #f3e8ff;
+        color: #7c3aed;
+    }
+}
+
+/* ============================================
+   ESTADOS DE CARGA Y EMPTY
+   ============================================ */
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--ion-color-medium);
+
+    ion-spinner {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 16px;
+        color: var(--ion-color-primary);
+    }
+
+    p {
+        margin: 0;
+        font-size: 14px;
+    }
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--ion-color-medium);
+
+    .empty-icon {
+        font-size: 64px;
+        color: #d1d5db;
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin-bottom: 8px;
+    }
+
+    p {
+        font-size: 14px;
+        margin: 0;
+    }
+}
+
+/* ============================================
+   METRICAS / KPIS
+   ============================================ */
+
+.metric-card {
+    background: var(--ion-card-background, #ffffff);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        ion-icon {
+            font-size: 24px;
+            color: white;
+        }
+
+        &.primary {
+            background: var(--ots-gradient-primary);
+        }
+
+        &.success {
+            background: var(--ots-gradient-secondary);
+        }
+
+        &.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        &.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+    }
+
+    .metric-info {
+        flex: 1;
+        min-width: 0;
+
+        .metric-value {
+            display: block;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ion-color-dark);
+
+            @media (max-width: 576px) {
+                font-size: 20px;
+            }
+        }
+
+        .metric-label {
+            display: block;
+            font-size: 13px;
+            color: var(--ion-color-medium);
+
+            @media (max-width: 576px) {
+                font-size: 12px;
+            }
+        }
+    }
+}
+
+/* ============================================
+   UTILIDADES RESPONSIVE ADICIONALES
+   ============================================ */
+
+// Ocultar en móvil
+.hide-mobile {
+    @media (max-width: 576px) {
+        display: none !important;
+    }
+}
+
+// Ocultar en desktop
+.hide-desktop {
+    @media (min-width: 577px) {
+        display: none !important;
+    }
+}
+
+// Stack en móvil
+.stack-mobile {
+    @media (max-width: 576px) {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+}
+
+// Texto responsive
+.text-responsive {
+    font-size: 14px;
+
+    @media (min-width: 576px) {
+        font-size: 16px;
+    }
+
+    @media (min-width: 768px) {
+        font-size: 18px;
+    }
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADA
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--ion-color-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--ion-color-medium);
+    border-radius: 4px;
+
+    &:hover {
+        background: var(--ion-color-primary);
+    }
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   DARK MODE SOBRESCRITURAS OTS
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    .page-header {
+        border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .metric-card {
+        background: var(--ion-card-background);
+    }
+
+    .badge {
+        &.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        &.warning {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        &.danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        &.info {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        &.primary {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+        }
+    }
+
+    .empty-state .empty-icon {
+        color: #4b5563;
+    }
+}

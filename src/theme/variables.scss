@@ -1,2 +1,560 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// Ionic Variables and Theming. For more info, please see:
+// http://ionicframework.com/docs/theming/
+
+/** Ionic CSS Variables **/
+:root {
+    /** primary **/
+    --ion-color-primary: #2A6F97;
+    --ion-color-primary-rgb: 42, 111, 151;
+    --ion-color-primary-contrast: #ffffff;
+    --ion-color-primary-contrast-rgb: 255, 255, 255;
+    --ion-color-primary-shade: #256280;
+    --ion-color-primary-tint: #3f7da2;
+
+    /** secondary **/
+    --ion-color-secondary: #48A9A7;
+    --ion-color-secondary-rgb: 72, 169, 167;
+    --ion-color-secondary-contrast: #ffffff;
+    --ion-color-secondary-contrast-rgb: 255, 255, 255;
+    --ion-color-secondary-shade: #3f9492;
+    --ion-color-secondary-tint: #5ab2b0;
+
+    /** tertiary **/
+    --ion-color-tertiary: #6B4C9A;
+    --ion-color-tertiary-rgb: 107, 76, 154;
+    --ion-color-tertiary-contrast: #ffffff;
+    --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+    --ion-color-tertiary-shade: #5e4388;
+    --ion-color-tertiary-tint: #7a5ea4;
+
+    /** success **/
+    --ion-color-success: #2dd36f;
+    --ion-color-success-rgb: 45, 211, 111;
+    --ion-color-success-contrast: #ffffff;
+    --ion-color-success-contrast-rgb: 255, 255, 255;
+    --ion-color-success-shade: #28ba62;
+    --ion-color-success-tint: #42d77d;
+
+    /** warning **/
+    --ion-color-warning: #ffc409;
+    --ion-color-warning-rgb: 255, 196, 9;
+    --ion-color-warning-contrast: #000000;
+    --ion-color-warning-contrast-rgb: 0, 0, 0;
+    --ion-color-warning-shade: #e0ac08;
+    --ion-color-warning-tint: #ffca22;
+
+    /** danger **/
+    --ion-color-danger: #eb445a;
+    --ion-color-danger-rgb: 235, 68, 90;
+    --ion-color-danger-contrast: #ffffff;
+    --ion-color-danger-contrast-rgb: 255, 255, 255;
+    --ion-color-danger-shade: #cf3c4f;
+    --ion-color-danger-tint: #ed576b;
+
+    /** dark **/
+    --ion-color-dark: #1a1a2e;
+    --ion-color-dark-rgb: 26, 26, 46;
+    --ion-color-dark-contrast: #ffffff;
+    --ion-color-dark-contrast-rgb: 255, 255, 255;
+    --ion-color-dark-shade: #171728;
+    --ion-color-dark-tint: #313143;
+
+    /** medium **/
+    --ion-color-medium: #6b7280;
+    --ion-color-medium-rgb: 107, 114, 128;
+    --ion-color-medium-contrast: #ffffff;
+    --ion-color-medium-contrast-rgb: 255, 255, 255;
+    --ion-color-medium-shade: #5e6470;
+    --ion-color-medium-tint: #7a7e8d;
+
+    /** light **/
+    --ion-color-light: #f3f4f6;
+    --ion-color-light-rgb: 243, 244, 246;
+    --ion-color-light-contrast: #000000;
+    --ion-color-light-contrast-rgb: 0, 0, 0;
+    --ion-color-light-shade: #d6d7d9;
+    --ion-color-light-tint: #f4f5f7;
+
+    /** Gradientes para OTS **/
+    --ots-gradient-primary: linear-gradient(135deg, #2A6F97 0%, #1a4a6b 100%);
+    --ots-gradient-secondary: linear-gradient(135deg, #48A9A7 0%, #2d6b6a 100%);
+    --ots-gradient-accent: linear-gradient(135deg, #6B4C9A 0%, #4a2d6b 100%);
+
+    /** Sombras **/
+    --ots-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --ots-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --ots-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+    /** Bordes **/
+    --ots-radius-sm: 6px;
+    --ots-radius-md: 10px;
+    --ots-radius-lg: 16px;
+    --ots-radius-xl: 24px;
+
+    /** Espaciado **/
+    --ots-space-xs: 4px;
+    --ots-space-sm: 8px;
+    --ots-space-md: 16px;
+    --ots-space-lg: 24px;
+    --ots-space-xl: 32px;
+}
+
+/* ============================================
+   DARK MODE - OTS
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ion-color-primary: #3f8db5;
+        --ion-color-primary-rgb: 63, 141, 181;
+        --ion-color-primary-contrast: #ffffff;
+        --ion-color-primary-contrast-rgb: 255, 255, 255;
+        --ion-color-primary-shade: #376c9a;
+        --ion-color-primary-tint: #5298bd;
+
+        --ion-color-secondary: #5cb8b6;
+        --ion-color-secondary-rgb: 92, 184, 182;
+        --ion-color-secondary-contrast: #ffffff;
+        --ion-color-secondary-contrast-rgb: 255, 255, 255;
+        --ion-color-secondary-shade: #519f9d;
+        --ion-color-secondary-tint: #6cc0be;
+
+        --ion-color-tertiary: #8a6bb5;
+        --ion-color-tertiary-rgb: 138, 107, 181;
+        --ion-color-tertiary-contrast: #ffffff;
+        --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+        --ion-color-tertiary-shade: #795e9f;
+        --ion-color-tertiary-tint: #967abd;
+
+        --ion-color-dark: #e5e7eb;
+        --ion-color-dark-rgb: 229, 231, 235;
+        --ion-color-dark-contrast: #1a1a2e;
+        --ion-color-dark-contrast-rgb: 26, 26, 46;
+        --ion-color-dark-shade: #cacbcf;
+        --ion-color-dark-tint: #e8e9ed;
+
+        --ion-color-medium: #9ca3af;
+        --ion-color-medium-rgb: 156, 163, 175;
+        --ion-color-medium-contrast: #ffffff;
+        --ion-color-medium-contrast-rgb: 255, 255, 255;
+        --ion-color-medium-shade: #8a9099;
+        --ion-color-medium-tint: #a6acb7;
+
+        --ion-color-light: #1f2937;
+        --ion-color-light-rgb: 31, 41, 55;
+        --ion-color-light-contrast: #ffffff;
+        --ion-color-light-contrast-rgb: 255, 255, 255;
+        --ion-color-light-shade: #1b2430;
+        --ion-color-light-tint: #353e4b;
+
+        --ots-gradient-primary: linear-gradient(135deg, #1a4a6b 0%, #0d2b40 100%);
+        --ots-gradient-secondary: linear-gradient(135deg, #2d6b6a 0%, #1a4040 100%);
+        --ots-gradient-accent: linear-gradient(135deg, #4a2d6b 0%, #2d1a40 100%);
+
+        --ots-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+        --ots-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+        --ots-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* ============================================
+   ESTILOS GLOBALES OTS
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--ion-background-color, #f5f7fa);
+    color: var(--ion-text-color, #1a1a2e);
+}
+
+/* ============================================
+   UTILIDADES GLOBALES
+   ============================================ */
+
+/* Texto */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-primary {
+    color: var(--ion-color-primary);
+}
+
+.text-secondary {
+    color: var(--ion-color-secondary);
+}
+
+.text-success {
+    color: var(--ion-color-success);
+}
+
+.text-danger {
+    color: var(--ion-color-danger);
+}
+
+.text-warning {
+    color: var(--ion-color-warning);
+}
+
+.text-muted {
+    color: var(--ion-color-medium);
+}
+
+/* Font weights */
+.fw-light {
+    font-weight: 300;
+}
+
+.fw-regular {
+    font-weight: 400;
+}
+
+.fw-medium {
+    font-weight: 500;
+}
+
+.fw-semibold {
+    font-weight: 600;
+}
+
+.fw-bold {
+    font-weight: 700;
+}
+
+/* Display */
+.d-flex {
+    display: flex;
+}
+
+.d-grid {
+    display: grid;
+}
+
+.d-block {
+    display: block;
+}
+
+.d-inline-block {
+    display: inline-block;
+}
+
+.d-none {
+    display: none;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-row {
+    flex-direction: row;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.align-start {
+    align-items: flex-start;
+}
+
+.align-end {
+    align-items: flex-end;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-end {
+    justify-content: flex-end;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.gap-1 {
+    gap: var(--ots-space-xs);
+}
+
+.gap-2 {
+    gap: var(--ots-space-sm);
+}
+
+.gap-3 {
+    gap: var(--ots-space-md);
+}
+
+.gap-4 {
+    gap: var(--ots-space-lg);
+}
+
+.gap-5 {
+    gap: var(--ots-space-xl);
+}
+
+/* Margin */
+.m-0 {
+    margin: 0;
+}
+
+.mt-1 {
+    margin-top: var(--ots-space-xs);
+}
+
+.mt-2 {
+    margin-top: var(--ots-space-sm);
+}
+
+.mt-3 {
+    margin-top: var(--ots-space-md);
+}
+
+.mt-4 {
+    margin-top: var(--ots-space-lg);
+}
+
+.mt-5 {
+    margin-top: var(--ots-space-xl);
+}
+
+.mb-1 {
+    margin-bottom: var(--ots-space-xs);
+}
+
+.mb-2 {
+    margin-bottom: var(--ots-space-sm);
+}
+
+.mb-3 {
+    margin-bottom: var(--ots-space-md);
+}
+
+.mb-4 {
+    margin-bottom: var(--ots-space-lg);
+}
+
+.mb-5 {
+    margin-bottom: var(--ots-space-xl);
+}
+
+/* Padding */
+.p-0 {
+    padding: 0;
+}
+
+.p-1 {
+    padding: var(--ots-space-xs);
+}
+
+.p-2 {
+    padding: var(--ots-space-sm);
+}
+
+.p-3 {
+    padding: var(--ots-space-md);
+}
+
+.p-4 {
+    padding: var(--ots-space-lg);
+}
+
+.p-5 {
+    padding: var(--ots-space-xl);
+}
+
+/* Border radius */
+.rounded-sm {
+    border-radius: var(--ots-radius-sm);
+}
+
+.rounded-md {
+    border-radius: var(--ots-radius-md);
+}
+
+.rounded-lg {
+    border-radius: var(--ots-radius-lg);
+}
+
+.rounded-xl {
+    border-radius: var(--ots-radius-xl);
+}
+
+.rounded-full {
+    border-radius: 50%;
+}
+
+/* Shadows */
+.shadow-sm {
+    box-shadow: var(--ots-shadow-sm);
+}
+
+.shadow-md {
+    box-shadow: var(--ots-shadow-md);
+}
+
+.shadow-lg {
+    box-shadow: var(--ots-shadow-lg);
+}
+
+/* Width */
+.w-100 {
+    width: 100%;
+}
+
+.w-50 {
+    width: 50%;
+}
+
+.w-25 {
+    width: 25%;
+}
+
+.h-100 {
+    height: 100%;
+}
+
+/* ============================================
+   COMPONENTES GLOBALES OTS
+   ============================================ */
+
+/* Cards OTS */
+.ots-card {
+    background: var(--ion-card-background, #ffffff);
+    border-radius: var(--ots-radius-lg);
+    box-shadow: var(--ots-shadow-sm);
+    padding: var(--ots-space-lg);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+        box-shadow: var(--ots-shadow-md);
+    }
+}
+
+/* Gradientes de fondo */
+.bg-gradient-primary {
+    background: var(--ots-gradient-primary);
+    color: white;
+}
+
+.bg-gradient-secondary {
+    background: var(--ots-gradient-secondary);
+    color: white;
+}
+
+.bg-gradient-accent {
+    background: var(--ots-gradient-accent);
+    color: white;
+}
+
+/* ============================================
+   ESTILOS PARA SCROLL
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--ion-color-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--ion-color-medium);
+    border-radius: 4px;
+
+    &:hover {
+        background: var(--ion-color-primary);
+    }
+}
+
+/* ============================================
+   RESPONSIVE GLOBAL
+   ============================================ */
+
+@media (max-width: 576px) {
+    .d-sm-none {
+        display: none;
+    }
+
+    .d-sm-block {
+        display: block;
+    }
+
+    .d-sm-flex {
+        display: flex;
+    }
+
+    .d-sm-grid {
+        display: grid;
+    }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+    .d-md-none {
+        display: none;
+    }
+
+    .d-md-block {
+        display: block;
+    }
+
+    .d-md-flex {
+        display: flex;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+    .d-lg-none {
+        display: none;
+    }
+
+    .d-lg-block {
+        display: block;
+    }
+
+    .d-lg-flex {
+        display: flex;
+    }
+}
+
+@media (min-width: 993px) {
+    .d-xl-none {
+        display: none;
+    }
+
+    .d-xl-block {
+        display: block;
+    }
+
+    .d-xl-flex {
+        display: flex;
+    }
+}

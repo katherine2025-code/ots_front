@@ -1,12 +1,95 @@
-<app-header [title]="'Ocupación'"></app-header>
-
 <ion-content class="ion-padding">
-  <ion-list>
-    <ion-item *ngFor="let item of ocupacion">
-      <ion-label>
-        <h2>{{ item.fecha }}</h2>
-        <p>Ocupación: {{ item.porcentaje_ocupacion }}%</p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Ocupación Hotelera</h1>
+      <p class="subtitle">Monitoreo de ocupación por hotel y fecha</p>
+    </div>
+    <div class="header-right">
+      <ion-button fill="outline" color="primary" size="small" (click)="cargarOcupacion()">
+        <ion-icon name="refresh-outline" slot="start"></ion-icon>
+        Actualizar
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Resumen de métricas -->
+  <div class="metrics-grid" *ngIf="!loading && ocupacion.length > 0">
+    <div class="metric-card">
+      <div class="metric-value">{{ ocupacionPromedio | number:'1.1-1' }}%</div>
+      <div class="metric-label">Ocupación Promedio</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ ocupacionMaxima | number:'1.1-1' }}%</div>
+      <div class="metric-label">Máxima Ocupación</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ ocupacionMinima | number:'1.1-1' }}%</div>
+      <div class="metric-label">Mínima Ocupación</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ totalRegistros }}</div>
+      <div class="metric-label">Total Registros</div>
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="loading" class="loading-state">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando datos de ocupación...</p>
+  </div>
+
+  <!-- Tabla de ocupación -->
+  <div class="table-container" *ngIf="!loading && ocupacion.length > 0">
+    <ion-card>
+      <ion-card-content>
+        <div class="table-responsive">
+          <table class="ocupacion-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Hotel</th>
+                <th>Ocupación</th>
+                <th>Habitaciones</th>
+                <th>Turistas</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of ocupacion">
+                <td>{{ item.fecha | date:'dd/MM/yyyy' }}</td>
+                <td>{{ item.hotel_nombre || 'N/A' }}</td>
+                <td>
+                  <div class="ocupacion-cell">
+                    <span class="ocupacion-value" [ngClass]="getOcupacionClass(item.porcentaje_ocupacion)">
+                      {{ item.porcentaje_ocupacion }}%
+                    </span>
+                    <div class="ocupacion-bar">
+                      <div class="ocupacion-bar-fill" [style.width.%]="item.porcentaje_ocupacion"
+                        [ngClass]="getOcupacionClass(item.porcentaje_ocupacion)">
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ item.habitaciones_ocupadas || 0 }}/{{ item.habitaciones_totales || 0 }}</td>
+                <td>{{ item.total_turistas || 0 }}</td>
+                <td>
+                  <ion-badge [color]="getOcupacionClass(item.porcentaje_ocupacion)">
+                    {{ getOcupacionLabel(item.porcentaje_ocupacion) }}
+                  </ion-badge>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Mensaje cuando no hay datos -->
+  <div *ngIf="!loading && ocupacion.length === 0" class="empty-state">
+    <ion-icon name="analytics-outline" class="empty-icon"></ion-icon>
+    <h3>No hay datos de ocupación</h3>
+    <p>Los datos de ocupación se cargarán cuando estén disponibles</p>
+  </div>
 </ion-content>

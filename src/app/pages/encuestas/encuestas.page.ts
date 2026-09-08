@@ -1,18 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { addIcons } from 'ionicons';
-import { clipboardOutline, eyeOutline, createOutline, pauseCircleOutline, playCircleOutline } from 'ionicons/icons';
-
-addIcons({
-  'clipboard-outline': clipboardOutline,
-  'eye-outline': eyeOutline,
-  'create-outline': createOutline,
-  'pause-circle-outline': pauseCircleOutline,
-  'play-circle-outline': playCircleOutline
-});
 
 @Component({
   selector: 'app-encuestas',
@@ -50,8 +40,9 @@ export class EncuestasPage implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private alertController: AlertController
+  ) { }
 
   ngOnInit() {
     this.isAdmin = this.authService.isAdmin();
@@ -70,7 +61,7 @@ export class EncuestasPage implements OnInit {
 
   nuevaEncuesta() {
     if (!this.isAdmin) {
-      alert('Solo los administradores pueden crear encuestas');
+      this.mostrarAlerta('Solo los administradores pueden crear encuestas');
       return;
     }
     this.router.navigate(['/encuestas/nueva']);
@@ -78,28 +69,58 @@ export class EncuestasPage implements OnInit {
 
   editarEncuesta(id: number) {
     if (!this.isAdmin) {
-      alert('Solo los administradores pueden editar encuestas');
+      this.mostrarAlerta('Solo los administradores pueden editar encuestas');
       return;
     }
     this.router.navigate([`/encuestas/editar/${id}`]);
   }
 
-    responderEncuesta(id: number) {
+  responderEncuesta(id: number) {
     const encuesta = this.encuestas.find(e => e.id === id);
-    const tipo = encuesta?.tipo === 'hotel' ? 'hotel' : 'turista';
-    console.log(' Navegando a responder encuesta:', tipo); 
+    if (!encuesta) {
+      this.mostrarAlerta('Encuesta no encontrada');
+      return;
+    }
+    const tipo = encuesta.tipo === 'hotel' ? 'hotel' : 'turista';
+    console.log('📝 Navegando a responder encuesta:', tipo);
     this.router.navigate([`/responder-encuesta/${tipo}`]);
   }
 
-  activarDesactivar(id: number) {
+  async activarDesactivar(id: number) {
     if (!this.isAdmin) {
-      alert('Solo los administradores pueden activar/desactivar encuestas');
+      this.mostrarAlerta('Solo los administradores pueden activar/desactivar encuestas');
       return;
     }
+
     const encuesta = this.encuestas.find(e => e.id === id);
-    if (encuesta) {
-      encuesta.activa = !encuesta.activa;
-      this.calcularTotales();
-    }
+    if (!encuesta) return;
+
+    const alert = await this.alertController.create({
+      header: 'Confirmar',
+      message: `¿Estás seguro de ${encuesta.activa ? 'desactivar' : 'activar'} la encuesta "${encuesta.nombre}"?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Confirmar',
+          handler: () => {
+            encuesta.activa = !encuesta.activa;
+            this.calcularTotales();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async mostrarAlerta(mensaje: string) {
+    const alert = await this.alertController.create({
+      header: 'Información',
+      message: mensaje,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 }

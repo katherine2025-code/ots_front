@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, MenuController } from '@ionic/angular';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
 
@@ -15,27 +15,25 @@ export class SidebarComponent implements OnInit {
   usuario: any = null;
   rolNombre: string = '';
   isAdmin: boolean = false;
-  isInvestigador: boolean = false; // ✅ Inicializado como booleano
+  isInvestigador: boolean = false;
   fotoPerfil: string = '';
-  fotoCargada: boolean = false; 
+  fotoCargada: boolean = false;
 
   constructor(
     private authService: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private menuCtrl: MenuController
+  ) { }
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
+      if (!user) return;
+
       this.usuario = user;
       this.rolNombre = this.authService.getRolNombre();
-      this.isAdmin = this.authService.isAdmin();
-      
-      // ✅ AQUÍ ESTABA EL PROBLEMA: Asignamos el valor a isInvestigador
-      // Si tu AuthService tiene el método isInvestigador(), úsalo. Si no, verificamos el id_rol === 2
-      this.isInvestigador = this.authService.isInvestigador 
-        ? this.authService.isInvestigador() 
-        : (this.usuario?.id_rol === 2);
-      
+      this.isAdmin = this.authService.isAdmin() || user.id_rol === 1;
+      this.isInvestigador = this.authService.isInvestigador?.() || user.id_rol === 2 || false;
+
       this.cargarFotoPerfil();
     });
   }
@@ -51,14 +49,13 @@ export class SidebarComponent implements OnInit {
     }
   }
 
-  // Verificar si la ruta actual está activa
   isActive(ruta: string): boolean {
     return this.router.url === ruta || this.router.url.startsWith(ruta + '/');
   }
 
   onImageError(event: any) {
     if (!this.fotoCargada) {
-      return; // Evita bucle infinito
+      return;
     }
     console.log('[Sidebar] Error al cargar imagen de perfil');
     this.fotoCargada = false;
@@ -66,13 +63,13 @@ export class SidebarComponent implements OnInit {
     event.target.style.display = 'none';
   }
 
-  // ✅ Corregido para que no lance error si el logo falla
   onLogoError(event: any) {
     console.warn('[Sidebar] No se pudo cargar el logo');
     event.target.style.display = 'none';
   }
 
   logout() {
+    this.menuCtrl.close();
     if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
       this.authService.logout();
       this.router.navigate(['/login']);

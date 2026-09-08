@@ -1,19 +1,76 @@
-<ion-content>
-  <app-sidebar></app-sidebar>
-  
-  <div class="main-content" id="main-content">
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Gestión de Usuarios</ion-title>
-      </ion-toolbar>
-    </ion-header>
+<ion-content class="ion-padding">
 
-    <ion-content class="ion-padding">
-      <h2>Usuarios del Sistema</h2>
-      <p>Aquí se gestionarán los usuarios del OTS</p>
-    </ion-content>
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Gestión de Usuarios</h1>
+      <p class="subtitle">Administración de usuarios del Observatorio Turístico Sostenible</p>
+    </div>
+    <div class="header-right">
+      <ion-button color="primary" (click)="abrirModalCrear()">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Nuevo Usuario
+      </ion-button>
+    </div>
   </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="cargando" class="loading-state">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando usuarios...</p>
+  </div>
+
+  <!-- Tabla de usuarios -->
+  <ion-card *ngIf="!cargando">
+    <ion-card-content>
+      <div class="table-responsive">
+        <table class="usuarios-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombres</th>
+              <th>Apellidos</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let usuario of usuarios">
+              <td>{{ usuario.id_usuario }}</td>
+              <td>{{ usuario.nombres }}</td>
+              <td>{{ usuario.apellidos }}</td>
+              <td>{{ usuario.correo }}</td>
+              <td>
+                <ion-badge [color]="usuario.id_rol === 1 ? 'danger' : usuario.id_rol === 2 ? 'primary' : 'medium'">
+                  {{ usuario.id_rol === 1 ? 'Admin' : usuario.id_rol === 2 ? 'Investigador' : 'Usuario' }}
+                </ion-badge>
+              </td>
+              <td>
+                <ion-badge [color]="usuario.estado === 1 ? 'success' : 'danger'">
+                  {{ usuario.estado === 1 ? 'Activo' : 'Inactivo' }}
+                </ion-badge>
+              </td>
+              <td class="text-center">
+                <ion-button fill="clear" size="small" color="primary" (click)="editarUsuario(usuario)">
+                  <ion-icon name="create-outline"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" size="small" color="danger" (click)="eliminarUsuario(usuario.id_usuario)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="usuarios.length === 0 && !cargando" class="empty-state">
+        <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+        <h3>No hay usuarios registrados</h3>
+        <p>Comienza agregando un nuevo usuario al sistema</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
 </ion-content>

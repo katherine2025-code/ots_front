@@ -9,7 +9,7 @@ export class EtlService {
   private apiUrl = 'http://localhost:3000/api/etl';
   private mlUrl = 'http://localhost:5000'; // Microservicio Python
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // ==========================================
   // MÉTODOS ETL (Node.js Backend)
@@ -43,10 +43,9 @@ export class EtlService {
     return this.http.get(`${this.apiUrl}/ejecuciones-programadas`);
   }
 
-  // ✅ MÉTODO MEJORADO: Validación histórica con parámetros opcionales
   getHistoricalPredictions(limite?: number, dias?: number): Observable<any> {
     let params = new HttpParams();
-    
+
     if (limite) {
       params = params.set('limite', limite.toString());
     }
@@ -91,9 +90,7 @@ export class EtlService {
     return this.http.get(`${this.apiUrl}/detalles/${id}`);
   }
 
-  // ==========================================
   // MÉTODOS ML (Microservicio Python)
-  // ==========================================
 
   entrenarModelo(): Observable<any> {
     return this.http.post(`${this.mlUrl}/entrenar`, {});

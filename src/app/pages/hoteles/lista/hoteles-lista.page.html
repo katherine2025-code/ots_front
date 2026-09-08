@@ -1,12 +1,67 @@
-<app-header [title]="'Hoteles'"></app-header>
-
 <ion-content class="ion-padding">
-  <ion-list>
-    <ion-item *ngFor="let hotel of hoteles">
-      <ion-label>
-        <h2>{{ hotel.nombre }}</h2>
-        <p>{{ hotel.direccion }}</p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+  <!-- Header con título y contador -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Hoteles</h1>
+      <p class="subtitle">Gestión de hoteles registrados en el OTS</p>
+    </div>
+    <div class="header-right">
+      <ion-badge color="primary" class="total-badge">
+        {{ hoteles.length }} hoteles
+      </ion-badge>
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="loading" class="loading-state">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando hoteles...</p>
+  </div>
+
+  <!-- Lista de hoteles -->
+  <div class="hoteles-grid" *ngIf="!loading">
+    <!-- Grid de tarjetas -->
+    <ion-card *ngFor="let hotel of hoteles" class="hotel-card" [routerLink]="['/hoteles', hotel.id_hotel]">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="business-outline" class="hotel-icon"></ion-icon>
+          {{ hotel.nombre }}
+        </ion-card-title>
+        <ion-card-subtitle>
+          <span class="categoria-badge" [ngClass]="'categoria-' + hotel.categoria">
+            {{ hotel.categoria }} ★
+          </span>
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p class="direccion">
+          <ion-icon name="location-outline"></ion-icon>
+          {{ hotel.direccion || 'Dirección no registrada' }}
+        </p>
+
+        <div class="hotel-stats">
+          <span class="stat-item">
+            <ion-icon name="bed-outline"></ion-icon>
+            {{ hotel.habitaciones_totales || 0 }} habitaciones
+          </span>
+          <span class="stat-item" *ngIf="hotel.precio_promedio">
+            <ion-icon name="cash-outline"></ion-icon>
+            ${{ hotel.precio_promedio }} promedio
+          </span>
+          <span class="stat-item status" [ngClass]="hotel.estado === 'Activo' ? 'activo' : 'inactivo'">
+            <ion-icon name="ellipse-outline"></ion-icon>
+            {{ hotel.estado || 'Activo' }}
+          </span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Mensaje cuando no hay hoteles -->
+    <div *ngIf="hoteles.length === 0" class="empty-state">
+      <ion-icon name="business-outline" class="empty-icon"></ion-icon>
+      <h3>No hay hoteles registrados</h3>
+      <p>Comienza agregando un nuevo hotel al sistema</p>
+    </div>
+  </div>
 </ion-content>

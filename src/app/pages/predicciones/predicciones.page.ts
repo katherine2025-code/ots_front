@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { Chart, registerables } from 'chart.js';
-import { HttpClient } from '@angular/common/http';
 import { EtlService } from 'src/app/core/services/etl.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 
@@ -17,54 +16,69 @@ Chart.register(...registerables);
   imports: [CommonModule, FormsModule, IonicModule]
 })
 export class PrediccionesPage implements OnInit {
-  // MODO DE PREDICCIÓN (Simulador vs Investigador Turismo por Rango)
+  // ==========================================
+  // MODO DE PREDICCIÓN
+  // ==========================================
   modoPrediccion: 'simulador' | 'rango' = 'simulador';
-  
+
+  // ==========================================
+  // ESTADOS DE CARGA
+  // ==========================================
   entrenando: boolean = false;
   prediciendo: boolean = false;
   calculandoRango: boolean = false;
+  cargandoHistoricas: boolean = false;
   modeloListo: boolean = false;
   prediccionCargada: boolean = false;
+
+  // ==========================================
+  // DATOS DE COMPARACIÓN Y PREDICCIÓN
+  // ==========================================
   metricas: any = null;
   comparacion: any = null;
   prediccion: any = null;
   resultadoRango: any = null;
+  prediccionesHistoricas: any[] = [];
+
+  modeloUsado: string = 'Modelo listo';
+  precisionPromedio: number = 0;
+  errorPromedio: number = 0;
+  totalRegistrosAnalizados: number = 0;
+
+  // ==========================================
+  // FORMULARIO SIMULADOR (1 DÍA)
+  // ==========================================
+  fechaObjetivo: string = '';
+  checkinNacionales: number = 50;
+  checkinExtranjeros: number = 10;
+  tarifaCobrada: number = 80;
+  temporada: string = 'Media';
+
+  // ==========================================
+  // FORMULARIO RANGO (INVESTIGADOR)
+  // ==========================================
+  fechaInicioRango: string = '';
+  fechaFinRango: string = '';
+
+  // ==========================================
+  // CHARTS
+  // ==========================================
   chartComparacion: any = null;
   chartPrediccion: any = null;
   chartRango: any = null;
   chartDiaSemana: any = null;
   chartTemporada: any = null;
-
-  // PREDICCIÓN POR RANGO (INVESTIGADOR TURISMO)
-  fechaInicioRango: string = '';
-  fechaFinRango: string = '';
-
-  // NUEVAS VARIABLES PARA PREDICCIONES HISTÓRICAS
-  prediccionesHistoricas: any[] = [];
-  cargandoHistoricas: boolean = false;
   chartHistoricas: any = null;
-  precisionPromedio: number = 0;
-  errorPromedio: number = 0;
-  totalRegistrosAnalizados: number = 0;
-  modeloUsado: string = '';
-
-  // Datos para predicción (inicializados dinámicamente)
-  fechaObjetivo: string = '';
-  checkinNacionales: number = 50;
-  checkinExtranjeros: number = 10;
-  tarifaCobrada: number = 80;
-  temperatura: number = 26;
-  humedad: number = 70;
-  precipitacion: number = 0;
-  temporada: string = 'Media';
 
   constructor(
     private etlService: EtlService,
     private authService: AuthService,
-    private http: HttpClient,
     private toastController: ToastController
-  ) {}
+  ) { }
 
+  // ==========================================
+  // GETTERS
+  // ==========================================
   get isAdmin(): boolean {
     return this.authService.isAdmin();
   }
@@ -73,24 +87,32 @@ export class PrediccionesPage implements OnInit {
     return this.authService.isInvestigador();
   }
 
+  // ==========================================
+  // NGONINIT
+  // ==========================================
   ngOnInit() {
+    // Si es investigador, modo rango por defecto
     if (this.isInvestigador) {
       this.modoPrediccion = 'rango';
     }
 
+    // Fechas por defecto
     const hoy = new Date();
     const manana = new Date();
     manana.setDate(hoy.getDate() + 1);
     this.fechaObjetivo = manana.toISOString().split('T')[0];
-    
+
     const masSieteDias = new Date();
     masSieteDias.setDate(hoy.getDate() + 7);
     this.fechaInicioRango = hoy.toISOString().split('T')[0];
     this.fechaFinRango = masSieteDias.toISOString().split('T')[0];
-    
+
     this.cargarMetricas();
   }
 
+  // ==========================================
+  // TOAST
+  // ==========================================
   async mostrarToast(mensaje: string, color: string = 'primary') {
     const toast = await this.toastController.create({
       message: mensaje,
@@ -101,17 +123,20 @@ export class PrediccionesPage implements OnInit {
     await toast.present();
   }
 
+  // ==========================================
+  // MÉTRICAS Y MODELOS
+  // ==========================================
   async cargarMetricas() {
     try {
       const response: any = await this.etlService.getMetricas().toPromise();
       this.metricas = response;
-      if (response && (response.comparacion || response['Random Forest'] || response.mejor_modelo)) {
+
+      if (response && response.comparacion) {
         this.modeloListo = true;
-        if (response.comparacion) {
-          this.comparacion = response.comparacion;
-        }
+        this.comparacion = response.comparacion;
+        this.modeloUsado = response.mejor_modelo || 'Modelo listo';
+        console.log('📊 Métricas cargadas:', this.metricas);
       }
-      console.log(' Métricas cargadas:', this.metricas);
     } catch (error) {
       console.error('Error cargando métricas:', error);
     }
@@ -121,23 +146,27 @@ export class PrediccionesPage implements OnInit {
     this.entrenando = true;
     try {
       const response: any = await this.etlService.entrenarModelo().toPromise();
-      console.log(' Entrenamiento completado:', response);
+      console.log('🧠 Entrenamiento completado:', response);
 
       this.metricas = response.metricas;
       this.comparacion = response.comparacion;
       this.modeloListo = true;
+      this.modeloUsado = response.mejor_modelo || 'Modelo entrenado';
 
       setTimeout(() => this.crearGraficoComparacion(), 100);
 
-      this.mostrarToast(`Entrenamiento completado. Mejor modelo: ${response.mejor_modelo}`, 'success');
+      this.mostrarToast(`✅ Entrenamiento completado. Mejor modelo: ${response.mejor_modelo}`, 'success');
     } catch (error) {
       console.error('Error entrenando:', error);
-      this.mostrarToast('Error al entrenar los modelos de predicción', 'danger');
+      this.mostrarToast('❌ Error al entrenar los modelos de predicción', 'danger');
     } finally {
       this.entrenando = false;
     }
   }
 
+  // ==========================================
+  // GRÁFICO COMPARACIÓN
+  // ==========================================
   crearGraficoComparacion() {
     const ctx = document.getElementById('chartComparacion') as HTMLCanvasElement;
     if (!ctx || !this.comparacion) return;
@@ -176,7 +205,7 @@ export class PrediccionesPage implements OnInit {
           title: {
             display: true,
             text: 'Comparación: Random Forest vs XGBoost',
-            font: { size: 16, weight: 'bold' }
+            font: { size: 14, weight: 'bold' }
           }
         },
         scales: {
@@ -186,6 +215,9 @@ export class PrediccionesPage implements OnInit {
     });
   }
 
+  // ==========================================
+  // PREDICCIÓN SIMULADOR (1 DÍA)
+  // ==========================================
   async predecir() {
     this.prediciendo = true;
     try {
@@ -194,10 +226,6 @@ export class PrediccionesPage implements OnInit {
         checkin_nacionales: this.checkinNacionales,
         checkin_extranjeros: this.checkinExtranjeros,
         tarifa_cobrada: this.tarifaCobrada,
-        temperatura: this.temperatura,
-        humedad: this.humedad,
-        precipitacion: this.precipitacion,
-        total_dias: 3,
         temporada: this.temporada
       };
 
@@ -206,17 +234,72 @@ export class PrediccionesPage implements OnInit {
       this.prediccionCargada = true;
 
       setTimeout(() => this.crearGraficoPrediccion(), 100);
-      this.mostrarToast('Predicción calculada correctamente', 'success');
+      this.mostrarToast('✅ Predicción calculada correctamente', 'success');
     } catch (error) {
       console.error('Error prediciendo:', error);
-      this.mostrarToast('Error al generar predicción. Verifique que exista un modelo entrenado.', 'danger');
+      this.mostrarToast('❌ Error al generar predicción. Verifique que exista un modelo entrenado.', 'danger');
     } finally {
       this.prediciendo = false;
     }
   }
 
   // ==========================================
-  // PREDICCIÓN POR RANGO (INVESTIGADOR TURISMO)
+  // GRÁFICO PREDICCIÓN
+  // ==========================================
+  crearGraficoPrediccion() {
+    const ctx = document.getElementById('chartPrediccion') as HTMLCanvasElement;
+    if (!ctx || !this.prediccion) return;
+
+    if (this.chartPrediccion) this.chartPrediccion.destroy();
+
+    const valorPredicho = this.prediccion.ocupacion_predicha;
+    const minimo = this.prediccion.rango_prediccion?.minimo || valorPredicho - 5;
+    const maximo = this.prediccion.rango_prediccion?.maximo || valorPredicho + 5;
+
+    this.chartPrediccion = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Valor Predicho', 'Rango Mínimo', 'Rango Máximo'],
+        datasets: [{
+          label: 'Ocupación (%)',
+          data: [valorPredicho, minimo, maximo],
+          backgroundColor: [
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(245, 158, 11, 0.6)',
+            'rgba(245, 158, 11, 0.6)'
+          ],
+          borderColor: [
+            'rgba(16, 185, 129, 1)',
+            'rgba(245, 158, 11, 1)',
+            'rgba(245, 158, 11, 1)'
+          ],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' },
+          title: {
+            display: true,
+            text: `Predicción con ${this.prediccion.modelo || 'Modelo ML'}`,
+            font: { size: 14, weight: 'bold' }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: { display: true, text: 'Ocupación (%)' }
+          }
+        }
+      }
+    });
+  }
+
+  // ==========================================
+  // PREDICCIÓN POR RANGO (INVESTIGADOR)
   // ==========================================
   seleccionarRangoRapido(dias: number) {
     const hoy = new Date();
@@ -240,50 +323,54 @@ export class PrediccionesPage implements OnInit {
 
   async predecirRango() {
     if (!this.fechaInicioRango || !this.fechaFinRango) {
-      this.mostrarToast('Por favor seleccione una fecha de inicio y una fecha de fin.', 'warning');
+      this.mostrarToast('⚠️ Por favor seleccione una fecha de inicio y una fecha de fin.', 'warning');
       return;
     }
-    
+
     this.calculandoRango = true;
     try {
-      const response: any = await this.etlService.predecirOcupacionRango(this.fechaInicioRango, this.fechaFinRango).toPromise();
+      const response: any = await this.etlService
+        .predecirOcupacionRango(this.fechaInicioRango, this.fechaFinRango)
+        .toPromise();
+
       this.resultadoRango = response;
-      console.log(' Proyección por rango:', response);
-      
+      console.log('📊 Proyección por rango:', response);
+
       setTimeout(() => this.crearGraficoRango(), 100);
-      this.mostrarToast(`Proyección para ${response.total_dias} días generada exitosamente`, 'success');
+      this.mostrarToast(`✅ Proyección para ${response.total_dias} días generada`, 'success');
     } catch (error) {
       console.error('Error al proyectar rango:', error);
-      this.mostrarToast('Error al proyectar el rango de fechas. Verifique el modelo.', 'danger');
+      this.mostrarToast('❌ Error al proyectar el rango de fechas.', 'danger');
     } finally {
       this.calculandoRango = false;
     }
   }
 
+  // ==========================================
+  // GRÁFICO RANGO
+  // ==========================================
   crearGraficoRango() {
     const ctx = document.getElementById('chartRango') as HTMLCanvasElement;
     if (!ctx || !this.resultadoRango) return;
 
     if (this.chartRango) this.chartRango.destroy();
 
-    const predicciones: any[] = this.resultadoRango.predicciones_diarias;
+    const predicciones: any[] = this.resultadoRango.predicciones_diarias || [];
 
     this.chartRango = new Chart(ctx, {
       type: 'line',
       data: {
         labels: predicciones.map((p: any) => p.fecha),
-        datasets: [
-          {
-            label: 'Ocupación Predicha (%)',
-            data: predicciones.map((p: any) => p.ocupacion_predicha),
-            borderColor: 'rgba(142, 68, 173, 1)',
-            backgroundColor: 'rgba(142, 68, 173, 0.15)',
-            tension: 0.35,
-            fill: true,
-            pointRadius: 5,
-            pointBackgroundColor: 'rgba(142, 68, 173, 1)'
-          }
-        ]
+        datasets: [{
+          label: 'Ocupación Predicha (%)',
+          data: predicciones.map((p: any) => p.ocupacion_predicha),
+          borderColor: 'rgba(142, 68, 173, 1)',
+          backgroundColor: 'rgba(142, 68, 173, 0.15)',
+          tension: 0.35,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: 'rgba(142, 68, 173, 1)'
+        }]
       },
       options: {
         responsive: true,
@@ -292,8 +379,8 @@ export class PrediccionesPage implements OnInit {
           legend: { position: 'bottom' },
           title: {
             display: true,
-            text: `Tendencia de Ocupación Esperada (${this.resultadoRango.fecha_inicio} a ${this.resultadoRango.fecha_fin})`,
-            font: { size: 15, weight: 'bold' }
+            text: `Tendencia de Ocupación (${this.resultadoRango.fecha_inicio} a ${this.resultadoRango.fecha_fin})`,
+            font: { size: 13, weight: 'bold' }
           }
         },
         scales: {
@@ -306,14 +393,17 @@ export class PrediccionesPage implements OnInit {
       }
     });
 
-    // RENDERIZAR GRÁFICOS SECUNDARIOS PARA EL INVESTIGADOR
+    // Gráficos secundarios
     this.crearGraficoDiaSemana();
     this.crearGraficoTemporada();
   }
 
+  // ==========================================
+  // GRÁFICO DÍA DE SEMANA
+  // ==========================================
   crearGraficoDiaSemana() {
     const ctx = document.getElementById('chartDiaSemana') as HTMLCanvasElement;
-    if (!ctx || !this.resultadoRango || !this.resultadoRango.promedios_dia_semana) return;
+    if (!ctx || !this.resultadoRango?.promedios_dia_semana) return;
 
     if (this.chartDiaSemana) this.chartDiaSemana.destroy();
 
@@ -338,16 +428,19 @@ export class PrediccionesPage implements OnInit {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          title: { display: true, text: 'Promedio de Ocupación por Día de la Semana', font: { size: 14, weight: 'bold' } }
+          title: { display: true, text: 'Ocupación por Día de Semana', font: { size: 12, weight: 'bold' } }
         },
         scales: { y: { beginAtZero: true, max: 100 } }
       }
     });
   }
 
+  // ==========================================
+  // GRÁFICO TEMPORADA
+  // ==========================================
   crearGraficoTemporada() {
     const ctx = document.getElementById('chartTemporada') as HTMLCanvasElement;
-    if (!ctx || !this.resultadoRango || !this.resultadoRango.promedios_temporada) return;
+    if (!ctx || !this.resultadoRango?.promedios_temporada) return;
 
     if (this.chartTemporada) this.chartTemporada.destroy();
 
@@ -374,109 +467,59 @@ export class PrediccionesPage implements OnInit {
         maintainAspectRatio: false,
         plugins: {
           legend: { position: 'bottom' },
-          title: { display: true, text: 'Comparación Ocupación por Temporada', font: { size: 14, weight: 'bold' } }
-        }
-      }
-    });
-  }
-
-  crearGraficoPrediccion() {
-    const ctx = document.getElementById('chartPrediccion') as HTMLCanvasElement;
-    if (!ctx || !this.prediccion) return;
-
-    if (this.chartPrediccion) this.chartPrediccion.destroy();
-
-    const valorPredicho = this.prediccion.ocupacion_predicha;
-    const errorEstimado = this.prediccion.error_estimado;
-
-    this.chartPrediccion = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Valor Predicho', 'Rango Mínimo', 'Rango Máximo'],
-        datasets: [{
-          label: 'Ocupación (%)',
-          data: [valorPredicho, this.prediccion.rango_prediccion.minimo, this.prediccion.rango_prediccion.maximo],
-          backgroundColor: [
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(245, 158, 11, 0.6)',
-            'rgba(245, 158, 11, 0.6)'
-          ],
-          borderColor: [
-            'rgba(16, 185, 129, 1)',
-            'rgba(245, 158, 11, 1)',
-            'rgba(245, 158, 11, 1)'
-          ],
-          borderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom' },
-          title: {
-            display: true,
-            text: `Predicción con ${this.prediccion.modelo}`,
-            font: { size: 16, weight: 'bold' }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            title: { display: true, text: 'Ocupación (%)' }
-          }
+          title: { display: true, text: 'Comparación por Temporada', font: { size: 12, weight: 'bold' } }
         }
       }
     });
   }
 
   // ==========================================
-  // NUEVO MÉTODO: PREDICCIONES HISTÓRICAS
+  // PREDICCIONES HISTÓRICAS (ADMIN)
   // ==========================================
   async cargarPrediccionesHistoricas() {
     this.cargandoHistoricas = true;
     try {
-      // Usar etlService en lugar de http.get directo
       const response: any = await this.etlService.getHistoricalPredictions().toPromise();
-      
-      this.prediccionesHistoricas = response.predicciones;
-      this.precisionPromedio = response.precision_promedio;
-      this.errorPromedio = response.error_promedio;
-      this.totalRegistrosAnalizados = response.total_registros;
-      this.modeloUsado = response.modelo_usado;
-      
-      console.log(' Predicciones históricas:', response);
-      
-      setTimeout(() => this.crearGraficoHistoricas(response), 100);
-      
+
+      this.prediccionesHistoricas = response.predicciones || [];
+      this.precisionPromedio = response.precision_promedio || 0;
+      this.errorPromedio = response.error_promedio || 0;
+      this.totalRegistrosAnalizados = response.total_registros || 0;
+      this.modeloUsado = response.modelo_usado || 'Modelo histórico';
+
+      console.log('📊 Predicciones históricas:', response);
+
+      setTimeout(() => this.crearGraficoHistoricas(), 100);
+      this.mostrarToast(`✅ ${response.total_registros} registros históricos validados`, 'success');
     } catch (error) {
       console.error('Error cargando predicciones históricas:', error);
-      this.mostrarToast('Error cargando predicciones históricas. Asegúrate de haber entrenado el modelo primero.', 'warning');
+      this.mostrarToast('⚠️ Error cargando predicciones históricas. Entrene el modelo primero.', 'warning');
     } finally {
       this.cargandoHistoricas = false;
     }
   }
 
-  crearGraficoHistoricas(data: any) {
+  // ==========================================
+  // GRÁFICO HISTÓRICAS
+  // ==========================================
+  crearGraficoHistoricas() {
     const ctx = document.getElementById('chartHistoricas') as HTMLCanvasElement;
-    if (!ctx) return;
+    if (!ctx || this.prediccionesHistoricas.length === 0) return;
 
     if (this.chartHistoricas) this.chartHistoricas.destroy();
 
-    // Ordenar por fecha
-    const predicciones: any[] = data.predicciones.sort((a: any, b: any) => 
+    const sorted = [...this.prediccionesHistoricas].sort((a, b) =>
       new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
     );
 
     this.chartHistoricas = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: predicciones.map((p: any) => p.fecha),
+        labels: sorted.map((p: any) => p.fecha),
         datasets: [
           {
             label: 'Valor Real (%)',
-            data: predicciones.map((p: any) => p.valor_real),
+            data: sorted.map((p: any) => p.valor_real),
             borderColor: 'rgba(41, 128, 185, 1)',
             backgroundColor: 'rgba(41, 128, 185, 0.1)',
             tension: 0.4,
@@ -486,7 +529,7 @@ export class PrediccionesPage implements OnInit {
           },
           {
             label: 'Valor Predicho (%)',
-            data: predicciones.map((p: any) => p.valor_predicho),
+            data: sorted.map((p: any) => p.valor_predicho),
             borderColor: 'rgba(46, 204, 113, 1)',
             backgroundColor: 'rgba(46, 204, 113, 0.1)',
             tension: 0.4,
@@ -503,8 +546,8 @@ export class PrediccionesPage implements OnInit {
           legend: { position: 'bottom' },
           title: {
             display: true,
-            text: `Comparación: Real vs Predicho (Precisión: ${data.precision_promedio}%)`,
-            font: { size: 14, weight: 'bold' }
+            text: `Real vs Predicho (Precisión: ${this.precisionPromedio}%)`,
+            font: { size: 13, weight: 'bold' }
           }
         },
         scales: {
@@ -516,5 +559,26 @@ export class PrediccionesPage implements OnInit {
         }
       }
     });
+  }
+
+  // ==========================================
+  // MÉTODOS DE UTILIDAD
+  // ==========================================
+  getPrecisionClass(precision: number): string {
+    if (precision >= 90) return 'high';
+    if (precision >= 70) return 'medium';
+    return 'low';
+  }
+
+  getOcupacionClass(valor: number): string {
+    if (valor >= 80) return 'alta';
+    if (valor >= 50) return 'media';
+    return 'baja';
+  }
+
+  getOcupacionLabel(valor: number): string {
+    if (valor >= 80) return 'Alta';
+    if (valor >= 50) return 'Media';
+    return 'Baja';
   }
 }

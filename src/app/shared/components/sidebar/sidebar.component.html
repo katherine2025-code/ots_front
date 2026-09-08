@@ -1,135 +1,124 @@
-<div class="sidebar-layout">
-  <!-- Sidebar Vertical -->
-  <aside class="sidebar">
-    <!-- Logo -->
-    <div class="sidebar-logo">
-      <img src="assets/icon/logo-ots.png" alt="OTS Logo" class="logo-img" (error)="onLogoError($event)">
-      <span class="logo-text">OTS</span>
-    </div>
+<ion-split-pane contentId="main-content" when="md">
+  <!-- MENÚ LATERAL -->
+  <ion-menu [contentId]="'main-content'" type="overlay" swipeGesture="true">
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>
+          <div class="menu-header">
+            <img src="assets/icon/logo-ots.png" alt="OTS Logo" class="logo-img" (error)="onLogoError($event)">
+            <span class="logo-text">OTS</span>
+          </div>
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
 
-    <!-- Menú de Navegación -->
-    <nav class="sidebar-nav">
-      <ul class="nav-list">
-        <!-- Dashboard - TODOS -->
-        <li class="nav-item" [class.active]="isActive('/dashboard')">
-          <a routerLink="/dashboard" class="nav-link">
-            <ion-icon name="grid-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Dashboard</span>
-          </a>
-        </li>
+    <ion-content>
+      <ion-list>
+        <!-- Dashboard -->
+        <ion-menu-toggle auto-hide="false">
+          <ion-item [routerLink]="['/dashboard']" [class.active]="isActive('/dashboard')" detail="false" lines="none">
+            <ion-icon name="grid-outline" slot="start"></ion-icon>
+            <ion-label>Dashboard</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
 
         <!-- Hoteles - SOLO ADMIN -->
-        <li class="nav-item" [class.active]="isActive('/hoteles')" *ngIf="isAdmin">
-          <a routerLink="/hoteles" class="nav-link">
-            <ion-icon name="business-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Hoteles</span>
-          </a>
-        </li>
+        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin">
+          <ion-item [routerLink]="['/hoteles']" [class.active]="isActive('/hoteles')" detail="false" lines="none">
+            <ion-icon name="business-outline" slot="start"></ion-icon>
+            <ion-label>Hoteles</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
 
         <!-- Ocupación - SOLO ADMIN -->
-        <li class="nav-item" [class.active]="isActive('/ocupacion')" *ngIf="isAdmin">
-          <a routerLink="/ocupacion" class="nav-link">
-            <ion-icon name="people-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Ocupación</span>
-          </a>
-        </li>
+        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin">
+          <ion-item [routerLink]="['/ocupacion']" [class.active]="isActive('/ocupacion')" detail="false" lines="none">
+            <ion-icon name="people-outline" slot="start"></ion-icon>
+            <ion-label>Ocupación</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
 
-        <!--  PREDICCIONES - ADMIN E INVESTIGADOR -->
-        <li class="nav-item" [class.active]="isActive('/predicciones')" *ngIf="isAdmin || isInvestigador">
-          <a routerLink="/predicciones" class="nav-link">
-            <ion-icon name="analytics-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Predicciones</span>
-          </a>
-        </li>
+        <!-- Predicciones - ADMIN E INVESTIGADOR -->
+        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin || isInvestigador">
+          <ion-item [routerLink]="['/predicciones']" [class.active]="isActive('/predicciones')" detail="false"
+            lines="none">
+            <ion-icon name="analytics-outline" slot="start"></ion-icon>
+            <ion-label>Predicciones</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
 
         <!-- Reportes - TODOS -->
-        <li class="nav-item" [class.active]="isActive('/reportes')">
-          <a routerLink="/reportes" class="nav-link">
-            <ion-icon name="document-text-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Reportes</span>
-          </a>
-        </li>
+        <ion-menu-toggle auto-hide="false">
+          <ion-item [routerLink]="['/reportes']" [class.active]="isActive('/reportes')" detail="false" lines="none">
+            <ion-icon name="document-text-outline" slot="start"></ion-icon>
+            <ion-label>Reportes</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
 
-        <!-- Separador para Admin -->
-        <li class="nav-divider" *ngIf="isAdmin"></li>
-        <li class="nav-section-title" *ngIf="isAdmin">Administración</li>
+        <!-- Separador Admin -->
+        <ion-item-divider *ngIf="isAdmin">
+          <ion-label>Administración</ion-label>
+        </ion-item-divider>
 
         <!-- Usuarios - SOLO ADMIN -->
-        <li class="nav-item" [class.active]="isActive('/usuarios')" *ngIf="isAdmin">
-          <a routerLink="/usuarios" class="nav-link">
-            <ion-icon name="people-circle-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Usuarios</span>
-          </a>
-        </li>
+        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin">
+          <ion-item [routerLink]="['/usuarios']" [class.active]="isActive('/usuarios')" detail="false" lines="none">
+            <ion-icon name="people-circle-outline" slot="start"></ion-icon>
+            <ion-label>Usuarios</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
 
         <!-- Encuestas - Admin e Investigador -->
-        <li class="nav-item" [class.active]="isActive('/encuestas')" *ngIf="isAdmin || isInvestigador">
-          <a routerLink="/encuestas" class="nav-link">
-            <ion-icon name="clipboard-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Encuestas</span>
-          </a>
-        </li>
+        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin || isInvestigador">
+          <ion-item [routerLink]="['/encuestas']" [class.active]="isActive('/encuestas')" detail="false" lines="none">
+            <ion-icon name="clipboard-outline" slot="start"></ion-icon>
+            <ion-label>Encuestas</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
 
         <!-- Carga ETL - SOLO ADMIN -->
-        <li class="nav-item" [class.active]="isActive('/etl')" *ngIf="isAdmin">
-          <a routerLink="/etl" class="nav-link">
-            <ion-icon name="cloud-upload-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Carga ETL</span>
-          </a>
-        </li>
+        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin">
+          <ion-item [routerLink]="['/etl']" [class.active]="isActive('/etl')" detail="false" lines="none">
+            <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+            <ion-label>Carga ETL</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
 
-        <!-- Configuración - SOLO ADMIN -->
-        <li class="nav-item" [class.active]="isActive('/perfil')" *ngIf="isAdmin">
-          <a routerLink="/perfil" class="nav-link">
-            <ion-icon name="settings-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Configuración</span>
-          </a>
-        </li>
+        <!-- Separador Investigador -->
+        <ion-item-divider *ngIf="isInvestigador && !isAdmin">
+          <ion-label>Mi Cuenta</ion-label>
+        </ion-item-divider>
 
-        <!-- Separador para Investigador -->
-        <li class="nav-divider" *ngIf="isInvestigador"></li>
-        <li class="nav-section-title" *ngIf="isInvestigador">Mi Cuenta</li>
-        
         <!-- Mi Perfil - Investigador -->
-        <li class="nav-item" [class.active]="isActive('/perfil')" *ngIf="isInvestigador">
-          <a routerLink="/perfil" class="nav-link">
-            <ion-icon name="person-outline" class="nav-icon"></ion-icon>
-            <span class="nav-text">Mi Perfil</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
+        <ion-menu-toggle auto-hide="false" *ngIf="isInvestigador">
+          <ion-item [routerLink]="['/perfil']" [class.active]="isActive('/perfil')" detail="false" lines="none">
+            <ion-icon name="person-outline" slot="start"></ion-icon>
+            <ion-label>Mi Perfil</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </ion-list>
+    </ion-content>
 
-    <!-- Footer con perfil y botón cerrar sesión -->
-    <div class="sidebar-footer">
-      <div class="user-profile">
-        <div class="user-avatar">
-          <img 
-            *ngIf="fotoPerfil && fotoCargada" 
-            [src]="fotoPerfil" 
-            alt="Foto" 
-            (error)="onImageError($event)">
-          <ion-icon 
-            *ngIf="!fotoPerfil || !fotoCargada" 
-            name="person-circle-outline" 
-            class="avatar-icon">
-          </ion-icon>
+    <!-- Footer con usuario -->
+    <ion-footer>
+      <ion-toolbar>
+        <div class="user-profile">
+          <ion-avatar slot="start">
+            <img *ngIf="fotoPerfil && fotoCargada" [src]="fotoPerfil" (error)="onImageError($event)">
+            <ion-icon *ngIf="!fotoPerfil || !fotoCargada" name="person-circle-outline"></ion-icon>
+          </ion-avatar>
+          <div class="user-info">
+            <span class="user-name">{{ usuario?.nombres }}</span>
+            <span class="user-role">{{ rolNombre }}</span>
+          </div>
+          <ion-button fill="clear" color="danger" (click)="logout()" slot="end">
+            <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+          </ion-button>
         </div>
-        <div class="user-info">
-          <span class="user-name">{{ usuario?.nombres }}</span>
-          <span class="user-role">{{ rolNombre }}</span>
-        </div>
-      </div>
-      
-      <button class="btn-logout" (click)="logout()" title="Cerrar Sesión">
-        <ion-icon name="log-out-outline"></ion-icon>
-        <span>Cerrar Sesión</span>
-      </button>
-    </div>
-  </aside>
+      </ion-toolbar>
+    </ion-footer>
+  </ion-menu>
 
-  <!-- Contenido Principal -->
-  <main class="main-content">
-    <ng-content></ng-content>
-  </main>
-</div>
+  <!-- CONTENIDO PRINCIPAL -->
+  <ion-router-outlet id="main-content"></ion-router-outlet>
+</ion-split-pane>

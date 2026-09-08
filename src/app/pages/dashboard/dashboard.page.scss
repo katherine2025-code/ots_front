@@ -8,17 +8,17 @@
   margin: 0 auto;
   padding: 20px;
   min-height: 100vh;
-  
+
   // ✅ FONDO DE IMAGEN
   background-image: url('src/assets/icon/fondo.png');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  
+
   // Overlay para mejorar legibilidad
   position: relative;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -26,16 +26,14 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.75) 0%,
-      rgba(245, 247, 250, 0.70) 100%
-    );
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.75) 0%,
+        rgba(245, 247, 250, 0.70) 100%);
     z-index: 0;
   }
-  
+
   // Todo el contenido debe estar por encima del overlay
-  > * {
+  >* {
     position: relative;
     z-index: 1;
   }
@@ -48,7 +46,7 @@
   padding: 24px;
   border-radius: 12px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   h1 {
     margin: 0 0 8px 0;
@@ -105,11 +103,11 @@
         font-size: 12px;
         font-weight: 600;
         color: white;
-        
+
         &.role-admin {
           background: #10b981; // Verde para Administrador
         }
-        
+
         &.role-investigador {
           background: #667eea; // Azul/Morado para Investigador
         }
@@ -126,7 +124,7 @@
   justify-content: center;
   padding: 60px;
   color: #6b7280;
-  
+
   ion-spinner {
     width: 40px;
     height: 40px;
@@ -195,16 +193,32 @@
       display: flex;
       align-items: center;
       gap: 4px;
-      
-      &.medium { color: #f59e0b; }
-      &.low { color: #ef4444; }
+
+      &.medium {
+        color: #f59e0b;
+      }
+
+      &.low {
+        color: #ef4444;
+      }
     }
   }
 
-  &.kpi-primary .kpi-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-  &.kpi-success .kpi-icon { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-  &.kpi-warning .kpi-icon { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-  &.kpi-danger .kpi-icon { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+  &.kpi-primary .kpi-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  &.kpi-success .kpi-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+
+  &.kpi-warning .kpi-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  }
+
+  &.kpi-danger .kpi-icon {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
 }
 
 // Charts Grid
@@ -275,14 +289,14 @@
   ion-item {
     --background: transparent;
     --border-color: #e5e7eb;
-    
+
     h2 {
       font-size: 15px;
       font-weight: 600;
       color: #1f2937;
       margin-bottom: 4px;
     }
-    
+
     p {
       font-size: 13px;
       color: #6b7280;
@@ -322,4 +336,180 @@
 ion-content {
   --background: transparent !important;
   overflow-y: auto !important;
+}
+
+// ==========================================
+// MEJORAS RESPONSIVE PARA DASHBOARD
+// ==========================================
+
+// Tablets y pantallas medianas
+@media (min-width: 768px) and (max-width: 1024px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-card {
+    h1 {
+      font-size: 1.4em;
+    }
+  }
+}
+
+// Móviles
+@media (max-width: 767px) {
+  .dashboard-page {
+    padding: 12px;
+  }
+
+  .welcome-card {
+    padding: 16px;
+
+    h1 {
+      font-size: 1.2em;
+    }
+
+    p {
+      font-size: 0.9em;
+    }
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    .header-left {
+      h1 {
+        font-size: 22px;
+      }
+    }
+
+    .header-right {
+      width: 100%;
+
+      .user-badge {
+        justify-content: flex-start;
+      }
+    }
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .kpi-card {
+    padding: 16px;
+
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+
+      ion-icon {
+        font-size: 24px;
+      }
+    }
+
+    .kpi-content {
+      h3 {
+        font-size: 24px;
+      }
+    }
+  }
+
+  .charts-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .chart-card {
+    padding: 16px;
+
+    .chart-container {
+      height: 220px;
+    }
+
+    .chart-header {
+      h3 {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .recent-predictions {
+    padding: 16px;
+
+    h3 {
+      font-size: 14px;
+    }
+
+    ion-item {
+      h2 {
+        font-size: 13px;
+      }
+
+      p {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+// Móviles muy pequeños
+@media (max-width: 400px) {
+  .dashboard-page {
+    padding: 8px;
+  }
+
+  .welcome-card {
+    padding: 12px;
+
+    h1 {
+      font-size: 1em;
+    }
+  }
+
+  .kpi-card {
+    padding: 12px;
+    gap: 12px;
+
+    .kpi-icon {
+      width: 40px;
+      height: 40px;
+
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+
+    .kpi-content {
+      h3 {
+        font-size: 20px;
+      }
+
+      p {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .chart-card {
+    padding: 12px;
+
+    .chart-container {
+      height: 180px;
+    }
+  }
+}
+
+// Mejora del scroll en móvil
+ion-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
 }

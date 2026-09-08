@@ -1,1 +1,125 @@
-<app-header [title]="'Detalle Hotel'"></app-header>
+<ion-content class="ion-padding">
+    <!-- Botón volver -->
+    <div class="back-button-container">
+        <ion-button fill="clear" color="primary" [routerLink]="['/hoteles']">
+            <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+            Volver a Hoteles
+        </ion-button>
+    </div>
+
+    <!-- Estado de carga -->
+    <div *ngIf="loading" class="loading-state">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando detalles del hotel...</p>
+    </div>
+
+    <!-- Detalle del hotel -->
+    <div *ngIf="!loading && hotel">
+        <ion-card class="hotel-detail-card">
+            <!-- Header con imagen placeholder -->
+            <div class="hotel-header">
+                <div class="hotel-icon-large">
+                    <ion-icon name="business-outline"></ion-icon>
+                </div>
+                <div class="hotel-titulo">
+                    <h1>{{ hotel.nombre }}</h1>
+                    <div class="hotel-categoria">
+                        <span *ngFor="let star of getEstrellas(hotel.categoria)" class="star">
+                            ★
+                        </span>
+                        <span class="categoria-label">{{ hotel.categoria }} estrellas</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información -->
+            <ion-card-content>
+                <div class="info-section">
+                    <h3>Información General</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <ion-icon name="location-outline"></ion-icon>
+                            <div>
+                                <strong>Dirección</strong>
+                                <p>{{ hotel.direccion || 'No registrada' }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item" *ngIf="hotel.telefono">
+                            <ion-icon name="call-outline"></ion-icon>
+                            <div>
+                                <strong>Teléfono</strong>
+                                <p>{{ hotel.telefono }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <ion-icon name="map-outline"></ion-icon>
+                            <div>
+                                <strong>Parroquia</strong>
+                                <p>{{ hotel.parroquia || 'No registrada' }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <ion-icon name="bed-outline"></ion-icon>
+                            <div>
+                                <strong>Habitaciones</strong>
+                                <p>{{ hotel.habitaciones_totales || 0 }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item" *ngIf="hotel.precio_promedio">
+                            <ion-icon name="cash-outline"></ion-icon>
+                            <div>
+                                <strong>Precio Promedio</strong>
+                                <p>${{ hotel.precio_promedio }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <ion-icon name="ellipse-outline"></ion-icon>
+                            <div>
+                                <strong>Estado</strong>
+                                <p class="status-badge" [ngClass]="hotel.estado === 'Activo' ? 'activo' : 'inactivo'">
+                                    {{ hotel.estado || 'Activo' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Servicios -->
+                <div class="info-section" *ngIf="hotel.servicios && hotel.servicios.length > 0">
+                    <h3>Servicios</h3>
+                    <div class="servicios-list">
+                        <ion-chip *ngFor="let servicio of hotel.servicios">
+                            <ion-label>{{ servicio }}</ion-label>
+                        </ion-chip>
+                    </div>
+                </div>
+
+                <!-- Estadísticas de ocupación -->
+                <div class="info-section" *ngIf="hotel.ocupacion_promedio">
+                    <h3>Estadísticas de Ocupación</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-value">{{ hotel.ocupacion_promedio }}%</span>
+                            <span class="stat-label">Ocupación Promedio</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">{{ hotel.total_turistas || 0 }}</span>
+                            <span class="stat-label">Turistas Atendidos</span>
+                        </div>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="!loading && !hotel" class="error-state">
+        <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+        <h3>Hotel no encontrado</h3>
+        <p>El hotel que buscas no existe o ha sido eliminado</p>
+        <ion-button [routerLink]="['/hoteles']" color="primary">
+            <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+            Volver a Hoteles
+        </ion-button>
+    </div>
+</ion-content>
