@@ -175,8 +175,9 @@ export class EtlPage implements OnInit, OnDestroy {
   }
 
   validarYSeleccionarArchivo(file: File) {
-    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
-      this.uploadError = 'Solo se permiten archivos CSV';
+    const nombre = file.name.toLowerCase();
+    if (!nombre.endsWith('.csv') && !nombre.endsWith('.xlsx')) {
+      this.uploadError = 'Solo se permiten archivos CSV o XLSX';
       this.selectedFile = null;
       return;
     }
@@ -237,13 +238,17 @@ export class EtlPage implements OnInit, OnDestroy {
     if (this.resultadoCarga) {
       const exitosos = this.resultadoCarga.exitosos || this.resultadoCarga.registros_insertados || 0;
       const errores = this.resultadoCarga.errores || this.resultadoCarga.registros_error || 0;
+      const advertencias: string[] = this.resultadoCarga.advertencias || [];
+      const notaAdvertencias = advertencias.length
+        ? `\n\nInconsistencias detectadas:\n- ${advertencias.join('\n- ')}`
+        : '';
 
       if (exitosos > 0 && errores === 0) {
-        alert(` Proceso completado exitosamente\n\n Registros insertados: ${exitosos}\n Errores: ${errores}`);
+        alert(` Proceso completado exitosamente\n\n Registros insertados: ${exitosos}\n Errores: ${errores}${notaAdvertencias}`);
       } else if (exitosos > 0 && errores > 0) {
-        alert(` Proceso completado con errores\n\n Exitosos: ${exitosos}\n Errores: ${errores}`);
+        alert(` Proceso completado con errores\n\n Exitosos: ${exitosos}\n Errores: ${errores}${notaAdvertencias}`);
       } else {
-        alert(` Proceso fallido\n\n Errores: ${errores}\n\nRevisa los logs para más detalles`);
+        alert(` Proceso fallido\n\n Errores: ${errores}\n\nRevisa los logs para más detalles${notaAdvertencias}`);
       }
     }
   }

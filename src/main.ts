@@ -63,7 +63,24 @@ import {
   homeOutline,
   optionsOutline,
   bookOutline,
-  listOutline
+  listOutline,
+
+  // Iconos usados en dashboard/reportes/ETL que faltaban registrar
+  clipboardOutline,
+  speedometerOutline,
+  barChartOutline,
+  cashOutline,
+  codeOutline,
+  playCircleOutline,
+  flagOutline,
+  starOutline,
+  walletOutline,
+  globeOutline,
+  checkmarkCircle,
+  addOutline,
+  createOutline,
+  pencilOutline,
+  pauseCircleOutline
 } from 'ionicons/icons';
 
 // ==========================================
@@ -120,7 +137,23 @@ addIcons({
   homeOutline,
   optionsOutline,
   bookOutline,
-  listOutline
+  listOutline,
+
+  clipboardOutline,
+  speedometerOutline,
+  barChartOutline,
+  cashOutline,
+  codeOutline,
+  playCircleOutline,
+  flagOutline,
+  starOutline,
+  walletOutline,
+  globeOutline,
+  checkmarkCircle,
+  addOutline,
+  createOutline,
+  pencilOutline,
+  pauseCircleOutline
 });
 
 // ==========================================
@@ -129,6 +162,13 @@ addIcons({
 if (environment.production) {
   enableProdMode();
 }
+
+// Forzar pantalla de login en cada arranque de la app:
+// se descarta cualquier sesión guardada de una ejecución anterior.
+localStorage.removeItem('ots_token');
+localStorage.removeItem('ots_usuario');
+localStorage.removeItem('token');
+localStorage.removeItem('usuario');
 
 bootstrapApplication(AppComponent, {
   providers: [

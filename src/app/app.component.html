@@ -1,5 +1,4 @@
 <ion-app>
-  <app-sidebar>
-    <ion-router-outlet></ion-router-outlet>
-  </app-sidebar>
+  <app-sidebar *ngIf="mostrarSidebar"></app-sidebar>
+  <ion-router-outlet *ngIf="!mostrarSidebar"></ion-router-outlet>
 </ion-app>

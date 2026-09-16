@@ -90,12 +90,18 @@ export class AuthService {
     return user?.id_rol === 2;
   }
 
+  // Verificar si es encuestador (id_rol = 3)
+  isEncuestador(): boolean {
+    const user = this.getCurrentUser();
+    return user?.id_rol === 3;
+  }
+
   // Obtener nombre del rol
   getRolNombre(): string {
     const user = this.getCurrentUser();
     if (user?.id_rol === 1) return 'Administrador';
     if (user?.id_rol === 2) return 'Investigador';
-    if (user?.id_rol === 3) return 'Analista';
+    if (user?.id_rol === 3) return 'Encuestador';
     return 'Usuario';
   }
 

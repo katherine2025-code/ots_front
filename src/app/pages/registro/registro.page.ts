@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { ROLES } from 'src/app/core/models/usuario.model';
 
 @Component({
   selector: 'app-registro',
@@ -16,6 +17,7 @@ export class RegistroPage {
   registroForm: FormGroup;
   loading = false;
   error = '';
+  readonly ROLES = ROLES;
 
   constructor(
     private fb: FormBuilder,
@@ -26,7 +28,8 @@ export class RegistroPage {
       nombres: ['', [Validators.required, Validators.minLength(2)]],
       apellidos: ['', [Validators.required, Validators.minLength(2)]],
       correo: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      id_rol: [ROLES.INVESTIGADOR, [Validators.required]]
     });
   }
 
@@ -48,7 +51,7 @@ export class RegistroPage {
       apellidos: this.f['apellidos'].value,
       correo: this.f['correo'].value,
       password: this.f['password'].value,
-      id_rol: 2 // Por defecto rol de investigador
+      id_rol: this.f['id_rol'].value
     };
 
     this.authService.registro(registroData).subscribe({

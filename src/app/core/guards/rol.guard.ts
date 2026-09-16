@@ -55,3 +55,21 @@ export const adminOInvestigadorGuard: CanActivateFn = (route, state) => {
 
   return true;
 };
+
+//Guard para Encuestador
+export const encuestadorGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isAuthenticated()) {
+    router.navigate(['/login']);
+    return false;
+  }
+
+  if (!authService.isEncuestador()) {
+    router.navigate(['/dashboard']);
+    return false;
+  }
+
+  return true;
+};

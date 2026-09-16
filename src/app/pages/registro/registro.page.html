@@ -67,6 +67,20 @@
 
         <div class="input-wrapper">
           <label class="input-label">
+            <ion-icon name="people-circle-outline"></ion-icon>
+            Voy a registrarme como
+          </label>
+          <div class="input-field">
+            <ion-icon name="people-circle-outline" class="field-icon"></ion-icon>
+            <select formControlName="id_rol" class="custom-input">
+              <option [ngValue]="ROLES.INVESTIGADOR">Investigador / Empresario</option>
+              <option [ngValue]="ROLES.ENCUESTADOR">Encuestador (recolección de datos en campo)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-wrapper">
+          <label class="input-label">
             <ion-icon name="lock-closed-outline"></ion-icon>
             Contraseña
           </label>

@@ -60,7 +60,13 @@ export class EtlService {
     const formData = new FormData();
     formData.append('archivo', file);
     formData.append('tipo', tipo);
-    return this.http.post(`${this.apiUrl}/procesar`, formData);
+    // reportProgress + observe:'events' son obligatorios para que etl.page.ts
+    // reciba HttpEventType.UploadProgress/Response - sin esto, isUploading
+    // nunca vuelve a false porque event.type siempre es undefined.
+    return this.http.post(`${this.apiUrl}/procesar`, formData, {
+      reportProgress: true,
+      observe: 'events'
+    });
   }
 
   eliminarRegistro(id: number): Observable<any> {

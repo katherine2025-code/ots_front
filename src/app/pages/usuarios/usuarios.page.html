@@ -43,8 +43,8 @@
               <td>{{ usuario.apellidos }}</td>
               <td>{{ usuario.correo }}</td>
               <td>
-                <ion-badge [color]="usuario.id_rol === 1 ? 'danger' : usuario.id_rol === 2 ? 'primary' : 'medium'">
-                  {{ usuario.id_rol === 1 ? 'Admin' : usuario.id_rol === 2 ? 'Investigador' : 'Usuario' }}
+                <ion-badge [color]="usuario.id_rol === 1 ? 'danger' : usuario.id_rol === 2 ? 'primary' : usuario.id_rol === 3 ? 'tertiary' : 'medium'">
+                  {{ usuario.id_rol === 1 ? 'Admin' : usuario.id_rol === 2 ? 'Investigador' : usuario.id_rol === 3 ? 'Encuestador' : 'Usuario' }}
                 </ion-badge>
               </td>
               <td>

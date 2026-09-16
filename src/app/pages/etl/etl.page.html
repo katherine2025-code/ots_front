@@ -84,7 +84,7 @@
     <div class="upload-card">
       <h2>
         <ion-icon name="cloud-upload-outline"></ion-icon>
-        Subir Archivo CSV
+        Subir Archivo CSV o Excel
       </h2>
 
       <div class="tipo-carga">
@@ -99,12 +99,13 @@
         (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="abrirSelectorArchivos()">
         <div class="drop-content">
           <ion-icon name="cloud-upload-outline" class="upload-icon"></ion-icon>
-          <h3>Arrastra tu archivo CSV aquí</h3>
+          <h3>Arrastra tu archivo CSV o XLSX aquí</h3>
           <p>o haz clic para explorar archivos</p>
-          <span class="file-types">Formato: .csv | Tamaño máximo: 10MB</span>
+          <span class="file-types">Formato: .csv (separado por ;) o .xlsx | Tamaño máximo: 10MB</span>
         </div>
-        <input #fileInput id="fileInput" type="file" accept=".csv,text/csv" (change)="onFileSelected($event)"
-          style="display: none">
+        <input #fileInput id="fileInput" type="file"
+          accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          (change)="onFileSelected($event)" style="display: none">
       </div>
 
       <div *ngIf="selectedFile" class="file-preview">

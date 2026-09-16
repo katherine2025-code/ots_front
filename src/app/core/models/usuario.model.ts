@@ -1,3 +1,15 @@
+export const ROLES = {
+  ADMIN: 1,
+  INVESTIGADOR: 2,
+  ENCUESTADOR: 3
+} as const;
+
+export const NOMBRES_ROL: Record<number, string> = {
+  [ROLES.ADMIN]: 'Administrador',
+  [ROLES.INVESTIGADOR]: 'Investigador',
+  [ROLES.ENCUESTADOR]: 'Encuestador'
+};
+
 export interface Usuario {
   telefono: string;
   id_usuario: number;
