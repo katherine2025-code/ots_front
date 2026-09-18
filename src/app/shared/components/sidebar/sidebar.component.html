@@ -14,11 +14,19 @@
 
     <ion-content>
       <ion-list>
-        <!-- Dashboard -->
-        <ion-menu-toggle auto-hide="false">
+        <!-- Dashboard - Admin e Investigador (Encuestador no lo ve) -->
+        <ion-menu-toggle auto-hide="false" *ngIf="!isEncuestador">
           <ion-item [routerLink]="['/dashboard']" [class.active]="isActive('/dashboard')" detail="false" lines="none">
             <ion-icon name="grid-outline" slot="start"></ion-icon>
             <ion-label>Dashboard</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+
+        <!-- Mis Encuestas - SOLO ENCUESTADOR -->
+        <ion-menu-toggle auto-hide="false" *ngIf="isEncuestador">
+          <ion-item [routerLink]="['/mis-encuestas']" [class.active]="isActive('/mis-encuestas')" detail="false" lines="none">
+            <ion-icon name="clipboard-outline" slot="start"></ion-icon>
+            <ion-label>Mis Encuestas</ion-label>
           </ion-item>
         </ion-menu-toggle>
 
@@ -47,8 +55,8 @@
           </ion-item>
         </ion-menu-toggle>
 
-        <!-- Reportes - TODOS -->
-        <ion-menu-toggle auto-hide="false">
+        <!-- Reportes - Admin e Investigador (Encuestador no lo ve) -->
+        <ion-menu-toggle auto-hide="false" *ngIf="!isEncuestador">
           <ion-item [routerLink]="['/reportes']" [class.active]="isActive('/reportes')" detail="false" lines="none">
             <ion-icon name="document-text-outline" slot="start"></ion-icon>
             <ion-label>Reportes</ion-label>

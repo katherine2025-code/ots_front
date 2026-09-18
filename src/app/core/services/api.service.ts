@@ -165,7 +165,10 @@ export class ApiService {
           errorMessage = 'Credenciales incorrectas. Verifica tu correo y contraseña.';
         }
       } else if (error.status === 403) {
-        errorMessage = 'No tienes permisos para realizar esta acción.';
+        // Se conserva el motivo específico que mande el backend (ej. "Solo un
+        // Super Administrador puede...") en vez de un mensaje genérico que lo
+        // descarta - importante para que las reglas de rol se entiendan.
+        errorMessage = error.error?.error || error.error?.message || 'No tienes permisos para realizar esta acción.';
       } else if (error.status === 404) {
         errorMessage = 'Recurso no encontrado.';
       } else if (error.status === 409) {

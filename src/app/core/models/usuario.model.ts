@@ -1,10 +1,12 @@
 export const ROLES = {
+  SUPER_ADMIN: 0,
   ADMIN: 1,
   INVESTIGADOR: 2,
   ENCUESTADOR: 3
 } as const;
 
 export const NOMBRES_ROL: Record<number, string> = {
+  [ROLES.SUPER_ADMIN]: 'Super Administrador',
   [ROLES.ADMIN]: 'Administrador',
   [ROLES.INVESTIGADOR]: 'Investigador',
   [ROLES.ENCUESTADOR]: 'Encuestador'

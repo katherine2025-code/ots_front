@@ -1,0 +1,20 @@
+<ion-content class="ion-padding">
+  <div class="header">
+    <h1>Hola, {{ nombreUsuario }}</h1>
+    <p class="subtitle">Elige la encuesta que vas a llenar en campo</p>
+  </div>
+
+  <div class="tarjetas">
+    <ion-card *ngFor="let encuesta of encuestas" button (click)="abrirEncuesta(encuesta.tipo)" class="tarjeta-encuesta">
+      <ion-card-content>
+        <ion-icon [name]="encuesta.icono" class="icono"></ion-icon>
+        <h2>{{ encuesta.titulo }}</h2>
+        <p>{{ encuesta.descripcion }}</p>
+        <ion-button expand="block" fill="outline">
+          Llenar encuesta
+          <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

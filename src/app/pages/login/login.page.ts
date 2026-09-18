@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { LoginRequest } from 'src/app/core/models/usuario.model';
+import { LoginRequest, ROLES } from 'src/app/core/models/usuario.model';
 
 @Component({
   selector: 'app-login',
@@ -54,7 +54,10 @@ export class LoginPage {
      next: (response) => {
       console.log('[LoginPage] Login exitoso:', response);
       this.loading = false;
-      this.router.navigate(['/dashboard']);
+      // Encuestador no tiene Dashboard/Reportes - su pantalla de inicio es
+      // "Mis Encuestas". El resto de roles sí van al Dashboard como antes.
+      const destino = response.usuario?.id_rol === ROLES.ENCUESTADOR ? '/mis-encuestas' : '/dashboard';
+      this.router.navigate([destino]);
     },
       error: (err) => {
         this.loading = false;

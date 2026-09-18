@@ -43,8 +43,8 @@
               <td>{{ usuario.apellidos }}</td>
               <td>{{ usuario.correo }}</td>
               <td>
-                <ion-badge [color]="usuario.id_rol === 1 ? 'danger' : usuario.id_rol === 2 ? 'primary' : usuario.id_rol === 3 ? 'tertiary' : 'medium'">
-                  {{ usuario.id_rol === 1 ? 'Admin' : usuario.id_rol === 2 ? 'Investigador' : usuario.id_rol === 3 ? 'Encuestador' : 'Usuario' }}
+                <ion-badge [color]="usuario.id_rol === 0 ? 'dark' : usuario.id_rol === 1 ? 'danger' : usuario.id_rol === 2 ? 'primary' : usuario.id_rol === 3 ? 'tertiary' : 'medium'">
+                  {{ usuario.id_rol === 0 ? 'Super Admin' : usuario.id_rol === 1 ? 'Admin' : usuario.id_rol === 2 ? 'Investigador' : usuario.id_rol === 3 ? 'Encuestador' : 'Usuario' }}
                 </ion-badge>
               </td>
               <td>
@@ -53,12 +53,17 @@
                 </ion-badge>
               </td>
               <td class="text-center">
-                <ion-button fill="clear" size="small" color="primary" (click)="editarUsuario(usuario)">
-                  <ion-icon name="create-outline"></ion-icon>
-                </ion-button>
-                <ion-button fill="clear" size="small" color="danger" (click)="eliminarUsuario(usuario.id_usuario)">
-                  <ion-icon name="trash-outline"></ion-icon>
-                </ion-button>
+                <ng-container *ngIf="puedeGestionar(usuario); else sinPermiso">
+                  <ion-button fill="clear" size="small" color="primary" (click)="editarUsuario(usuario)">
+                    <ion-icon name="create-outline"></ion-icon>
+                  </ion-button>
+                  <ion-button fill="clear" size="small" color="danger" (click)="eliminarUsuario(usuario.id_usuario)">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </ion-button>
+                </ng-container>
+                <ng-template #sinPermiso>
+                  <ion-badge color="medium">Solo Super Admin</ion-badge>
+                </ng-template>
               </td>
             </tr>
           </tbody>
@@ -72,5 +77,75 @@
       </div>
     </ion-card-content>
   </ion-card>
+
+  <!-- MODAL CREAR / EDITAR USUARIO -->
+  <ion-modal [isOpen]="mostrarModal" (didDismiss)="cerrarModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ modoEdicion ? 'Editar Usuario' : 'Nuevo Usuario' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModal()">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <form [formGroup]="usuarioForm" (ngSubmit)="guardarUsuario()">
+          <ion-item>
+            <ion-label position="stacked">Nombres</ion-label>
+            <ion-input formControlName="nombres" placeholder="Nombres"></ion-input>
+          </ion-item>
+          <div class="error-message-small" *ngIf="usuarioForm.get('nombres')?.invalid && usuarioForm.get('nombres')?.touched">
+            Los nombres son requeridos (mínimo 2 caracteres)
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Apellidos</ion-label>
+            <ion-input formControlName="apellidos" placeholder="Apellidos"></ion-input>
+          </ion-item>
+          <div class="error-message-small" *ngIf="usuarioForm.get('apellidos')?.invalid && usuarioForm.get('apellidos')?.touched">
+            Los apellidos son requeridos (mínimo 2 caracteres)
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Correo</ion-label>
+            <ion-input formControlName="correo" type="email" placeholder="correo@ejemplo.com"></ion-input>
+          </ion-item>
+          <div class="error-message-small" *ngIf="usuarioForm.get('correo')?.invalid && usuarioForm.get('correo')?.touched">
+            Ingresa un correo válido
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">{{ modoEdicion ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</ion-label>
+            <ion-input formControlName="password" type="password" placeholder="Mínimo 6 caracteres"></ion-input>
+          </ion-item>
+          <div class="error-message-small" *ngIf="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched">
+            Debe tener al menos 6 caracteres
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Rol</ion-label>
+            <ion-select formControlName="id_rol" interface="popover">
+              <ion-select-option *ngFor="let rol of rolesAsignables" [value]="rol">
+                {{ NOMBRES_ROL[rol] }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <div class="error-alert" *ngIf="errorForm" style="margin-top: 12px;">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            {{ errorForm }}
+          </div>
+
+          <ion-button expand="block" type="submit" [disabled]="guardando" style="margin-top: 20px;">
+            <ion-spinner name="crescent" *ngIf="guardando"></ion-spinner>
+            <span *ngIf="!guardando">{{ modoEdicion ? 'Guardar cambios' : 'Crear usuario' }}</span>
+          </ion-button>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 
 </ion-content>

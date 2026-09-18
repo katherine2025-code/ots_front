@@ -80,7 +80,8 @@ import {
   addOutline,
   createOutline,
   pencilOutline,
-  pauseCircleOutline
+  pauseCircleOutline,
+  arrowForwardOutline
 } from 'ionicons/icons';
 
 // ==========================================
@@ -153,7 +154,8 @@ addIcons({
   addOutline,
   createOutline,
   pencilOutline,
-  pauseCircleOutline
+  pauseCircleOutline,
+  arrowForwardOutline
 });
 
 // ==========================================

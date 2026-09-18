@@ -16,6 +16,7 @@ export class SidebarComponent implements OnInit {
   rolNombre: string = '';
   isAdmin: boolean = false;
   isInvestigador: boolean = false;
+  isEncuestador: boolean = false;
   fotoPerfil: string = '';
   fotoCargada: boolean = false;
 
@@ -33,6 +34,7 @@ export class SidebarComponent implements OnInit {
       this.rolNombre = this.authService.getRolNombre();
       this.isAdmin = this.authService.isAdmin() || user.id_rol === 1;
       this.isInvestigador = this.authService.isInvestigador?.() || user.id_rol === 2 || false;
+      this.isEncuestador = this.authService.isEncuestador?.() || user.id_rol === 3 || false;
 
       this.cargarFotoPerfil();
     });

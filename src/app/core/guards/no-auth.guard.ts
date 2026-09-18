@@ -9,10 +9,12 @@ export const noAuthGuard: CanActivateFn = (route, state) => {
   console.log('[NoAuthGuard] Verificando si usuario está autenticado...');
   console.log('[NoAuthGuard] isAuthenticated:', authService.isAuthenticated());
 
-  // Si está autenticado, redirigir al dashboard
+  // Si está autenticado, redirigir a su home según el rol (Encuestador no
+  // tiene Dashboard, evita el rebote doble por adminOInvestigadorGuard).
   if (authService.isAuthenticated()) {
-    console.log('[NoAuthGuard] Usuario autenticado, redirigiendo a dashboard');
-    router.navigate(['/dashboard']);
+    const destino = authService.isEncuestador() ? '/mis-encuestas' : '/dashboard';
+    console.log('[NoAuthGuard] Usuario autenticado, redirigiendo a', destino);
+    router.navigate([destino]);
     return false;
   }
 

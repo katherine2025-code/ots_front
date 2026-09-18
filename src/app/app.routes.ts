@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { noAuthGuard } from './core/guards/no-auth.guard';
-import { adminGuard } from './core/guards/rol.guard';
+import { adminGuard, adminOInvestigadorGuard, encuestadorGuard } from './core/guards/rol.guard';
 
 export const routes: Routes = [
   {
@@ -22,7 +22,12 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.page').then(m => m.DashboardPage),
-    canActivate: [authGuard]
+    canActivate: [authGuard, adminOInvestigadorGuard]
+  },
+  {
+    path: 'mis-encuestas',
+    loadComponent: () => import('./pages/mis-encuestas/mis-encuestas.page').then(m => m.MisEncuestasPage),
+    canActivate: [encuestadorGuard]
   },
   {
     path: 'hoteles',
@@ -42,7 +47,7 @@ export const routes: Routes = [
   {
     path: 'reportes',
     loadComponent: () => import('./pages/reportes/reportes.page').then(m => m.ReportesPage),
-    canActivate: [authGuard]
+    canActivate: [authGuard, adminOInvestigadorGuard]
   },
   {
     path: 'ocupacion',
@@ -100,7 +105,7 @@ export const routes: Routes = [
   {
     path: 'responder-encuesta/:tipo',
     loadComponent: () => import('./pages/responder-encuesta/responder-encuesta.page').then(m => m.ResponderEncuestaPage),
-    canActivate: [authGuard]
+    canActivate: [encuestadorGuard]
   },
 
   // Ruta comodín al final - redirige a dashboard

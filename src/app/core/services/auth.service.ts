@@ -78,10 +78,17 @@ export class AuthService {
     return !!this.getToken();
   }
 
-  // Verificar si es administrador (id_rol = 1)
+  // Verificar si es Super Administrador (id_rol = 0)
+  isSuperAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.id_rol === 0;
+  }
+
+  // Verificar si es administrador (id_rol = 1). Super Administrador (0)
+  // hereda todo lo que puede hacer un administrador, así que también cuenta.
   isAdmin(): boolean {
     const user = this.getCurrentUser();
-    return user?.id_rol === 1;
+    return user?.id_rol === 1 || user?.id_rol === 0;
   }
 
   // Verificar si es investigador (id_rol = 2)
@@ -99,6 +106,7 @@ export class AuthService {
   // Obtener nombre del rol
   getRolNombre(): string {
     const user = this.getCurrentUser();
+    if (user?.id_rol === 0) return 'Super Administrador';
     if (user?.id_rol === 1) return 'Administrador';
     if (user?.id_rol === 2) return 'Investigador';
     if (user?.id_rol === 3) return 'Encuestador';
