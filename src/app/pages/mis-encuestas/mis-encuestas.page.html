@@ -1,15 +1,93 @@
 <ion-content class="ion-padding">
   <div class="header">
     <h1>Hola, {{ nombreUsuario }}</h1>
-    <p class="subtitle">Elige la encuesta que vas a llenar en campo</p>
+    <p class="subtitle">Tu jornada de recolección y las encuestas que vas a llenar en campo</p>
   </div>
 
+  <ion-item color="warning" lines="none" *ngIf="pendientes > 0">
+    <ion-icon name="cloud-offline-outline" slot="start"></ion-icon>
+    <ion-label class="ion-text-wrap">
+      {{ pendientes }} encuesta(s) guardada(s) en este dispositivo pendiente(s) de enviar. Se enviarán cuando haya conexión.
+    </ion-label>
+  </ion-item>
+
+  <!-- ===== Cronograma (solo lectura) ===== -->
+  <section class="cronograma" *ngIf="cronograma?.jornada as jornada">
+    <div class="jornada-titulo">
+      <div>
+        <span class="etiqueta">Jornada de recolección</span>
+        <h2>{{ jornada.feriado }}</h2>
+        <span class="rango">{{ formatoFecha(jornada.fechaInicio) }} – {{ formatoFecha(jornada.fechaFin) }}</span>
+      </div>
+      <span class="en-vivo" title="Se actualiza automáticamente"><span class="punto"></span> En vivo</span>
+    </div>
+
+    <!-- Hoy -->
+    <div class="hoy" [class.cumplida]="porcentajeHoy >= 100">
+      <div class="anillo">
+        <svg viewBox="0 0 120 120" width="120" height="120">
+          <circle class="fondo" cx="60" cy="60" r="52"></circle>
+          <circle class="progreso" cx="60" cy="60" r="52" [attr.stroke-dasharray]="anillo" transform="rotate(-90 60 60)"></circle>
+        </svg>
+        <div class="anillo-texto">
+          <strong>{{ porcentajeHoy }}%</strong>
+          <span>de hoy</span>
+        </div>
+      </div>
+
+      <div class="hoy-detalle">
+        <h3>{{ mensajeHoy }}</h3>
+        <ng-container *ngIf="hoy">
+          <div class="barra-tipo" *ngIf="hoy.metaTurista > 0">
+            <div class="fila"><span><ion-icon name="people-outline"></ion-icon> Turistas</span><b>{{ hoy.hechoTurista }} / {{ hoy.metaTurista }}</b></div>
+            <div class="barra"><div [style.width.%]="porcentaje(hoy.hechoTurista, hoy.metaTurista)"></div></div>
+          </div>
+          <div class="barra-tipo" *ngIf="hoy.metaHotel > 0">
+            <div class="fila"><span><ion-icon name="business-outline"></ion-icon> Alojamiento</span><b>{{ hoy.hechoHotel }} / {{ hoy.metaHotel }}</b></div>
+            <div class="barra"><div [style.width.%]="porcentaje(hoy.hechoHotel, hoy.metaHotel)"></div></div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Línea de tiempo de los días del feriado -->
+    <div class="dias">
+      <div class="dia" *ngFor="let dia of cronograma?.dias" [ngClass]="dia.estado" [class.es-hoy]="dia.esHoy">
+        <span class="nombre">{{ nombreDia(dia.fecha) }}</span>
+        <span class="numero">{{ numeroDia(dia.fecha) }}</span>
+        <span class="cuenta" *ngIf="dia.metaTurista + dia.metaHotel > 0">{{ dia.hechoTurista + dia.hechoHotel }}/{{ dia.metaTurista + dia.metaHotel }}</span>
+        <span class="cuenta" *ngIf="dia.metaTurista + dia.metaHotel === 0">—</span>
+        <span class="estado">{{ etiquetaEstado(dia) }}</span>
+      </div>
+    </div>
+
+    <!-- Total de la jornada -->
+    <div class="total-jornada" *ngIf="cronograma?.totales as t">
+      <div class="fila"><span>Avance de toda la jornada</span><b>{{ t.hecho }} / {{ t.meta }} encuestas</b></div>
+      <div class="barra grande"><div [style.width.%]="porcentajeJornada"></div></div>
+    </div>
+  </section>
+
+  <ion-item lines="none" class="sin-cronograma" *ngIf="!cargandoCronograma && !cronograma?.jornada && !errorCronograma">
+    <ion-icon name="calendar-outline" slot="start"></ion-icon>
+    <ion-label class="ion-text-wrap">
+      Aún no tienes un cronograma asignado. Cuando el administrador te asigne una jornada, verás aquí tus metas por día.
+    </ion-label>
+  </ion-item>
+
+  <!-- ===== Encuestas ===== -->
+  <h2 class="seccion">Llenar encuesta</h2>
   <div class="tarjetas">
     <ion-card *ngFor="let encuesta of encuestas" button (click)="abrirEncuesta(encuesta.tipo)" class="tarjeta-encuesta">
       <ion-card-content>
         <ion-icon [name]="encuesta.icono" class="icono"></ion-icon>
         <h2>{{ encuesta.titulo }}</h2>
         <p>{{ encuesta.descripcion }}</p>
+        <ng-container *ngIf="hoyPorTipo(encuesta.tipo) as h">
+          <span class="chip-hoy" *ngIf="h.meta > 0" [class.ok]="h.hecho >= h.meta">
+            Hoy: {{ h.hecho }} de {{ h.meta }}
+          </span>
+        </ng-container>
         <ion-button expand="block" fill="outline">
           Llenar encuesta
           <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>

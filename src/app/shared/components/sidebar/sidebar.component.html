@@ -84,6 +84,14 @@
           </ion-item>
         </ion-menu-toggle>
 
+        <!-- Cronograma de recolección - Admin (control) e Investigador (solo lectura) -->
+        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin || isInvestigador">
+          <ion-item [routerLink]="['/cronograma']" [class.active]="isActive('/cronograma')" detail="false" lines="none">
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            <ion-label>Cronograma</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+
         <!-- Carga ETL - SOLO ADMIN -->
         <ion-menu-toggle auto-hide="false" *ngIf="isAdmin">
           <ion-item [routerLink]="['/etl']" [class.active]="isActive('/etl')" detail="false" lines="none">

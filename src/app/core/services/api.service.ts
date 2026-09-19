@@ -184,6 +184,9 @@ export class ApiService {
 
     console.error(`[API] Status: ${error.status}, Mensaje: ${errorMessage}`);
 
-    return throwError(() => new Error(errorMessage));
+    // Se conserva el status HTTP para que quien llama distinga errores de conexión/servidor (0, 5xx)
+    const apiError: Error & { status?: number } = new Error(errorMessage);
+    apiError.status = error.status;
+    return throwError(() => apiError);
   }
 }

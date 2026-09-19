@@ -6,7 +6,7 @@
 .page-header {
   margin-bottom: 32px;
   padding-bottom: 16px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--ots-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -16,13 +16,13 @@
       margin: 0;
       font-size: 28px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--ots-text);
     }
 
     .subtitle {
       margin: 4px 0 0 0;
       font-size: 14px;
-      color: #6b7280;
+      color: var(--ots-text-muted);
     }
   }
 }
@@ -36,7 +36,7 @@
 }
 
 .stat-card {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -53,13 +53,13 @@
     margin: 0;
     font-size: 28px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--ots-text);
   }
 
   p {
     margin: 0;
     font-size: 13px;
-    color: #6b7280;
+    color: var(--ots-text-muted);
   }
 
   &.stat-active {
@@ -104,7 +104,7 @@
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--ots-border);
   overflow-x: auto;
 }
 
@@ -119,7 +119,7 @@
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--ots-text-muted);
   transition: all 0.2s;
   white-space: nowrap;
 
@@ -192,7 +192,7 @@
 
 // Upload card
 .upload-card {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   padding: 32px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -201,7 +201,7 @@
     margin: 0 0 24px 0;
     font-size: 20px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--ots-text);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -218,7 +218,7 @@
   margin-bottom: 8px;
   font-weight: 600;
   font-size: 14px;
-  color: #1a1a1a;
+  color: var(--ots-text);
 }
 
 .tipo-carga {
@@ -229,13 +229,13 @@
 .filter-select {
   width: 100%;
   padding: 10px 14px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--ots-border);
   border-radius: 8px;
   font-size: 14px;
-  background: white;
+  background: var(--ots-surface);
   cursor: pointer;
   transition: border-color 0.2s;
-  color: #1a1a1a;
+  color: var(--ots-text);
 
   &:focus {
     outline: none;
@@ -251,7 +251,7 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: #f8fafc;
+  background: var(--ots-surface-alt);
 
   &:hover {
     border-color: #667eea;
@@ -275,13 +275,13 @@
       margin: 0 0 8px 0;
       font-size: 18px;
       font-weight: 600;
-      color: #1e293b;
+      color: var(--ots-text);
     }
 
     p {
       margin: 0 0 12px 0;
       font-size: 14px;
-      color: #6b7280;
+      color: var(--ots-text-muted);
     }
 
     .file-types {
@@ -295,7 +295,7 @@
 .file-preview {
   margin: 24px 0;
   padding: 16px;
-  background: #f8fafc;
+  background: var(--ots-surface-alt);
   border-radius: 8px;
 
   .file-info {
@@ -315,13 +315,13 @@
 
       .file-name {
         font-weight: 600;
-        color: #1e293b;
+        color: var(--ots-text);
         word-break: break-all;
       }
 
       .file-size {
         font-size: 12px;
-        color: #6b7280;
+        color: var(--ots-text-muted);
       }
     }
 
@@ -399,7 +399,7 @@
     margin: 0 0 20px 0;
     font-size: 18px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--ots-text);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -418,27 +418,27 @@
 }
 
 .format-card {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 8px;
   padding: 20px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--ots-border);
 
   h4 {
     margin: 0 0 8px 0;
-    color: #1e293b;
+    color: var(--ots-text);
     font-weight: 600;
   }
 
   p {
     margin: 0 0 12px 0;
     font-size: 13px;
-    color: #6b7280;
+    color: var(--ots-text-muted);
   }
 
   .campos {
     strong {
       font-size: 12px;
-      color: #1e293b;
+      color: var(--ots-text);
       display: block;
       margin-bottom: 8px;
       font-weight: 600;
@@ -463,14 +463,14 @@
 
 // Table card
 .table-card {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
   .table-header {
     padding: 20px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--ots-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -481,7 +481,7 @@
       margin: 0;
       font-size: 18px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--ots-text);
     }
   }
 }
@@ -494,18 +494,18 @@
   td {
     padding: 12px 16px;
     text-align: left;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--ots-border);
     font-size: 14px;
   }
 
   th {
-    background: #f8fafc;
+    background: var(--ots-surface-alt);
     font-weight: 600;
-    color: #1e293b;
+    color: var(--ots-text);
   }
 
   td {
-    color: #4b5563;
+    color: var(--ots-text-muted);
   }
 
   .error-text {
@@ -619,8 +619,8 @@
 
 // Refresh button
 .btn-refresh {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--ots-surface);
+  border: 1px solid var(--ots-border);
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -628,7 +628,7 @@
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  color: #1a1a1a;
+  color: var(--ots-text);
   transition: all 0.2s;
 
   &:hover {

@@ -11,6 +11,9 @@
 
 <ion-content class="ion-padding">
   
+  <p *ngIf="cargando">Cargando encuesta...</p>
+  <p *ngIf="errorCarga">{{ errorCarga }}</p>
+
   <div *ngIf="encuesta" class="detalle-container">
     
     <!-- Encabezado de la encuesta -->
@@ -20,7 +23,7 @@
         <span class="badge" [ngClass]="encuesta.tipo">
           {{ encuesta.tipo === 'turista' ? '👤 Turista' : '🏨 Hotel' }}
         </span>
-        <span class="badge info">{{ encuesta.preguntas?.length || 0 }} preguntas</span>
+        <span class="badge info">{{ encuesta.totalPreguntas }} preguntas</span>
         <span class="badge" [ngClass]="encuesta.activa ? 'success' : 'danger'">
           {{ encuesta.activa ? 'Activa' : 'Inactiva' }}
         </span>
@@ -36,10 +39,13 @@
           <div *ngFor="let pregunta of obtenerPreguntasPorSeccion(seccion)" class="pregunta-card">
             <div class="pregunta-header">
               <span class="codigo">{{ pregunta.codigo }}</span>
-              <span class="tipo">{{ pregunta.tipo }}</span>
+              <span class="tipo">{{ etiquetaTipo(pregunta.tipo) }}</span>
               <span class="obligatoria" *ngIf="pregunta.obligatoria">*</span>
             </div>
             <p class="texto">{{ pregunta.texto }}</p>
+            <ul class="opciones" *ngIf="pregunta.opciones?.length">
+              <li *ngFor="let opcion of pregunta.opciones">{{ opcion }}</li>
+            </ul>
           </div>
         </div>
       </ng-container>

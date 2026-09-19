@@ -3,6 +3,14 @@
 
 /** Ionic CSS Variables **/
 :root {
+    /** Superficies y textos compartidos (cambian con el tema claro/oscuro) **/
+    --ots-surface: #ffffff;
+    --ots-surface-alt: #f8f9fa;
+    --ots-surface-soft: #f3f4f6;
+    --ots-text: #1a1a1a;
+    --ots-text-muted: #6b7280;
+    --ots-border: #e5e7eb;
+
     /** primary **/
     --ion-color-primary: #2A6F97;
     --ion-color-primary-rgb: 42, 111, 151;
@@ -103,8 +111,17 @@
    DARK MODE - OTS
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
-    :root {
+/* El tema oscuro se activa con la clase .ion-palette-dark en <html>
+   (botón de tema; ver core/services/theme.service.ts). */
+:root.ion-palette-dark {
+    & {
+        --ots-surface: #1e2530;
+        --ots-surface-alt: #252d3a;
+        --ots-surface-soft: #2b3444;
+        --ots-text: #e5e7eb;
+        --ots-text-muted: #9ca3af;
+        --ots-border: #374151;
+
         --ion-color-primary: #3f8db5;
         --ion-color-primary-rgb: 63, 141, 181;
         --ion-color-primary-contrast: #ffffff;

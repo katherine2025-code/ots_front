@@ -17,13 +17,13 @@
       margin: 0;
       font-size: 24px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--ots-text);
     }
 
     .subtitle {
       margin: 4px 0 0 0;
       font-size: 14px;
-      color: #6b7280;
+      color: var(--ots-text-muted);
     }
   }
 
@@ -39,7 +39,7 @@
 
 // SECTION CARDS
 .section-card {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -51,7 +51,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #1f2937;
+    color: var(--ots-text);
     font-size: 1.2em;
     margin-bottom: 8px;
 
@@ -62,7 +62,7 @@
   }
 
   p {
-    color: #6b7280;
+    color: var(--ots-text-muted);
     font-size: 0.9em;
     margin-bottom: 16px;
   }
@@ -91,8 +91,8 @@
   }
 
   .metric-box {
-    background: white;
-    border: 2px solid #e5e7eb;
+    background: var(--ots-surface);
+    border: 2px solid var(--ots-border);
     border-radius: 10px;
     padding: 16px;
     text-align: center;
@@ -100,12 +100,12 @@
     h3 {
       font-size: 1.5em;
       margin: 0;
-      color: #1f2937;
+      color: var(--ots-text);
     }
 
     p {
       margin: 4px 0 0 0;
-      color: #6b7280;
+      color: var(--ots-text-muted);
       font-size: 0.8em;
     }
 
@@ -174,7 +174,7 @@
 
       &.winner {
         background: #f1c40f;
-        color: #2c3e50;
+        color: var(--ots-text);
         font-weight: bold;
       }
     }
@@ -224,7 +224,7 @@
 
   ion-chip {
     cursor: pointer;
-    --background: #f3f4f6;
+    --background: var(--ots-surface-soft);
   }
 }
 
@@ -302,7 +302,7 @@ ion-button[expand="block"] {
 
 // CHART CONTAINER
 .chart-container {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -341,7 +341,7 @@ ion-button[expand="block"] {
 
 // TABLAS
 .table-container {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   padding: 16px;
   margin-top: 16px;
@@ -350,7 +350,7 @@ ion-button[expand="block"] {
   h3 {
     margin: 0 0 12px 0;
     font-size: 1em;
-    color: #1f2937;
+    color: var(--ots-text);
   }
 }
 
@@ -373,9 +373,9 @@ ion-button[expand="block"] {
   }
 
   th {
-    background: #f8fafc;
+    background: var(--ots-surface-alt);
     font-weight: 600;
-    color: #4b5563;
+    color: var(--ots-text-muted);
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -392,7 +392,7 @@ ion-button[expand="block"] {
   }
 
   tr:hover {
-    background: #f8fafc;
+    background: var(--ots-surface-alt);
   }
 }
 

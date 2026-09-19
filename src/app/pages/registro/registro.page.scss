@@ -17,7 +17,7 @@
 .register-container {
   width: 100%;
   max-width: 500px;
-  background: white;
+  background: var(--ots-surface);
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   overflow: hidden;
@@ -36,7 +36,7 @@
 }
 
 .header-section {
-  background: white;
+  background: var(--ots-surface);
   padding: 30px 20px 20px 20px;
   text-align: center;
 
@@ -89,7 +89,7 @@
 .input-field {
   display: flex;
   align-items: center;
-  background: #f8f9fa;
+  background: var(--ots-surface-alt);
   border: 2px solid #e2e8f0;
   border-radius: 10px;
   padding: 12px 14px;
@@ -97,7 +97,7 @@
 
   &:focus-within {
     border-color: #2e86c1;
-    background: white;
+    background: var(--ots-surface);
     box-shadow: 0 0 0 3px rgba(46, 134, 193, 0.1);
   }
 
@@ -118,7 +118,7 @@
     padding: 0;
     outline: none;
     width: 100%;
-    color: #2d3748;
+    color: var(--ots-text);
 
     &::placeholder {
       color: #a0aec0;
@@ -216,7 +216,7 @@
 
   p {
     margin: 0 0 10px 0;
-    color: #4a5568;
+    color: var(--ots-text-muted);
     font-size: 14px;
   }
 }
@@ -226,7 +226,7 @@
   height: 44px;
   border: 2px solid #667eea;
   border-radius: 10px;
-  background: white;
+  background: var(--ots-surface);
   color: #667eea;
   font-size: 15px;
   font-weight: 600;

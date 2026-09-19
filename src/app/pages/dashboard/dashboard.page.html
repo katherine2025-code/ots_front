@@ -90,6 +90,101 @@
       </div>
     </div>
 
+    <!-- Jornada de recolección en curso (resumen del cronograma) -->
+    <section class="jornada-card" *ngIf="!loading">
+      <div class="jornada-cabecera">
+        <div>
+          <span class="etiqueta">Recolección de datos en campo</span>
+          <h3 *ngIf="resumenJornada">
+            {{ resumenJornada.jornada.feriado }}
+            <span class="estado-jornada" [ngClass]="resumenJornada.estado">{{ estadoJornada }}</span>
+          </h3>
+          <h3 *ngIf="!resumenJornada">Sin jornada programada</h3>
+        </div>
+        <a class="ver-cronograma" [routerLink]="['/cronograma']">
+          {{ isAdmin ? 'Administrar cronograma' : 'Ver cronograma' }}
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </a>
+      </div>
+
+      <ng-container *ngIf="resumenJornada as r">
+        <div class="jornada-kpis">
+          <div class="jkpi">
+            <span>Hoy</span>
+            <strong>{{ r.totales.hechoHoy }} <small>/ {{ r.totales.metaHoy }}</small></strong>
+            <div class="barra"><div [style.width.%]="porcentaje(r.totales.hechoHoy, r.totales.metaHoy)"></div></div>
+          </div>
+          <div class="jkpi">
+            <span>Toda la jornada</span>
+            <strong>{{ r.totales.hecho }} <small>/ {{ r.totales.meta }}</small></strong>
+            <div class="barra"><div [style.width.%]="porcentaje(r.totales.hecho, r.totales.meta)"></div></div>
+          </div>
+          <div class="jkpi">
+            <span>Encuestadores</span>
+            <strong>{{ r.encuestadores.length }}</strong>
+            <small class="pie">{{ r.jornada.fechaInicio | date:'dd/MM' }} – {{ r.jornada.fechaFin | date:'dd/MM' }}</small>
+          </div>
+        </div>
+
+        <div class="top-encuestadores" *ngIf="topEncuestadores.length > 0">
+          <h4>Encuestadores con más encuestas</h4>
+          <div class="fila-encuestador" *ngFor="let e of topEncuestadores; trackBy: trackPorId">
+            <span class="nombre">{{ e.nombre }}</span>
+            <div class="barra"><div [style.width.%]="porcentaje(e.hechoTotal, e.metaTotal)"></div></div>
+            <span class="cuenta">{{ e.hechoTotal }}/{{ e.metaTotal }}</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <p class="jornada-vacia" *ngIf="jornadaCargada && !resumenJornada">
+        Aún no hay una jornada de recolección para el próximo feriado.
+        <a *ngIf="isAdmin" [routerLink]="['/cronograma']">Programar una jornada</a>
+      </p>
+    </section>
+
+    <!-- Mapa: lugares más visitados por feriado -->
+    <section class="mapa-card" *ngIf="!loading">
+      <div class="mapa-cabecera">
+        <div>
+          <span class="etiqueta">Comportamiento turístico</span>
+          <h3>¿Dónde visitan más los turistas?</h3>
+        </div>
+        <ion-select *ngIf="opcionesMapa.length > 0" [ngModel]="seleccionMapa" (ngModelChange)="cambiarSeleccionMapa($event)" interface="popover" class="selector-feriado"
+          aria-label="Feriado">
+          <ion-select-option *ngFor="let o of opcionesMapa; trackBy: trackPorValor" [value]="o.valor">{{ o.etiqueta }}</ion-select-option>
+        </ion-select>
+      </div>
+
+      <div class="mapa-cuerpo">
+        <div class="mapa-contenedor">
+          <app-mapa-lugares [lugares]="grupoMapa.lugares"></app-mapa-lugares>
+        </div>
+
+        <div class="ranking">
+          <h4>Lugares más visitados</h4>
+          <p class="base" *ngIf="grupoMapa.encuestas > 0">Según {{ grupoMapa.encuestas }} turista{{ grupoMapa.encuestas === 1 ? '' : 's' }} encuestado{{ grupoMapa.encuestas === 1 ? '' : 's' }}</p>
+
+          <ol *ngIf="rankingLugares.length > 0">
+            <li *ngFor="let l of rankingLugares; let i = index; trackBy: trackPorNombre">
+              <span class="pos">{{ i + 1 }}</span>
+              <div class="datos">
+                <div class="linea"><strong>{{ l.nombre }}</strong><span>{{ l.visitas }} · {{ l.porcentaje }}%</span></div>
+                <div class="barra"><div [style.width.%]="l.porcentaje"></div></div>
+              </div>
+            </li>
+          </ol>
+
+          <p class="sin-datos" *ngIf="rankingLugares.length === 0">
+            Todavía no hay encuestas turísticas con lugares visitados en esta selección. Aparecerán aquí a medida que los
+            encuestadores registren la pregunta “¿Qué lugares visitó?”.
+          </p>
+          <p class="nota" *ngIf="lugaresSinUbicar > 0">
+            {{ lugaresSinUbicar }} lugar(es) aparecen en el ranking pero aún no tienen coordenadas para dibujarse en el mapa.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- Charts Section -->
     <div class="charts-row" *ngIf="!loading">
       <div class="chart-card chart-large">

@@ -34,7 +34,8 @@
 /* ============================================
    DARK MODE
    ============================================ */
-@import '@ionic/angular/css/palettes/dark.system.css';
+@import '@ionic/angular/css/palettes/dark.class.css';
+@import 'leaflet/dist/leaflet.css';
 
 /* ============================================
    RESET Y ESTILOS BASE - OTS
@@ -546,7 +547,7 @@ ion-card-content {
    DARK MODE SOBRESCRITURAS OTS
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
+.ion-palette-dark {
     .page-header {
         border-bottom-color: rgba(255, 255, 255, 0.06);
     }
@@ -585,4 +586,14 @@ ion-card-content {
     .empty-state .empty-icon {
         color: #4b5563;
     }
+}
+/* ============================================
+   MAPAS (Leaflet) - tema oscuro
+   ============================================ */
+.ion-palette-dark .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+}
+
+.ion-palette-dark .leaflet-container {
+    background: #1e2530;
 }

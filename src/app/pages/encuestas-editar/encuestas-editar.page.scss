@@ -24,8 +24,8 @@
 }
 
 .seccion-card {
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--ots-surface);
+  border: 1px solid var(--ots-border);
   border-radius: 10px;
   padding: 20px;
   margin-bottom: 20px;
@@ -40,12 +40,30 @@
 }
 
 .pregunta-item {
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
+  background: var(--ots-surface-alt);
+  border: 1px solid var(--ots-border);
   border-radius: 5px;
   padding: 15px;
   margin-bottom: 15px;
   
+  .opciones-section {
+    margin: 10px 0;
+
+    h4 {
+      margin: 0 0 8px 0;
+      color: var(--ion-color-primary);
+    }
+
+    .opcion-row {
+      display: flex;
+      align-items: center;
+
+      ion-item {
+        flex: 1;
+      }
+    }
+  }
+
   .pregunta-header {
     display: flex;
     gap: 10px;
@@ -60,7 +78,7 @@
     }
     
     .tipo {
-      background: #e0e0e0;
+      background: var(--ots-border);
       padding: 5px 10px;
       border-radius: 5px;
     }

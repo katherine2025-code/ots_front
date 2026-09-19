@@ -5,12 +5,6 @@
       <h1>Gestión de Encuestas</h1>
       <p class="subtitle">Administración de encuestas turísticas y hoteleras</p>
     </div>
-    <div class="header-right">
-      <ion-button color="primary" (click)="nuevaEncuesta()" *ngIf="isAdmin">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
-        Nueva Encuesta
-      </ion-button>
-    </div>
   </div>
 
   <!-- Resumen -->
@@ -50,11 +44,10 @@
   <div class="encuestas-container">
     <h2>Encuestas Configuradas</h2>
 
-    <div *ngIf="encuestas.length === 0" class="empty-state">
+    <div *ngIf="!cargando && encuestas.length === 0" class="empty-state">
       <ion-icon name="clipboard-outline" class="empty-icon"></ion-icon>
       <h3>No hay encuestas configuradas</h3>
-      <p *ngIf="isAdmin">Comienza creando una nueva encuesta para el sistema</p>
-      <p *ngIf="!isAdmin">No hay encuestas disponibles en este momento</p>
+      <p>No hay encuestas disponibles en este momento</p>
     </div>
 
     <div *ngFor="let encuesta of encuestas" class="encuesta-card">
@@ -71,7 +64,11 @@
           <div class="encuesta-meta">
             <span class="badge info">
               <ion-icon name="document-text-outline"></ion-icon>
-              {{ encuesta.preguntas }} preguntas
+              {{ encuesta.totalPreguntas }} preguntas
+            </span>
+            <span class="badge info" *ngIf="puedeVerRespuestas">
+              <ion-icon name="clipboard-outline"></ion-icon>
+              {{ encuesta.totalRespuestas || 0 }} respuestas recolectadas
             </span>
             <span class="badge" [ngClass]="encuesta.activa ? 'success' : 'danger'">
               <ion-icon [name]="encuesta.activa ? 'checkmark-circle' : 'close-circle'"></ion-icon>
@@ -91,9 +88,15 @@
           Ver
         </ion-button>
 
-        <ion-button fill="outline" size="small" color="success" (click)="responderEncuesta(encuesta.id)">
+        <ion-button fill="outline" size="small" color="success" (click)="responderEncuesta(encuesta.id)" *ngIf="isEncuestador">
           <ion-icon name="create-outline" slot="start"></ion-icon>
           Responder
+        </ion-button>
+
+        <ion-button fill="outline" size="small" color="tertiary" (click)="descargarRespuestas(encuesta)"
+          *ngIf="puedeVerRespuestas" [disabled]="!encuesta.totalRespuestas">
+          <ion-icon name="download-outline" slot="start"></ion-icon>
+          Descargar respuestas
         </ion-button>
 
         <ion-button fill="outline" size="small" color="primary" (click)="editarEncuesta(encuesta.id)" *ngIf="isAdmin">

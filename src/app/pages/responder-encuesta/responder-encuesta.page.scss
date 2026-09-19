@@ -9,12 +9,12 @@
 }
 
 .seccion-card {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 10px;
   padding: 20px;
   margin-bottom: 20px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--ots-border);
   
   .seccion-titulo {
     color: var(--ion-color-primary) !important;
@@ -83,9 +83,9 @@ ion-select-interface-option {
 .action-buttons {
   margin-top: 30px;
   padding: 20px;
-  background: #f8f9fa;
+  background: var(--ots-surface-alt);
   border-radius: 10px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--ots-border);
   
   ion-button {
     margin-bottom: 15px;

@@ -25,8 +25,11 @@
     </ion-segment>
   </div>
 
-  <form #formulario="ngForm">
-    
+  <p *ngIf="cargando">Cargando preguntas...</p>
+  <p *ngIf="errorCarga" class="error-carga">{{ errorCarga }}</p>
+
+  <form #formulario="ngForm" *ngIf="!cargando && !errorCarga">
+
     <!-- Secciones de preguntas -->
     <div *ngFor="let seccion of obtenerSecciones()" class="seccion-card">
       <h3 class="seccion-titulo">{{ seccion }}</h3>
@@ -58,6 +61,15 @@
           placeholder="0">
         </ion-input>
         
+        <!-- Fecha (día del feriado) -->
+        <ion-input
+          *ngIf="pregunta.tipo === 'date'"
+          type="date"
+          [(ngModel)]="respuestas[pregunta.codigo]"
+          [name]="pregunta.codigo"
+          [required]="pregunta.obligatoria">
+        </ion-input>
+
         <!-- Select simple -->
         <ion-select 
           *ngIf="pregunta.tipo === 'select'"

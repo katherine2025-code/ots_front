@@ -1,5 +1,9 @@
+$verde: #2dd36f;
+$amarillo: #ffc409;
+$rojo: #eb445a;
+
 .header {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 
   h1 {
     margin: 0;
@@ -12,6 +16,191 @@
   }
 }
 
+.seccion {
+  margin: 28px 0 12px;
+  font-size: 1.15rem;
+}
+
+// ---------- Cronograma ----------
+.cronograma {
+  background: var(--ion-card-background, var(--ion-item-background, #fff));
+  border: 1px solid var(--ion-border-color, rgba(128, 128, 128, 0.25));
+  border-radius: 16px;
+  padding: 18px;
+  margin: 12px 0 8px;
+}
+
+.jornada-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+
+  .etiqueta {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ion-color-medium);
+  }
+
+  h2 {
+    margin: 2px 0;
+    font-size: 1.4rem;
+    color: var(--ion-color-primary);
+  }
+
+  .rango {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.en-vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: $verde;
+  font-weight: 600;
+
+  .punto {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $verde;
+    animation: pulso 1.6s infinite;
+  }
+}
+
+@keyframes pulso {
+  0% { box-shadow: 0 0 0 0 rgba(45, 211, 111, 0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(45, 211, 111, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(45, 211, 111, 0); }
+}
+
+.hoy {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+
+  &.cumplida {
+    background: rgba(45, 211, 111, 0.14);
+
+    .progreso { stroke: $verde; }
+  }
+}
+
+.anillo {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex: 0 0 auto;
+
+  circle {
+    fill: none;
+    stroke-width: 10;
+  }
+
+  .fondo { stroke: rgba(128, 128, 128, 0.25); }
+
+  .progreso {
+    stroke: var(--ion-color-primary);
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s ease;
+  }
+
+  .anillo-texto {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    strong { font-size: 1.6rem; }
+    span { font-size: 0.75rem; color: var(--ion-color-medium); }
+  }
+}
+
+.hoy-detalle {
+  flex: 1 1 220px;
+  min-width: 0;
+
+  h3 {
+    margin: 0 0 10px;
+    font-size: 1.05rem;
+  }
+}
+
+.fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+
+  span ion-icon { vertical-align: -2px; margin-right: 4px; }
+}
+
+.barra {
+  height: 8px;
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.25);
+  overflow: hidden;
+  margin-bottom: 10px;
+
+  div {
+    height: 100%;
+    border-radius: 8px;
+    background: var(--ion-color-primary);
+    transition: width 0.6s ease;
+  }
+
+  &.grande { height: 12px; }
+}
+
+// ---------- Días del feriado ----------
+.dias {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.dia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  border: 2px solid rgba(128, 128, 128, 0.25);
+  text-align: center;
+
+  .nombre { font-size: 0.75rem; color: var(--ion-color-medium); text-transform: uppercase; }
+  .numero { font-size: 1.4rem; font-weight: 700; line-height: 1.1; }
+  .cuenta { font-size: 0.85rem; font-weight: 600; }
+  .estado { font-size: 0.7rem; color: var(--ion-color-medium); }
+
+  &.cumplida { border-color: $verde; background: rgba(45, 211, 111, 0.12); .estado { color: $verde; } }
+  &.incompleta { border-color: $rojo; background: rgba(235, 68, 90, 0.1); .estado { color: $rojo; } }
+  &.hoy { border-color: var(--ion-color-primary); .estado { color: var(--ion-color-primary); font-weight: 700; } }
+  &.libre { opacity: 0.55; }
+  &.es-hoy { box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.25); }
+}
+
+.total-jornada .fila { margin-bottom: 6px; }
+
+.sin-cronograma {
+  border-radius: 12px;
+  margin: 12px 0;
+}
+
+// ---------- Tarjetas de encuestas ----------
 .tarjetas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -33,5 +222,21 @@
 
   p {
     color: var(--ion-color-medium);
+  }
+}
+
+.chip-hoy {
+  display: inline-block;
+  margin: 4px 0 8px;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(255, 196, 9, 0.2);
+  color: #b58900;
+
+  &.ok {
+    background: rgba(45, 211, 111, 0.2);
+    color: #1f9d54;
   }
 }

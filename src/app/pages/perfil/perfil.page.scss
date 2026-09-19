@@ -26,7 +26,7 @@
 }
 
 .profile-section {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -34,7 +34,7 @@
 
   h3 {
     margin: 0 0 15px 0;
-    color: #2c3e50;
+    color: var(--ots-text);
     font-size: 1.2em;
   }
 }

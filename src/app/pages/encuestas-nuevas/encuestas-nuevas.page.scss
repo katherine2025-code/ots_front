@@ -16,8 +16,8 @@
 }
 
 .option-card {
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: var(--ots-surface);
+  border: 2px solid var(--ots-border);
   border-radius: 10px;
   padding: 30px;
   text-align: center;

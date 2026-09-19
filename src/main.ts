@@ -81,7 +81,17 @@ import {
   createOutline,
   pencilOutline,
   pauseCircleOutline,
-  arrowForwardOutline
+  arrowForwardOutline,
+  cloudOfflineOutline,
+  locationOutline,
+  mapOutline,
+  arrowBack,
+  add,
+  trash,
+  closeCircle,
+  ellipseOutline,
+  moonOutline,
+  sunnyOutline
 } from 'ionicons/icons';
 
 // ==========================================
@@ -155,7 +165,17 @@ addIcons({
   createOutline,
   pencilOutline,
   pauseCircleOutline,
-  arrowForwardOutline
+  arrowForwardOutline,
+  cloudOfflineOutline,
+  locationOutline,
+  mapOutline,
+  arrowBack,
+  add,
+  trash,
+  closeCircle,
+  ellipseOutline,
+  moonOutline,
+  sunnyOutline
 });
 
 // ==========================================

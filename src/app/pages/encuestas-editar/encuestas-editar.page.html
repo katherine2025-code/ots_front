@@ -7,18 +7,21 @@
     </ion-buttons>
     <ion-title>Editar Encuesta #{{ encuestaId }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="guardarCambios()" color="light">
+      <ion-button (click)="guardarCambios()" color="light" [disabled]="guardando || !encuesta">
         <ion-icon name="save-outline"></ion-icon>
-        Guardar
+        {{ guardando ? 'Guardando...' : 'Guardar' }}
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="encuesta-form">
+  <p *ngIf="cargando">Cargando encuesta...</p>
+  <p *ngIf="errorCarga">{{ errorCarga }}</p>
+
+  <div class="encuesta-form" *ngIf="encuesta">
     <h2>Información General</h2>
-    
+
     <ion-item>
       <ion-label position="floating">Nombre de la Encuesta</ion-label>
       <ion-input [(ngModel)]="encuesta.nombre"></ion-input>
@@ -31,10 +34,7 @@
 
     <ion-item>
       <ion-label>Tipo</ion-label>
-      <ion-select [(ngModel)]="encuesta.tipo">
-        <ion-select-option value="turista">Turista</ion-select-option>
-        <ion-select-option value="hotel">Hotel</ion-select-option>
-      </ion-select>
+      <ion-note slot="end">{{ encuesta.tipo === 'turista' ? 'Turista' : 'Hotel' }}</ion-note>
     </ion-item>
 
     <ion-item>
@@ -47,7 +47,7 @@
     <!-- Secciones de preguntas -->
     <div class="preguntas-section">
       <div class="section-header">
-        <h2>Preguntas ({{ encuesta.preguntas?.length || 0 }})</h2>
+        <h2>Preguntas ({{ preguntas.length }})</h2>
         <ion-button (click)="agregarPregunta()" size="small">
           <ion-icon name="add"></ion-icon>
           Agregar
@@ -57,40 +57,64 @@
       <!-- Mostrar preguntas agrupadas por sección -->
       <div *ngFor="let seccion of obtenerSecciones()" class="seccion-card">
         <h3 class="seccion-titulo">{{ seccion }}</h3>
-        
+
         <div *ngFor="let pregunta of getPreguntasPorSeccion(seccion)" class="pregunta-item">
           <div class="pregunta-header">
-            <span class="codigo">{{ pregunta.codigo }}</span>
-            <span class="tipo">{{ pregunta.tipo }}</span>
+            <span class="codigo">{{ pregunta.codigo || 'nueva' }}</span>
             <span class="obligatoria" *ngIf="pregunta.obligatoria">*</span>
           </div>
-          
+
           <ion-item>
             <ion-label position="floating">Texto de la pregunta</ion-label>
             <ion-input [(ngModel)]="pregunta.texto"></ion-input>
           </ion-item>
-          
+
           <ion-item>
             <ion-label>Tipo de respuesta</ion-label>
             <ion-select [(ngModel)]="pregunta.tipo">
               <ion-select-option value="text">Texto</ion-select-option>
+              <ion-select-option value="email">Correo</ion-select-option>
               <ion-select-option value="number">Número</ion-select-option>
+              <ion-select-option value="date">Fecha</ion-select-option>
               <ion-select-option value="select">Selección</ion-select-option>
               <ion-select-option value="multiselect">Selección múltiple</ion-select-option>
               <ion-select-option value="escala">Escala</ion-select-option>
             </ion-select>
           </ion-item>
-          
+
           <ion-item>
             <ion-label>Obligatoria</ion-label>
             <ion-toggle [(ngModel)]="pregunta.obligatoria"></ion-toggle>
           </ion-item>
-          
-          <ion-button fill="outline" color="danger" (click)="eliminarPregunta(pregunta.id)">
+
+          <!-- Respuestas (opciones) editables -->
+          <div class="opciones-section" *ngIf="tieneOpciones(pregunta)">
+            <h4>Respuestas / Opciones</h4>
+            <div class="opcion-row" *ngFor="let opcion of pregunta.opciones; let i = index; trackBy: trackByIndex">
+              <ion-item>
+                <ion-input [ngModel]="pregunta.opciones![i]" (ngModelChange)="pregunta.opciones![i] = $event"
+                  placeholder="Texto de la respuesta"></ion-input>
+              </ion-item>
+              <ion-button fill="clear" color="danger" (click)="eliminarOpcion(pregunta, i)">
+                <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+            <ion-button fill="outline" size="small" (click)="agregarOpcion(pregunta)">
+              <ion-icon name="add" slot="start"></ion-icon>
+              Agregar respuesta
+            </ion-button>
+          </div>
+
+          <ion-button fill="outline" color="danger" (click)="eliminarPregunta(pregunta)">
             <ion-icon name="trash"></ion-icon>
             Eliminar
           </ion-button>
         </div>
+
+        <ion-button fill="outline" size="small" (click)="agregarPregunta(seccion)">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Agregar pregunta a esta sección
+        </ion-button>
       </div>
     </div>
   </div>

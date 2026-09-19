@@ -1,0 +1,180 @@
+<ion-content class="ion-padding">
+  <div class="page-header">
+    <div>
+      <h1>Cronograma de recolección</h1>
+      <p class="subtitle">Metas por encuestador y avance en tiempo real durante los feriados</p>
+    </div>
+    <ion-button (click)="abrirFormulario()" *ngIf="puedeEditar && !mostrarFormulario">
+      <ion-icon name="add-outline" slot="start"></ion-icon>
+      Nueva jornada
+    </ion-button>
+  </div>
+
+  <ion-item color="danger" lines="none" *ngIf="error">
+    <ion-label class="ion-text-wrap">{{ error }}</ion-label>
+  </ion-item>
+
+  <!-- ===== Nueva jornada ===== -->
+  <section class="formulario" *ngIf="puedeEditar && mostrarFormulario">
+    <h2>Nueva jornada de recolección</h2>
+    <div class="grid-form">
+      <ion-item>
+        <ion-select label="Feriado" label-placement="stacked" placeholder="Selecciona el feriado" [(ngModel)]="nueva.feriado" interface="popover">
+          <ion-select-option *ngFor="let f of feriados" [value]="f">{{ f }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Primer día" label-placement="stacked" type="date" [(ngModel)]="nueva.fecha_inicio"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-select label="Duración" label-placement="stacked" [(ngModel)]="nueva.dias" interface="popover">
+          <ion-select-option [value]="1">1 día</ion-select-option>
+          <ion-select-option [value]="2">2 días</ion-select-option>
+          <ion-select-option [value]="3">3 días</ion-select-option>
+          <ion-select-option [value]="4">4 días</ion-select-option>
+          <ion-select-option [value]="5">5 días</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Meta diaria: turísticas" label-placement="stacked" type="number" min="0" [(ngModel)]="nueva.meta_turista"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Meta diaria: alojamiento" label-placement="stacked" type="number" min="0" [(ngModel)]="nueva.meta_hotel"></ion-input>
+      </ion-item>
+    </div>
+
+    <ion-item class="selector-encuestadores">
+      <ion-select label="Encuestadores" label-placement="stacked" [multiple]="true" placeholder="Selecciona los encuestadores"
+        [(ngModel)]="nueva.encuestadores" interface="popover">
+        <ion-select-option *ngFor="let e of encuestadores" [value]="e.id">{{ e.nombre }}</ion-select-option>
+      </ion-select>
+      <ion-button slot="end" fill="clear" size="small" (click)="seleccionarTodos()">Todos</ion-button>
+    </ion-item>
+    <p class="ayuda" *ngIf="encuestadores.length === 0">No hay encuestadores activos. Créalos en Usuarios con el rol Encuestador.</p>
+
+    <div class="acciones">
+      <ion-button fill="outline" color="medium" (click)="mostrarFormulario = false">Cancelar</ion-button>
+      <ion-button (click)="crearJornada()"
+        [disabled]="guardando || !nueva.feriado || !nueva.fecha_inicio || nueva.encuestadores.length === 0">
+        {{ guardando ? 'Creando...' : 'Crear jornada' }}
+      </ion-button>
+    </div>
+  </section>
+
+  <!-- ===== Sin jornadas ===== -->
+  <div class="vacio" *ngIf="!cargando && jornadas.length === 0 && !(puedeEditar && mostrarFormulario)">
+    <ion-icon name="calendar-outline"></ion-icon>
+    <h3>Aún no hay jornadas de recolección</h3>
+    <p *ngIf="puedeEditar">Crea una jornada para el próximo feriado: eliges los días (1 a 5), los encuestadores y sus metas diarias.</p>
+    <p *ngIf="!puedeEditar">Cuando el administrador programe una jornada de recolección, la verás aquí.</p>
+    <ion-button (click)="abrirFormulario()" *ngIf="puedeEditar">Crear la primera jornada</ion-button>
+  </div>
+
+  <ng-container *ngIf="jornadas.length > 0">
+    <!-- Selector de jornada + estado en vivo -->
+    <div class="barra-superior">
+      <ion-item class="selector-jornada">
+        <ion-select label="Jornada" label-placement="stacked" [value]="jornadaId" (ionChange)="cambiarJornada($event.detail.value)" interface="popover">
+          <ion-select-option *ngFor="let j of jornadas" [value]="j.id">{{ etiquetaJornada(j) }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <div class="en-vivo">
+        <ion-toggle [(ngModel)]="autoRefresco" labelPlacement="start">En vivo</ion-toggle>
+        <span class="actualizado" *ngIf="avance">
+          <span class="punto" [class.apagado]="!autoRefresco"></span>
+          Actualizado hace {{ segundosDesdeActualizacion }} s
+        </span>
+        <ion-button fill="clear" size="small" (click)="cargarAvance(false)" title="Actualizar ahora">
+          <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <ng-container *ngIf="avance">
+      <!-- Indicadores -->
+      <div class="kpis">
+        <div class="kpi">
+          <span>Hoy</span>
+          <strong>{{ avance.totales.hechoHoy }} <small>/ {{ avance.totales.metaHoy }}</small></strong>
+          <div class="barra"><div [style.width.%]="porcentaje(avance.totales.hechoHoy, avance.totales.metaHoy)"></div></div>
+        </div>
+        <div class="kpi">
+          <span>Toda la jornada</span>
+          <strong>{{ avance.totales.hecho }} <small>/ {{ avance.totales.meta }}</small></strong>
+          <div class="barra"><div [style.width.%]="porcentaje(avance.totales.hecho, avance.totales.meta)"></div></div>
+        </div>
+        <div class="kpi">
+          <span>Encuestadores</span>
+          <strong>{{ avance.encuestadores.length }}</strong>
+          <small class="pie">{{ avance.jornada.feriado }}</small>
+        </div>
+      </div>
+
+      <!-- Matriz encuestador x día -->
+      <div class="tabla-contenedor">
+        <table class="matriz">
+          <thead>
+            <tr>
+              <th class="col-nombre">Encuestador</th>
+              <th *ngFor="let fecha of avance.dias" [class.hoy]="fecha === avance.hoy">
+                <span class="dia">{{ corto(fecha).dia }}</span>
+                <span class="num">{{ corto(fecha).num }}</span>
+              </th>
+              <th class="col-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let fila of avance.encuestadores">
+              <td class="col-nombre">
+                {{ fila.nombre }}
+                <span class="etiqueta-extra" *ngIf="fila.sinAsignar">sin asignar</span>
+              </td>
+              <td *ngFor="let fecha of avance.dias" class="celda" [ngClass]="estadoCelda(fila.dias[fecha], fecha)"
+                [class.hoy]="fecha === avance.hoy" [class.editable]="puedeEditar"
+                (click)="editarMeta(fila, fecha)" [title]="puedeEditar ? 'Clic para editar la meta' : ''">
+                <div class="linea" *ngIf="fila.dias[fecha].metaTurista > 0 || fila.dias[fecha].hechoTurista > 0">
+                  <ion-icon name="people-outline"></ion-icon> {{ fila.dias[fecha].hechoTurista }}/{{ fila.dias[fecha].metaTurista }}
+                </div>
+                <div class="linea" *ngIf="fila.dias[fecha].metaHotel > 0 || fila.dias[fecha].hechoHotel > 0">
+                  <ion-icon name="business-outline"></ion-icon> {{ fila.dias[fecha].hechoHotel }}/{{ fila.dias[fecha].metaHotel }}
+                </div>
+                <div class="linea libre-texto" *ngIf="fila.dias[fecha].metaTurista + fila.dias[fecha].metaHotel + fila.dias[fecha].hechoTurista + fila.dias[fecha].hechoHotel === 0">—</div>
+              </td>
+              <td class="col-total">
+                <strong>{{ fila.hechoTotal }}/{{ fila.metaTotal }}</strong>
+                <div class="barra"><div [style.width.%]="porcentaje(fila.hechoTotal, fila.metaTotal)"></div></div>
+              </td>
+            </tr>
+            <tr *ngIf="avance.encuestadores.length === 0">
+              <td [attr.colspan]="avance.dias.length + 2" class="ion-text-center">Esta jornada no tiene encuestadores asignados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="leyenda">
+        <span><i class="cumplida"></i> Meta cumplida</span>
+        <span><i class="hoy"></i> Hoy, en progreso</span>
+        <span><i class="incompleta"></i> Día pasado incompleto</span>
+        <span><i class="pendiente"></i> Pendiente</span>
+        <span class="icono-leyenda"><ion-icon name="people-outline"></ion-icon> Turísticas</span>
+        <span class="icono-leyenda"><ion-icon name="business-outline"></ion-icon> Alojamiento</span>
+      </div>
+
+      <p class="solo-lectura" *ngIf="!puedeEditar">
+        <ion-icon name="eye-outline"></ion-icon> Vista de solo lectura: las metas las administra el administrador.
+      </p>
+
+      <div class="acciones-jornada" *ngIf="puedeEditar">
+        <ion-button fill="outline" size="small" (click)="agregarEncuestador()">
+          <ion-icon name="person-add-outline" slot="start"></ion-icon> Agregar encuestador
+        </ion-button>
+        <ion-button fill="outline" size="small" color="danger" (click)="eliminarJornada()">
+          <ion-icon name="trash-outline" slot="start"></ion-icon> Eliminar jornada
+        </ion-button>
+      </div>
+    </ng-container>
+
+    <div class="cargando" *ngIf="!avance && !error"><ion-spinner name="crescent"></ion-spinner></div>
+  </ng-container>
+</ion-content>

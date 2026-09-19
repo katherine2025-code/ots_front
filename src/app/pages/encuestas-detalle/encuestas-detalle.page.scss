@@ -4,7 +4,7 @@
 }
 
 .encuesta-header {
-  background: white;
+  background: var(--ots-surface);
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 20px;
@@ -41,7 +41,7 @@
 }
 
 .seccion-card {
-  background: white;
+  background: var(--ots-surface);
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 20px;
@@ -59,7 +59,7 @@
 .pregunta-card {
   padding: 15px;
   border-left: 4px solid var(--ion-color-primary);
-  background: #f8f9fa;
+  background: var(--ots-surface-alt);
   border-radius: 5px;
   margin-bottom: 10px;
   
@@ -79,7 +79,7 @@
     }
     
     .tipo {
-      background: #e0e0e0;
+      background: var(--ots-border);
       padding: 3px 10px;
       border-radius: 5px;
       font-size: 12px;
@@ -95,13 +95,13 @@
   
   .texto {
     margin: 0;
-    color: #2c3e50;
+    color: var(--ots-text);
     font-size: 15px;
   }
 }
 
 .tabla-mintur {
-  background: white;
+  background: var(--ots-surface);
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 20px;
@@ -133,7 +133,7 @@
     
     tbody {
       tr:nth-child(even) {
-        background: #f8f9fa;
+        background: var(--ots-surface-alt);
       }
       
       input {

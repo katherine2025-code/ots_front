@@ -75,13 +75,13 @@
       margin: 0;
       font-size: 28px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--ots-text);
     }
 
     .subtitle {
       margin: 4px 0 0 0;
       font-size: 14px;
-      color: #6b7280;
+      color: var(--ots-text-muted);
     }
   }
 
@@ -93,7 +93,7 @@
 
       .user-name {
         font-weight: 600;
-        color: #1f2937;
+        color: var(--ots-text);
       }
 
       // ✅ ACTUALIZADO: Badges de rol con colores específicos
@@ -123,7 +123,7 @@
   align-items: center;
   justify-content: center;
   padding: 60px;
-  color: #6b7280;
+  color: var(--ots-text-muted);
 
   ion-spinner {
     width: 40px;
@@ -142,7 +142,7 @@
 }
 
 .kpi-card {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   padding: 24px;
   display: flex;
@@ -178,13 +178,13 @@
       margin: 0;
       font-size: 32px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--ots-text);
     }
 
     p {
       margin: 4px 0 8px 0;
       font-size: 14px;
-      color: #6b7280;
+      color: var(--ots-text-muted);
     }
 
     .kpi-trend {
@@ -230,7 +230,7 @@
 }
 
 .chart-card {
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -245,12 +245,12 @@
       margin: 0;
       font-size: 16px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--ots-text);
     }
 
     .btn-filter {
-      background: #f3f4f6;
-      border: 1px solid #e5e7eb;
+      background: var(--ots-surface-soft);
+      border: 1px solid var(--ots-border);
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 13px;
@@ -261,7 +261,7 @@
       transition: background 0.2s ease;
 
       &:hover {
-        background: #e5e7eb;
+        background: var(--ots-border);
       }
     }
   }
@@ -274,7 +274,7 @@
 // ✅ NUEVO: Lista de Predicciones Recientes
 .recent-predictions {
   margin-top: 20px;
-  background: white;
+  background: var(--ots-surface);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -283,23 +283,23 @@
     margin: 0 0 16px 0;
     font-size: 16px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--ots-text);
   }
 
   ion-item {
     --background: transparent;
-    --border-color: #e5e7eb;
+    --border-color: var(--ots-border);
 
     h2 {
       font-size: 15px;
       font-weight: 600;
-      color: #1f2937;
+      color: var(--ots-text);
       margin-bottom: 4px;
     }
 
     p {
       font-size: 13px;
-      color: #6b7280;
+      color: var(--ots-text-muted);
       margin: 0;
     }
   }
@@ -512,4 +512,183 @@ ion-content {
   --padding-end: 0;
   --padding-top: 0;
   --padding-bottom: 0;
+}
+// ============================================
+// Jornada de recolección + mapa de lugares
+// ============================================
+.jornada-card,
+.mapa-card {
+  background: var(--ots-surface);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+
+  .etiqueta {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ots-text-muted);
+  }
+
+  h3 {
+    margin: 2px 0 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ots-text);
+  }
+
+  h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ots-text);
+  }
+
+  .barra {
+    height: 8px;
+    border-radius: 8px;
+    background: rgba(128, 128, 128, 0.25);
+    overflow: hidden;
+
+    div {
+      height: 100%;
+      border-radius: 8px;
+      background: var(--ion-color-primary);
+      transition: width 0.6s ease;
+    }
+  }
+}
+
+.jornada-cabecera,
+.mapa-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.estado-jornada {
+  margin-left: 8px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+  background: rgba(128, 128, 128, 0.2);
+  color: var(--ots-text-muted);
+
+  &.en_curso { background: rgba(45, 211, 111, 0.2); color: #1f9d54; }
+  &.programada { background: rgba(255, 196, 9, 0.2); color: #b58900; }
+}
+
+.ver-cronograma {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}
+
+.jornada-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+
+  .jkpi {
+    border: 1px solid var(--ots-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+
+    span { font-size: 12px; color: var(--ots-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    strong { display: block; font-size: 26px; margin: 2px 0 8px; color: var(--ots-text); small { font-size: 14px; color: var(--ots-text-muted); font-weight: 500; } }
+    .pie { color: var(--ots-text-muted); }
+  }
+}
+
+.top-encuestadores {
+  .fila-encuestador {
+    display: grid;
+    grid-template-columns: minmax(110px, 200px) 1fr 70px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 14px;
+
+    .nombre { color: var(--ots-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cuenta { text-align: right; color: var(--ots-text-muted); font-variant-numeric: tabular-nums; }
+  }
+}
+
+.jornada-vacia {
+  margin: 0;
+  color: var(--ots-text-muted);
+
+  a { color: var(--ion-color-primary); font-weight: 600; margin-left: 6px; cursor: pointer; }
+}
+
+.mapa-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+  gap: 20px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.selector-feriado {
+  min-width: 220px;
+  max-width: 320px;
+  border: 1px solid var(--ots-border);
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+.ranking {
+  ol { list-style: none; margin: 0; padding: 0; }
+
+  li {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .pos {
+    flex: 0 0 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .datos { flex: 1; min-width: 0; }
+
+  .linea {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: var(--ots-text);
+
+    span { color: var(--ots-text-muted); white-space: nowrap; }
+  }
+
+  .base, .nota, .sin-datos { font-size: 12px; color: var(--ots-text-muted); margin: 0 0 10px; }
+  .sin-datos { font-size: 13px; line-height: 1.45; }
 }

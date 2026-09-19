@@ -12,6 +12,22 @@
     </div>
   </div>
 
+  <!-- Clasificación por cantón -->
+  <ion-segment [value]="filtro" (ionChange)="cambiarFiltro($event.detail.value)" scrollable="true" class="filtro-canton">
+    <ion-segment-button value="todos">
+      <ion-label>Todos ({{ contar('todos') }})</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="Santa Elena">
+      <ion-label>Santa Elena ({{ contar('Santa Elena') }})</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="Salinas">
+      <ion-label>Salinas ({{ contar('Salinas') }})</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="sin" *ngIf="contar('sin') > 0">
+      <ion-label>Sin clasificar ({{ contar('sin') }})</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
   <!-- Estado de carga -->
   <div *ngIf="loading" class="loading-state">
     <ion-spinner name="crescent"></ion-spinner>
@@ -21,7 +37,7 @@
   <!-- Lista de hoteles -->
   <div class="hoteles-grid" *ngIf="!loading">
     <!-- Grid de tarjetas -->
-    <ion-card *ngFor="let hotel of hoteles" class="hotel-card" [routerLink]="['/hoteles', hotel.id_hotel]">
+    <ion-card *ngFor="let hotel of hotelesFiltrados" class="hotel-card" [routerLink]="['/hoteles', hotel.id_hotel]">
       <ion-card-header>
         <ion-card-title>
           <ion-icon name="business-outline" class="hotel-icon"></ion-icon>
@@ -38,6 +54,10 @@
         <p class="direccion">
           <ion-icon name="location-outline"></ion-icon>
           {{ hotel.direccion || 'Dirección no registrada' }}
+        </p>
+        <p class="direccion">
+          <ion-icon name="map-outline"></ion-icon>
+          {{ hotel.parroquia || 'Parroquia no registrada' }} · Cantón {{ hotel.canton || 'sin clasificar' }}
         </p>
 
         <div class="hotel-stats">
@@ -58,10 +78,10 @@
     </ion-card>
 
     <!-- Mensaje cuando no hay hoteles -->
-    <div *ngIf="hoteles.length === 0" class="empty-state">
+    <div *ngIf="hotelesFiltrados.length === 0" class="empty-state">
       <ion-icon name="business-outline" class="empty-icon"></ion-icon>
-      <h3>No hay hoteles registrados</h3>
-      <p>Comienza agregando un nuevo hotel al sistema</p>
+      <h3>{{ hoteles.length === 0 ? 'No hay hoteles registrados' : 'No hay hoteles en esta clasificación' }}</h3>
+      <p *ngIf="hoteles.length === 0">Comienza agregando un nuevo hotel al sistema</p>
     </div>
   </div>
 </ion-content>

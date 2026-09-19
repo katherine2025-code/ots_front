@@ -1,14 +1,19 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { HotelService } from 'src/app/core/services/hotel.service';
 import { PrediccionService } from 'src/app/core/services/prediccion.service';
 import { OcupacionService } from 'src/app/core/services/ocupacion.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ChartOcupacionComponent } from 'src/app/shared/components/chart-ocupacion/chart-ocupacion.component';
+import { MapaLugaresComponent } from 'src/app/shared/components/mapa-lugares/mapa-lugares.component';
+import { CronogramaService, AvanceJornada, FilaEncuestador } from 'src/app/core/services/cronograma.service';
+import { GrupoLugares, LugarVisita, LugaresService, MapaLugares } from 'src/app/core/services/lugares.service';
+
+const GRUPO_VACIO: GrupoLugares = { encuestas: 0, lugares: [] };
 
 Chart.register(...registerables);
 
@@ -22,10 +27,12 @@ Chart.register(...registerables);
     FormsModule,
     IonicModule,
     // ❌ ELIMINAR SidebarComponent - ya está en app.component.ts
-    ChartOcupacionComponent
+    ChartOcupacionComponent,
+    MapaLugaresComponent,
+    RouterLink
   ]
 })
-export class DashboardPage implements OnInit, AfterViewInit {
+export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chartTemporada') chartTemporadaRef!: ElementRef;
   @ViewChild('chartPredicciones') chartPrediccionesRef!: ElementRef;
   @ViewChild('chartParroquia') chartParroquiaRef!: ElementRef;
@@ -46,6 +53,23 @@ export class DashboardPage implements OnInit, AfterViewInit {
   prediccionesRecientes: any[] = [];
   loading = true;
 
+  // ===== Jornada de recolección en curso (resumen) =====
+  resumenJornada: AvanceJornada | null = null;
+  topEncuestadores: FilaEncuestador[] = [];
+  jornadaCargada = false;
+
+  // ===== Mapa: lugares más visitados por feriado =====
+  mapaLugares: MapaLugares | null = null;
+  seleccionMapa = 'todos';
+  // Se calculan UNA vez al cargar datos o cambiar la selección. No deben ser getters: un getter que
+  // devuelve objetos nuevos en cada revisión hace que Angular recree el DOM sin fin (la página se congela).
+  opcionesMapa: { valor: string; etiqueta: string }[] = [];
+  grupoMapa: GrupoLugares = GRUPO_VACIO;
+  rankingLugares: LugarVisita[] = [];
+  lugaresSinUbicar = 0;
+  private seleccionMapaInicial = true;
+  private temporizadorEnVivo?: ReturnType<typeof setInterval>;
+
   private chartTemporada: Chart | undefined;
   private chartPredicciones: Chart | undefined;
   private chartParroquia: Chart | undefined;
@@ -55,7 +79,9 @@ export class DashboardPage implements OnInit, AfterViewInit {
     private prediccionService: PrediccionService,
     private ocupacionService: OcupacionService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cronogramaService: CronogramaService,
+    private lugaresService: LugaresService
   ) { }
 
   ngOnInit() {
@@ -68,6 +94,105 @@ export class DashboardPage implements OnInit, AfterViewInit {
 
     this.cargarDashboard();
   }
+
+  // Al entrar al dashboard se cargan (y se refrescan cada 30 s) la jornada en curso y el mapa
+  ionViewWillEnter() {
+    this.cargarJornada();
+    this.cargarMapa();
+    this.detenerEnVivo();
+    this.temporizadorEnVivo = setInterval(() => { this.cargarJornada(); this.cargarMapa(); }, 30000);
+  }
+
+  ionViewWillLeave() {
+    this.detenerEnVivo();
+  }
+
+  ngOnDestroy() {
+    this.detenerEnVivo();
+  }
+
+  private detenerEnVivo() {
+    if (this.temporizadorEnVivo) {
+      clearInterval(this.temporizadorEnVivo);
+      this.temporizadorEnVivo = undefined;
+    }
+  }
+
+  // ---------- Jornada de recolección ----------
+
+  cargarJornada() {
+    this.cronogramaService.getResumen().subscribe({
+      next: (r) => {
+        this.resumenJornada = r.jornada ? (r as AvanceJornada) : null;
+        this.topEncuestadores = (this.resumenJornada?.encuestadores || []).slice(0, 5);
+        this.jornadaCargada = true;
+      },
+      error: () => { this.jornadaCargada = true; }
+    });
+  }
+
+  porcentaje(hecho: number, meta: number): number {
+    return meta > 0 ? Math.min(100, Math.round((hecho / meta) * 100)) : 0;
+  }
+
+  get estadoJornada(): string {
+    switch (this.resumenJornada?.estado) {
+      case 'en_curso': return 'En curso';
+      case 'programada': return 'Programada';
+      default: return 'Finalizada';
+    }
+  }
+
+  // ---------- Mapa de lugares ----------
+
+  cargarMapa() {
+    this.lugaresService.getMapa().subscribe({
+      next: (m) => {
+        this.mapaLugares = m;
+        this.actualizarOpcionesMapa(m);
+        if (this.seleccionMapaInicial) {
+          this.seleccionMapaInicial = false;
+          // Por defecto: el feriado más reciente que ya tenga datos; si no hay, todos
+          const reciente = m.jornadas.find(j => j.encuestas > 0);
+          this.seleccionMapa = reciente ? 'j-' + reciente.id : 'todos';
+        }
+        this.actualizarVistaMapa();
+      },
+      error: () => { /* el resto del dashboard sigue funcionando */ }
+    });
+  }
+
+  cambiarSeleccionMapa(valor: string) {
+    this.seleccionMapa = valor;
+    this.actualizarVistaMapa();
+  }
+
+  // Solo reemplaza la lista si cambió, para no recrear las opciones del selector en cada refresco
+  private actualizarOpcionesMapa(m: MapaLugares) {
+    const nuevas = [
+      { valor: 'todos', etiqueta: 'Todos los feriados' },
+      ...m.jornadas.map(j => ({ valor: 'j-' + j.id, etiqueta: j.feriado + ' ' + j.anio })),
+      ...(m.fueraDeJornada.encuestas > 0 ? [{ valor: 'fuera', etiqueta: 'Fuera de una jornada' }] : [])
+    ];
+    if (JSON.stringify(nuevas) !== JSON.stringify(this.opcionesMapa)) this.opcionesMapa = nuevas;
+  }
+
+  private actualizarVistaMapa() {
+    const m = this.mapaLugares;
+    let grupo: GrupoLugares = GRUPO_VACIO;
+    if (m) {
+      if (this.seleccionMapa === 'fuera') grupo = m.fueraDeJornada;
+      else if (this.seleccionMapa.startsWith('j-')) grupo = m.jornadas.find(j => 'j-' + j.id === this.seleccionMapa) || m.todos;
+      else grupo = m.todos;
+    }
+    this.grupoMapa = grupo;
+    this.rankingLugares = grupo.lugares.slice(0, 8);
+    this.lugaresSinUbicar = grupo.lugares.filter(l => l.lat === null || l.lng === null).length;
+  }
+
+  trackPorValor(_: number, o: { valor: string }) { return o.valor; }
+  trackPorNombre(_: number, l: { nombre: string }) { return l.nombre; }
+  trackPorId(_: number, e: { id: number }) { return e.id; }
 
   ngAfterViewInit() {
     setTimeout(() => {

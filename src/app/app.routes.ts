@@ -30,6 +30,11 @@ export const routes: Routes = [
     canActivate: [encuestadorGuard]
   },
   {
+    path: 'cronograma',
+    loadComponent: () => import('./pages/cronograma/cronograma.page').then(m => m.CronogramaPage),
+    canActivate: [authGuard, adminOInvestigadorGuard]  // Admin controla; Investigador solo lectura
+  },
+  {
     path: 'hoteles',
     loadComponent: () => import('./pages/hoteles/lista/hoteles-lista.page').then(m => m.HotelesListaPage),
     canActivate: [authGuard]
@@ -84,23 +89,18 @@ export const routes: Routes = [
   // ==========================================
   {
     path: 'encuestas',
-    loadComponent: () => import('./pages/encuestas/encuestas.page').then(m => m.EncuestasPage)
-  },
-  {
-    path: 'encuestas/nueva',
-    loadComponent: () => import('./pages/encuestas-nuevas/encuestas-nuevas.page').then(m => m.EncuestasNuevaPage)
+    loadComponent: () => import('./pages/encuestas/encuestas.page').then(m => m.EncuestasPage),
+    canActivate: [authGuard]
   },
   {
     path: 'encuestas/detalle/:id',
-    loadComponent: () => import('./pages/encuestas-detalle/encuestas-detalle.page').then(m => m.EncuestasDetallePage)
+    loadComponent: () => import('./pages/encuestas-detalle/encuestas-detalle.page').then(m => m.EncuestasDetallePage),
+    canActivate: [authGuard]
   },
   {
     path: 'encuestas/editar/:id',
-    loadComponent: () => import('./pages/encuestas-editar/encuestas-editar.page').then(m => m.EncuestasEditarPage)
-  },
-  {
-    path: 'encuestas/editor',
-    loadComponent: () => import('./pages/encuestas-editor/encuestas-editor.page').then(m => m.EncuestasEditorPage)
+    loadComponent: () => import('./pages/encuestas-editar/encuestas-editar.page').then(m => m.EncuestasEditarPage),
+    canActivate: [adminGuard]  // Solo super_admin y admin pueden editar preguntas/respuestas
   },
   {
     path: 'responder-encuesta/:tipo',
