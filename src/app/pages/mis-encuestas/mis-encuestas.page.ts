@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { RespuestaService } from 'src/app/core/services/respuesta.service';
 import { CronogramaService, DiaMiCronograma, MiCronograma } from 'src/app/core/services/cronograma.service';
+import { EncuestaService, TipoEncuesta } from 'src/app/core/services/encuesta.service';
 
 const DIAS_SEMANA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -27,6 +28,10 @@ export class MisEncuestasPage implements OnInit, OnDestroy {
   errorCronograma = '';
   private temporizador?: ReturnType<typeof setInterval>;
 
+  // Fecha (por tipo) en que el cuestionario quedó guardado en este dispositivo, para trabajar
+  // sin conexión en el campo. null = ese cuestionario todavía no se ha descargado nunca aquí.
+  cacheCuestionarios: Record<TipoEncuesta, string | null> = { turista: null, hotel: null };
+
   encuestas = [
     {
       tipo: 'turista' as const,
@@ -46,7 +51,8 @@ export class MisEncuestasPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private respuestaService: RespuestaService,
-    private cronogramaService: CronogramaService
+    private cronogramaService: CronogramaService,
+    private encuestaService: EncuestaService
   ) { }
 
   ngOnInit() {
@@ -61,12 +67,25 @@ export class MisEncuestasPage implements OnInit, OnDestroy {
     this.cargarCronograma();
     this.temporizador = setInterval(() => this.cargarCronograma(), REFRESCO_MS);
 
+    // Se descargan los dos cuestionarios (si hay señal) para poder responder encuestas más
+    // tarde aunque en ese momento no haya conexión; se actualiza el indicador al terminar.
+    this.actualizarCacheCuestionarios();
+    this.encuestaService.precargarCuestionarios().then(() => this.actualizarCacheCuestionarios());
+
     this.pendientes = this.respuestaService.totalPendientes();
     if (this.pendientes > 0) {
       await this.respuestaService.sincronizarPendientes();
       this.pendientes = this.respuestaService.totalPendientes();
       this.cargarCronograma();
     }
+  }
+
+  private actualizarCacheCuestionarios() {
+    this.cacheCuestionarios = this.encuestaService.estadoCache();
+  }
+
+  get listoSinConexion(): boolean {
+    return !!(this.cacheCuestionarios.turista && this.cacheCuestionarios.hotel);
   }
 
   ionViewWillLeave() {

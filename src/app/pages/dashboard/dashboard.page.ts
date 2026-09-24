@@ -12,6 +12,7 @@ import { ChartOcupacionComponent } from 'src/app/shared/components/chart-ocupaci
 import { MapaLugaresComponent } from 'src/app/shared/components/mapa-lugares/mapa-lugares.component';
 import { CronogramaService, AvanceJornada, FilaEncuestador } from 'src/app/core/services/cronograma.service';
 import { GrupoLugares, LugarVisita, LugaresService, MapaLugares } from 'src/app/core/services/lugares.service';
+import { DashboardService } from 'src/app/core/services/dashboard.service';
 
 const GRUPO_VACIO: GrupoLugares = { encuestas: 0, lugares: [] };
 
@@ -74,6 +75,12 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   private chartPredicciones: Chart | undefined;
   private chartParroquia: Chart | undefined;
 
+  // true mientras no hay ningún dato real que graficar (se muestra un aviso en vez del canvas,
+  // en vez de dibujar un gráfico vacío o con números inventados)
+  sinDatosTemporada = false;
+  sinDatosParroquia = false;
+  sinDatosPredicciones = false;
+
   constructor(
     private hotelService: HotelService,
     private prediccionService: PrediccionService,
@@ -81,7 +88,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private cronogramaService: CronogramaService,
-    private lugaresService: LugaresService
+    private lugaresService: LugaresService,
+    private dashboardService: DashboardService
   ) { }
 
   ngOnInit() {
@@ -153,8 +161,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         if (this.seleccionMapaInicial) {
           this.seleccionMapaInicial = false;
           // Por defecto: el feriado más reciente que ya tenga datos; si no hay, todos
-          const reciente = m.jornadas.find(j => j.encuestas > 0);
-          this.seleccionMapa = reciente ? 'j-' + reciente.id : 'todos';
+          const reciente = [...m.feriados].reverse().find(f => f.encuestas > 0);
+          this.seleccionMapa = reciente ? 'f-' + reciente.feriado : 'todos';
         }
         this.actualizarVistaMapa();
       },
@@ -171,8 +179,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   private actualizarOpcionesMapa(m: MapaLugares) {
     const nuevas = [
       { valor: 'todos', etiqueta: 'Todos los feriados' },
-      ...m.jornadas.map(j => ({ valor: 'j-' + j.id, etiqueta: j.feriado + ' ' + j.anio })),
-      ...(m.fueraDeJornada.encuestas > 0 ? [{ valor: 'fuera', etiqueta: 'Fuera de una jornada' }] : [])
+      ...m.feriados.map(f => ({ valor: 'f-' + f.feriado, etiqueta: `${f.feriado} (${f.encuestas})` })),
+      ...(m.sinFeriado.encuestas > 0 ? [{ valor: 'sin', etiqueta: `Sin feriado asignado (${m.sinFeriado.encuestas})` }] : [])
     ];
     if (JSON.stringify(nuevas) !== JSON.stringify(this.opcionesMapa)) this.opcionesMapa = nuevas;
   }
@@ -181,9 +189,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     const m = this.mapaLugares;
     let grupo: GrupoLugares = GRUPO_VACIO;
     if (m) {
-      if (this.seleccionMapa === 'fuera') grupo = m.fueraDeJornada;
-      else if (this.seleccionMapa.startsWith('j-')) grupo = m.jornadas.find(j => 'j-' + j.id === this.seleccionMapa) || m.todos;
-      else grupo = m.todos;
+      if (this.seleccionMapa === 'sin') grupo = m.sinFeriado;
+      else if (this.seleccionMapa.startsWith('f-')) {
+        grupo = m.feriados.find(f => 'f-' + f.feriado === this.seleccionMapa) || m.todos;
+      } else grupo = m.todos;
     }
     this.grupoMapa = grupo;
     this.rankingLugares = grupo.lugares.slice(0, 8);
@@ -195,10 +204,11 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   trackPorId(_: number, e: { id: number }) { return e.id; }
 
   ngAfterViewInit() {
+    // El setTimeout da tiempo a que los <canvas> existan en el DOM (aparecen detrás de *ngIf="!loading").
     setTimeout(() => {
-      this.crearGraficoTemporada();
-      this.crearGraficoPredicciones();
-      this.crearGraficoParroquia();
+      this.cargarGraficoTemporada();
+      this.cargarGraficoPredicciones();
+      this.cargarGraficoParroquia();
     }, 500);
   }
 
@@ -245,104 +255,98 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  crearGraficoTemporada() {
-    if (!this.chartTemporadaRef) return;
+  // Distribución de la ocupación real por temporada (Alta/Media, según el feriado de cada
+  // registro - ver dashboardService.js). Sin registros con capacidad conocida, no hay nada que
+  // graficar: se muestra un aviso en vez de un donut vacío o con números inventados.
+  cargarGraficoTemporada() {
+    this.dashboardService.getOcupacionPorTemporada().subscribe({
+      next: (datos) => {
+        this.sinDatosTemporada = datos.length === 0;
+        if (this.sinDatosTemporada || !this.chartTemporadaRef) return;
 
-    const ctx = this.chartTemporadaRef.nativeElement.getContext('2d');
-
-    if (this.chartTemporada) {
-      this.chartTemporada.destroy();
-    }
-
-    this.chartTemporada = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Alta', 'Media', 'Baja'],
-        datasets: [{
-          data: [45, 30, 25],
-          backgroundColor: ['#667eea', '#10b981', '#f59e0b'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom'
-          }
-        }
-      }
-    });
-  }
-
-  crearGraficoPredicciones() {
-    if (!this.chartPrediccionesRef) return;
-
-    const ctx = this.chartPrediccionesRef.nativeElement.getContext('2d');
-
-    if (this.chartPredicciones) {
-      this.chartPredicciones.destroy();
-    }
-
-    this.chartPredicciones = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-        datasets: [
-          {
-            label: 'Predicho',
-            data: [75, 82, 78, 85, 90, 88],
-            backgroundColor: '#667eea'
+        const colores: Record<string, string> = { Alta: '#667eea', Media: '#10b981', Baja: '#f59e0b' };
+        const ctx = this.chartTemporadaRef.nativeElement.getContext('2d');
+        this.chartTemporada?.destroy();
+        this.chartTemporada = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: datos.map(d => `${d.temporada} (${d.registros})`),
+            datasets: [{
+              data: datos.map(d => parseFloat(d.promedio)),
+              backgroundColor: datos.map(d => colores[d.temporada] || '#94a3b8'),
+              borderWidth: 0
+            }]
           },
-          {
-            label: 'Real',
-            data: [73, 80, 76, 83, 88, 86],
-            backgroundColor: '#10b981'
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
           }
-        ]
+        });
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'top'
-          }
-        }
-      }
+      error: () => { this.sinDatosTemporada = true; }
     });
   }
 
-  crearGraficoParroquia() {
-    if (!this.chartParroquiaRef) return;
+  // Ocupación predicha vs. real por mes: solo predicciones ya validadas contra un dato real.
+  // Mientras el modelo no tenga predicciones validadas, este gráfico queda honestamente vacío
+  // (con un aviso) en vez de mostrar una comparación inventada.
+  cargarGraficoPredicciones() {
+    this.dashboardService.getPredichoVsReal().subscribe({
+      next: (datos) => {
+        this.sinDatosPredicciones = datos.length === 0;
+        if (this.sinDatosPredicciones || !this.chartPrediccionesRef) return;
 
-    const ctx = this.chartParroquiaRef.nativeElement.getContext('2d');
-
-    if (this.chartParroquia) {
-      this.chartParroquia.destroy();
-    }
-
-    this.chartParroquia = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Santa Elena', 'La Libertad', 'Salinas', 'Ancon', 'Manglaralto'],
-        datasets: [{
-          label: 'Ocupación %',
-          data: [85, 78, 92, 70, 65],
-          backgroundColor: '#667eea'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          legend: {
-            display: false
+        const ctx = this.chartPrediccionesRef.nativeElement.getContext('2d');
+        this.chartPredicciones?.destroy();
+        this.chartPredicciones = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: datos.map(d => d.mes),
+            datasets: [
+              { label: 'Predicho', data: datos.map(d => d.predicho), backgroundColor: '#667eea' },
+              { label: 'Real', data: datos.map(d => d.real), backgroundColor: '#10b981' }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top' } }
           }
-        }
-      }
+        });
+      },
+      error: () => { this.sinDatosPredicciones = true; }
+    });
+  }
+
+  // Ocupación real promedio por parroquia (de los hoteles con registros de ocupación).
+  cargarGraficoParroquia() {
+    this.dashboardService.getOcupacionPorParroquia().subscribe({
+      next: (datos) => {
+        this.sinDatosParroquia = datos.length === 0;
+        if (this.sinDatosParroquia || !this.chartParroquiaRef) return;
+
+        const ctx = this.chartParroquiaRef.nativeElement.getContext('2d');
+        this.chartParroquia?.destroy();
+        this.chartParroquia = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: datos.map(d => d.parroquia),
+            datasets: [{
+              label: 'Ocupación % (promedio)',
+              data: datos.map(d => parseFloat(d.promedio)),
+              backgroundColor: '#667eea'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { display: false } }
+          }
+        });
+      },
+      error: () => { this.sinDatosParroquia = true; }
     });
   }
 

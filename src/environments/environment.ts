@@ -7,6 +7,11 @@ import { Version } from "@angular/core";
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000/api',
+  // Usada solo dentro de la app nativa (APK/Capacitor): ahí 'localhost' sería el propio celular,
+  // así que se necesita la IP de la máquina que corre el backend en la red local. Cambia esto si
+  // la IP de esa máquina cambia (revisar con `ipconfig`) o si el backend pasa a tener un dominio
+  // público. El celular debe estar en la MISMA red WiFi que esta máquina.
+  apiUrlNative: 'http://192.168.110.193:3000/api',
   version: '1.0.0',
   // Para desarrollo
   debug: true,

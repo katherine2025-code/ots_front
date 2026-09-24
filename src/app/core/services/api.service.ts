@@ -2,13 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { Capacitor } from '@capacitor/core';
 import { StorageService } from './storage.service';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:3000/api';
+  // Dentro de la app nativa (APK) no hay "mismo origen" que servir: 'localhost' apuntaría al
+  // propio celular, no al servidor. Ahí se usa siempre una URL absoluta (environment.apiUrlNative);
+  // en el navegador se usa environment.apiUrl (relativa en producción, localhost en desarrollo).
+  private baseUrl = Capacitor.isNativePlatform() ? environment.apiUrlNative : environment.apiUrl;
 
   constructor(
     private http: HttpClient,

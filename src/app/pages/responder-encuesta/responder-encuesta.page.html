@@ -28,6 +28,15 @@
   <p *ngIf="cargando">Cargando preguntas...</p>
   <p *ngIf="errorCarga" class="error-carga">{{ errorCarga }}</p>
 
+  <ion-item color="warning" lines="none" *ngIf="cuestionarioSinConexionDesde" class="aviso-offline">
+    <ion-icon name="cloud-offline-outline" slot="start"></ion-icon>
+    <ion-label class="ion-text-wrap">
+      Sin conexión: mostrando el cuestionario guardado en este dispositivo el
+      {{ cuestionarioSinConexionDesde | date:'dd/MM/yyyy HH:mm' }}. Si el administrador lo editó
+      después de esa fecha, esos cambios no se ven hasta que vuelvas a tener señal.
+    </ion-label>
+  </ion-item>
+
   <form #formulario="ngForm" *ngIf="!cargando && !errorCarga">
 
     <!-- Secciones de preguntas -->

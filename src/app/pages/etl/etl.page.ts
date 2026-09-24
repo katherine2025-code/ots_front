@@ -243,7 +243,12 @@ export class EtlPage implements OnInit, OnDestroy {
         ? `\n\nInconsistencias detectadas:\n- ${advertencias.join('\n- ')}`
         : '';
 
-      if (exitosos > 0 && errores === 0) {
+      const total = this.resultadoCarga.total || 0;
+
+      if (exitosos === 0 && errores === 0 && total > 0) {
+        // Nada falló: todas las filas ya estaban cargadas (el ETL las reconoce por su _uuid de Kobo)
+        alert(` Sin cambios: este archivo ya estaba cargado\n\n Filas en el archivo: ${total}\n Insertadas: 0 (ninguna duplicada)${notaAdvertencias}`);
+      } else if (exitosos > 0 && errores === 0) {
         alert(` Proceso completado exitosamente\n\n Registros insertados: ${exitosos}\n Errores: ${errores}${notaAdvertencias}`);
       } else if (exitosos > 0 && errores > 0) {
         alert(` Proceso completado con errores\n\n Exitosos: ${exitosos}\n Errores: ${errores}${notaAdvertencias}`);

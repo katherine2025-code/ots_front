@@ -16,17 +16,16 @@ export interface GrupoLugares {
   lugares: LugarVisita[];
 }
 
-export interface JornadaLugares extends GrupoLugares {
-  id: number;
+export interface FeriadoLugares extends GrupoLugares {
   feriado: string;
-  anio: string;
-  fechaInicio: string;
-  fechaFin: string;
 }
 
 export interface MapaLugares {
-  jornadas: JornadaLugares[];
-  fueraDeJornada: GrupoLugares;
+  // Los 7 feriados del calendario oficial, siempre en este orden, cada uno con su análisis real
+  // (0 encuestas si todavía no se ha recolectado nada para ese feriado - ver ocupación por feriado).
+  feriados: FeriadoLugares[];
+  // Encuestas cuya fecha no cae dentro del margen de ningún feriado oficial.
+  sinFeriado: GrupoLugares;
   todos: GrupoLugares;
   lugaresSinCoordenadas: string[];
 }

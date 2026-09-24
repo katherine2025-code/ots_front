@@ -22,6 +22,9 @@ export class ResponderEncuestaPage implements OnInit {
   private tipoCargado?: TipoEncuesta;
   cargando: boolean = false;
   errorCarga: string = '';
+  // Cuando el cuestionario se sirvió desde la copia guardada en el dispositivo (sin conexión),
+  // aquí queda la fecha en que se guardó esa copia, para avisarle al encuestador.
+  cuestionarioSinConexionDesde: string | null = null;
   guardando: boolean = false;
   exportando: boolean = false;
 
@@ -57,6 +60,7 @@ export class ResponderEncuestaPage implements OnInit {
     this.encuestaService.getEncuestaPorTipo(this.tipoEncuesta).subscribe({
       next: (encuesta) => {
         this.preguntas = encuesta.preguntas || [];
+        this.cuestionarioSinConexionDesde = encuesta._cacheadoEl || null;
         this.cargando = false;
       },
       error: (err) => {

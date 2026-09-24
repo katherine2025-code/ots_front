@@ -3,6 +3,27 @@
     display: block;
 }
 
+.filtro-feriado {
+    margin-bottom: 16px;
+
+    ion-item {
+        --background: var(--ots-surface);
+        border-radius: 10px;
+        max-width: 320px;
+    }
+
+    .sin-jornadas {
+        color: var(--ots-text-muted);
+        font-size: 14px;
+        max-width: 560px;
+
+        a {
+            color: var(--ion-color-primary);
+            font-weight: 600;
+        }
+    }
+}
+
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -127,6 +148,13 @@
             }
         }
     }
+}
+
+.ocupacion-value.sin-datos {
+    display: inline-block;
+    font-weight: 500;
+    font-style: italic;
+    color: var(--ots-text-muted);
 }
 
 .ocupacion-cell {

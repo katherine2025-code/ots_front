@@ -201,7 +201,34 @@
           <h3>Distribución por Temporada</h3>
         </div>
         <div class="chart-container">
-          <canvas #chartTemporada></canvas>
+          <canvas #chartTemporada [hidden]="sinDatosTemporada"></canvas>
+          <p class="sin-datos-chart" *ngIf="sinDatosTemporada">
+            Aún no hay registros de ocupación con capacidad conocida para calcular esto.
+          </p>
+        </div>
+      </div>
+
+      <div class="chart-card chart-small">
+        <div class="chart-header">
+          <h3>Ocupación Promedio por Parroquia</h3>
+        </div>
+        <div class="chart-container">
+          <canvas #chartParroquia [hidden]="sinDatosParroquia"></canvas>
+          <p class="sin-datos-chart" *ngIf="sinDatosParroquia">
+            Aún no hay registros de ocupación para calcular esto.
+          </p>
+        </div>
+      </div>
+
+      <div class="chart-card chart-large">
+        <div class="chart-header">
+          <h3>Ocupación Predicha vs. Real</h3>
+        </div>
+        <div class="chart-container">
+          <canvas #chartPredicciones [hidden]="sinDatosPredicciones"></canvas>
+          <p class="sin-datos-chart" *ngIf="sinDatosPredicciones">
+            Todavía no hay predicciones validadas contra un dato real para compararlas.
+          </p>
         </div>
       </div>
     </div>

@@ -13,6 +13,28 @@
     </div>
   </div>
 
+  <!-- Filtro por feriado -->
+  <div class="filtro-feriado" *ngIf="!cargandoFeriados">
+    <ion-item lines="none" *ngIf="feriadosDisponibles.length > 0 || totalSinFeriado > 0">
+      <ion-icon name="calendar-outline" slot="start"></ion-icon>
+      <ion-select label="Feriado" label-placement="stacked" interface="popover" [value]="feriadoSeleccionado"
+        (ionChange)="cambiarFeriado($event.detail.value)">
+        <ion-select-option [value]="TODOS">Todos los feriados</ion-select-option>
+        <ion-select-option *ngFor="let f of feriadosDisponibles" [value]="f.feriado">
+          {{ f.feriado }} ({{ f.total }})
+        </ion-select-option>
+        <ion-select-option *ngIf="totalSinFeriado > 0" [value]="SIN_FERIADO">
+          Sin feriado asignado ({{ totalSinFeriado }})
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <p class="sin-jornadas" *ngIf="feriadosDisponibles.length === 0 && totalSinFeriado === 0">
+      Todavía no hay ningún registro de ocupación con feriado asignado. El feriado se guarda
+      automáticamente cuando un encuestador responde la encuesta de hotel dentro de una jornada
+      programada en <a routerLink="/cronograma">Cronograma</a>.
+    </p>
+  </div>
+
   <!-- Resumen de métricas -->
   <div class="metrics-grid" *ngIf="!loading && ocupacion.length > 0">
     <div class="metric-card">
@@ -48,6 +70,7 @@
             <thead>
               <tr>
                 <th>Fecha</th>
+                <th>Feriado</th>
                 <th>Hotel</th>
                 <th>Ocupación</th>
                 <th>Habitaciones</th>
@@ -58,24 +81,33 @@
             <tbody>
               <tr *ngFor="let item of ocupacion">
                 <td>{{ item.fecha | date:'dd/MM/yyyy' }}</td>
-                <td>{{ item.hotel_nombre || 'N/A' }}</td>
                 <td>
-                  <div class="ocupacion-cell">
-                    <span class="ocupacion-value" [ngClass]="getOcupacionClass(item.porcentaje_ocupacion)">
-                      {{ item.porcentaje_ocupacion }}%
+                  <ion-badge color="tertiary" *ngIf="item.feriado; else sinFeriadoTd">{{ item.feriado }}</ion-badge>
+                  <ng-template #sinFeriadoTd><span class="sin-datos">—</span></ng-template>
+                </td>
+                <td>{{ item.hotel?.nombre || 'N/A' }}</td>
+                <td>
+                  <div class="ocupacion-cell" *ngIf="tieneCapacidad(item); else sinCapacidad">
+                    <span class="ocupacion-value" [ngClass]="getOcupacionClass(item.ocupacion_porcentaje)">
+                      {{ item.ocupacion_porcentaje }}%
                     </span>
                     <div class="ocupacion-bar">
-                      <div class="ocupacion-bar-fill" [style.width.%]="item.porcentaje_ocupacion"
-                        [ngClass]="getOcupacionClass(item.porcentaje_ocupacion)">
+                      <div class="ocupacion-bar-fill" [style.width.%]="item.ocupacion_porcentaje"
+                        [ngClass]="getOcupacionClass(item.ocupacion_porcentaje)">
                       </div>
                     </div>
                   </div>
+                  <ng-template #sinCapacidad>
+                    <span class="ocupacion-value sin-datos" title="No se registró la capacidad (habitaciones totales) de este hotel ese día">
+                      Sin datos
+                    </span>
+                  </ng-template>
                 </td>
                 <td>{{ item.habitaciones_ocupadas || 0 }}/{{ item.habitaciones_totales || 0 }}</td>
                 <td>{{ item.total_turistas || 0 }}</td>
                 <td>
-                  <ion-badge [color]="getOcupacionClass(item.porcentaje_ocupacion)">
-                    {{ getOcupacionLabel(item.porcentaje_ocupacion) }}
+                  <ion-badge [color]="tieneCapacidad(item) ? getOcupacionClass(item.ocupacion_porcentaje) : 'medium'">
+                    {{ tieneCapacidad(item) ? getOcupacionLabel(item.ocupacion_porcentaje) : 'Sin datos' }}
                   </ion-badge>
                 </td>
               </tr>

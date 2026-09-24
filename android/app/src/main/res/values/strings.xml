@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">OTS Santa Elena</string>
+    <string name="title_activity_main">OTS Santa Elena</string>
+    <string name="package_name">ec.edu.upse.ots</string>
+    <string name="custom_url_scheme">ec.edu.upse.ots</string>
+</resources>

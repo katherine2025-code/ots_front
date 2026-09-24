@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Capacitor } from '@capacitor/core';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EtlService {
-  private apiUrl = 'http://localhost:3000/api/etl';
+  // Ver api.service.ts: dentro de la app nativa 'localhost' apunta al propio celular, no al servidor.
+  private apiUrl = `${Capacitor.isNativePlatform() ? environment.apiUrlNative : environment.apiUrl}/etl`;
   private mlUrl = 'http://localhost:5000'; // Microservicio Python
 
   constructor(private http: HttpClient) { }

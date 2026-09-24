@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'Front_OTS',
+  appId: 'ec.edu.upse.ots',
+  appName: 'OTS Santa Elena',
   webDir: 'www'
 };
 
