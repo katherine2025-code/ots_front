@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { noAuthGuard } from './core/guards/no-auth.guard';
-import { adminGuard, adminOInvestigadorGuard, encuestadorGuard } from './core/guards/rol.guard';
+import { adminGuard, adminOInvestigadorGuard, encuestadorGuard, superAdminGuard } from './core/guards/rol.guard';
 
 export const routes: Routes = [
   {
@@ -73,11 +73,12 @@ export const routes: Routes = [
   {
     path: 'etl',
     loadComponent: () => import('./pages/etl/etl.page').then(m => m.EtlPage),
-    canActivate: [adminGuard]
+    canActivate: [superAdminGuard]  // Solo Super Administrador (el Administrador ya no gestiona el ETL)
   },
   {
     path: 'etl/detalles/:id',
-    loadComponent: () => import('./pages/etl-detalles/etl-detalles.page').then(m => m.EtlDetallesPage)
+    loadComponent: () => import('./pages/etl-detalles/etl-detalles.page').then(m => m.EtlDetallesPage),
+    canActivate: [superAdminGuard]
   },
   {
     path: 'reporte-detalle/:id',

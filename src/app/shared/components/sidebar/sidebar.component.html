@@ -92,8 +92,8 @@
           </ion-item>
         </ion-menu-toggle>
 
-        <!-- Carga ETL - SOLO ADMIN -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin">
+        <!-- Carga ETL - SOLO SUPER ADMINISTRADOR -->
+        <ion-menu-toggle auto-hide="false" *ngIf="isSuperAdmin">
           <ion-item [routerLink]="['/etl']" [class.active]="isActive('/etl')" detail="false" lines="none">
             <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
             <ion-label>Carga ETL</ion-label>

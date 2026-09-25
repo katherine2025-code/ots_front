@@ -361,16 +361,18 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   validarPrediccion(prediccion: any): void {
-    console.log('Validar predicción:', prediccion);
-    alert(`Predicción ${prediccion.id} validada correctamente`);
+    this.prediccionService.validarPrediccion(prediccion.id_prediccion).subscribe({
+      next: () => { prediccion.estado = 'validada'; },
+      error: (err) => console.error('Error al validar predicción:', err)
+    });
   }
 
   descartarPrediccion(prediccion: any): void {
-    console.log('Descartar predicción:', prediccion);
-    const confirmacion = confirm(`¿Estás seguro de descartar la predicción ${prediccion.id}?`);
-    if (confirmacion) {
-      alert('Predicción descartada');
-    }
+    if (!confirm(`¿Estás seguro de descartar la predicción del ${prediccion.fecha_objetivo}?`)) return;
+    this.prediccionService.descartarPrediccion(prediccion.id_prediccion, 'Descartada desde el dashboard').subscribe({
+      next: () => { prediccion.estado = 'descartada'; },
+      error: (err) => console.error('Error al descartar predicción:', err)
+    });
   }
 
   generarReporte(): void {

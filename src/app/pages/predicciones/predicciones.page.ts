@@ -5,6 +5,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { Chart, registerables } from 'chart.js';
 import { EtlService } from 'src/app/core/services/etl.service';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { PrediccionService } from 'src/app/core/services/prediccion.service';
 
 Chart.register(...registerables);
 
@@ -70,9 +71,16 @@ export class PrediccionesPage implements OnInit {
   chartTemporada: any = null;
   chartHistoricas: any = null;
 
+  // ==========================================
+  // RESULTADOS DE PREDICCIONES (SOLO ADMINISTRADOR)
+  // ==========================================
+  resultadosPredicciones: any[] = [];
+  cargandoResultados: boolean = false;
+
   constructor(
     private etlService: EtlService,
     private authService: AuthService,
+    private prediccionService: PrediccionService,
     private toastController: ToastController
   ) { }
 
@@ -81,6 +89,16 @@ export class PrediccionesPage implements OnInit {
   // ==========================================
   get isAdmin(): boolean {
     return this.authService.isAdmin();
+  }
+
+  get isSuperAdmin(): boolean {
+    return this.authService.isSuperAdmin();
+  }
+
+  // Administrador "puro" (no Super Administrador): en Predicciones solo ve y
+  // valida/descarta resultados, no entrena modelos ni genera predicciones nuevas.
+  get esSoloAdmin(): boolean {
+    return this.isAdmin && !this.isSuperAdmin;
   }
 
   get isInvestigador(): boolean {
@@ -108,6 +126,7 @@ export class PrediccionesPage implements OnInit {
     this.fechaFinRango = masSieteDias.toISOString().split('T')[0];
 
     this.cargarMetricas();
+    if (this.esSoloAdmin) this.cargarResultados();
   }
 
   // ==========================================
@@ -145,7 +164,7 @@ export class PrediccionesPage implements OnInit {
   async entrenarModelo() {
     this.entrenando = true;
     try {
-      const response: any = await this.etlService.entrenarModelo().toPromise();
+      const response: any = await this.prediccionService.entrenarModelo().toPromise();
       console.log('🧠 Entrenamiento completado:', response);
 
       this.metricas = response.metricas;
@@ -175,27 +194,39 @@ export class PrediccionesPage implements OnInit {
 
     const rf = this.comparacion.random_forest;
     const xgb = this.comparacion.xgboost;
+    const prophet = this.comparacion.prophet;
+
+    const datasets: any[] = [
+      {
+        label: 'Random Forest',
+        data: [rf.precision, rf.r2 * 100, rf.mae],
+        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+        borderColor: 'rgba(102, 126, 234, 1)',
+        borderWidth: 2
+      },
+      {
+        label: 'XGBoost',
+        data: [xgb.precision, xgb.r2 * 100, xgb.mae],
+        backgroundColor: 'rgba(245, 158, 11, 0.8)',
+        borderColor: 'rgba(245, 158, 11, 1)',
+        borderWidth: 2
+      }
+    ];
+    if (prophet) {
+      datasets.push({
+        label: 'Prophet',
+        data: [prophet.precision, prophet.r2 * 100, prophet.mae],
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 2
+      });
+    }
 
     this.chartComparacion = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ['Precisión (%)', 'R² Score', 'MAE'],
-        datasets: [
-          {
-            label: 'Random Forest',
-            data: [rf.precision, rf.r2 * 100, rf.mae],
-            backgroundColor: 'rgba(102, 126, 234, 0.8)',
-            borderColor: 'rgba(102, 126, 234, 1)',
-            borderWidth: 2
-          },
-          {
-            label: 'XGBoost',
-            data: [xgb.precision, xgb.r2 * 100, xgb.mae],
-            backgroundColor: 'rgba(245, 158, 11, 0.8)',
-            borderColor: 'rgba(245, 158, 11, 1)',
-            borderWidth: 2
-          }
-        ]
+        datasets
       },
       options: {
         responsive: true,
@@ -204,7 +235,7 @@ export class PrediccionesPage implements OnInit {
           legend: { position: 'bottom' },
           title: {
             display: true,
-            text: 'Comparación: Random Forest vs XGBoost',
+            text: 'Comparación: Random Forest vs XGBoost vs Prophet',
             font: { size: 14, weight: 'bold' }
           }
         },
@@ -229,7 +260,7 @@ export class PrediccionesPage implements OnInit {
         temporada: this.temporada
       };
 
-      const response: any = await this.etlService.predecirOcupacion(datos).toPromise();
+      const response: any = await this.prediccionService.predecir(datos).toPromise();
       this.prediccion = response;
       this.prediccionCargada = true;
 
@@ -329,8 +360,8 @@ export class PrediccionesPage implements OnInit {
 
     this.calculandoRango = true;
     try {
-      const response: any = await this.etlService
-        .predecirOcupacionRango(this.fechaInicioRango, this.fechaFinRango)
+      const response: any = await this.prediccionService
+        .predecirRango(this.fechaInicioRango, this.fechaFinRango)
         .toPromise();
 
       this.resultadoRango = response;
@@ -580,5 +611,46 @@ export class PrediccionesPage implements OnInit {
     if (valor >= 80) return 'Alta';
     if (valor >= 50) return 'Media';
     return 'Baja';
+  }
+
+  // ==========================================
+  // RESULTADOS DE PREDICCIONES (SOLO ADMINISTRADOR)
+  // Lista las predicciones ya generadas (tabla `predicciones`) para que el
+  // Administrador las revise y confirme si acertaron o no, sin poder entrenar
+  // modelos ni generar predicciones nuevas (eso es de Super Administrador).
+  // ==========================================
+  async cargarResultados() {
+    this.cargandoResultados = true;
+    try {
+      const response: any = await this.prediccionService.getPredicciones({ limite: 20 }).toPromise();
+      this.resultadosPredicciones = response || [];
+    } catch (error) {
+      console.error('Error cargando resultados de predicciones:', error);
+      this.mostrarToast('❌ Error al cargar los resultados de predicciones', 'danger');
+    } finally {
+      this.cargandoResultados = false;
+    }
+  }
+
+  async validarResultado(pred: any) {
+    try {
+      await this.prediccionService.validarPrediccion(pred.id_prediccion).toPromise();
+      pred.estado = 'validada';
+      this.mostrarToast('✅ Predicción validada', 'success');
+    } catch (error) {
+      console.error('Error al validar predicción:', error);
+      this.mostrarToast('❌ No se pudo validar la predicción', 'danger');
+    }
+  }
+
+  async descartarResultado(pred: any) {
+    try {
+      await this.prediccionService.descartarPrediccion(pred.id_prediccion, 'Descartada desde Predicciones').toPromise();
+      pred.estado = 'descartada';
+      this.mostrarToast('Predicción descartada', 'medium');
+    } catch (error) {
+      console.error('Error al descartar predicción:', error);
+      this.mostrarToast('❌ No se pudo descartar la predicción', 'danger');
+    }
   }
 }

@@ -20,6 +20,23 @@ export class PrediccionService {
     return this.api.post<any>('predicciones/generar', datos);
   }
 
+  // Entrenar los modelos (Random Forest, XGBoost, Prophet): reservado a Super Administrador
+  // (ver prediccionRoutes.js). Pasa por el backend Node en vez de llamar directo al
+  // microservicio Python, que es el único lugar donde hoy se controla el rol.
+  entrenarModelo(): Observable<any> {
+    return this.api.post<any>('predicciones/entrenar', {});
+  }
+
+  // Simulador de un día puntual: Super Administrador e Investigador (ver prediccionRoutes.js)
+  predecir(datos: any): Observable<any> {
+    return this.api.post<any>('predicciones/predict', datos);
+  }
+
+  // Proyección por rango de fechas: Super Administrador e Investigador
+  predecirRango(fechaInicio: string, fechaFin: string): Observable<any> {
+    return this.api.post<any>('predicciones/predecir-rango', { fecha_inicio: fechaInicio, fecha_fin: fechaFin });
+  }
+
   validarPrediccion(id: number, observaciones?: string): Observable<any> {
     return this.api.put<any>(`predicciones/${id}/validar`, { observaciones });
   }

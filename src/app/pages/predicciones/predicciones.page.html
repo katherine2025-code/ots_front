@@ -13,14 +13,14 @@
     </div>
   </div>
 
-  <!-- SECCIÓN 1: ENTRENAMIENTO COMPARATIVO (SOLO ADMIN) -->
-  <div class="section-card" *ngIf="isAdmin">
+  <!-- SECCIÓN 1: ENTRENAMIENTO COMPARATIVO (SOLO SUPER ADMINISTRADOR) -->
+  <div class="section-card" *ngIf="isSuperAdmin">
     <div class="section-header">
       <h2>
         <ion-icon name="analytics-outline" class="section-icon"></ion-icon>
         Entrenamiento Comparativo de Modelos ML
       </h2>
-      <p>Entrenamiento simultáneo de <strong>Random Forest</strong> y <strong>XGBoost</strong> para comparar su
+      <p>Entrenamiento simultáneo de <strong>Random Forest</strong>, <strong>XGBoost</strong> y <strong>Prophet</strong> para comparar su
         precisión.</p>
     </div>
 
@@ -88,6 +88,34 @@
           </div>
         </div>
       </div>
+
+      <div class="metric-card prophet-card" *ngIf="comparacion.prophet">
+        <div class="card-header">
+          <ion-icon name="trending-up-outline"></ion-icon>
+          <h3>Prophet</h3>
+          <span class="badge" [class.winner]="comparacion.ganador === 'Prophet'">
+            {{ comparacion.ganador === 'Prophet' ? '🏆 GANADOR' : 'Alternativo' }}
+          </span>
+        </div>
+        <div class="metric-values">
+          <div class="metric-item">
+            <span class="metric-label">Precisión</span>
+            <span class="metric-value">{{ comparacion.prophet.precision }}%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">RMSE</span>
+            <span class="metric-value">{{ comparacion.prophet.rmse }}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">MAE</span>
+            <span class="metric-value">{{ comparacion.prophet.mae }}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">R² Score</span>
+            <span class="metric-value">{{ comparacion.prophet.r2 }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Gráfico Comparativo -->
@@ -96,19 +124,19 @@
     </div>
   </div>
 
-  <!-- SECCIÓN 2: GENERAR PREDICCIÓN -->
-  <div class="section-card">
+  <!-- SECCIÓN 2: GENERAR PREDICCIÓN (SUPER ADMINISTRADOR E INVESTIGADOR) -->
+  <div class="section-card" *ngIf="isSuperAdmin || isInvestigador">
     <div class="section-header">
       <h2>
         <ion-icon name="trending-up-outline" class="section-icon"></ion-icon>
         Módulo de Proyección Turística
       </h2>
-      <p *ngIf="isAdmin">Seleccione el modo de cálculo: simulación puntual o proyección por rango de fechas.</p>
+      <p *ngIf="isSuperAdmin">Seleccione el modo de cálculo: simulación puntual o proyección por rango de fechas.</p>
       <p *ngIf="isInvestigador">Proyección inteligente de ocupación hotelera basada en Machine Learning.</p>
     </div>
 
     <!-- Selector de Modo -->
-    <ion-segment *ngIf="isAdmin" [(ngModel)]="modoPrediccion" color="primary" class="segment-selector">
+    <ion-segment *ngIf="isSuperAdmin" [(ngModel)]="modoPrediccion" color="primary" class="segment-selector">
       <ion-segment-button value="simulador">
         <ion-icon name="options-outline"></ion-icon>
         <ion-label>Simulador</ion-label>
@@ -288,8 +316,8 @@
     </div>
   </div>
 
-  <!-- SECCIÓN 3: VALIDACIÓN HISTÓRICA (SOLO ADMIN) -->
-  <div class="section-card" *ngIf="isAdmin">
+  <!-- SECCIÓN 3: VALIDACIÓN HISTÓRICA (SOLO SUPER ADMINISTRADOR) -->
+  <div class="section-card" *ngIf="isSuperAdmin">
     <div class="section-header">
       <h2>
         <ion-icon name="time-outline" class="section-icon"></ion-icon>
@@ -355,6 +383,46 @@
         </table>
       </div>
     </div>
+  </div>
+
+  <!-- SECCIÓN 4: RESULTADOS DE PREDICCIONES (SOLO ADMINISTRADOR) -->
+  <div class="section-card" *ngIf="esSoloAdmin">
+    <div class="section-header">
+      <h2>
+        <ion-icon name="list-outline" class="section-icon"></ion-icon>
+        Resultados de Predicciones
+      </h2>
+      <p>Predicciones generadas por Super Administrador o Investigador. Puedes confirmar si acertaron
+        (validar) o descartarlas, pero no entrenar modelos ni generar predicciones nuevas.</p>
+    </div>
+
+    <div *ngIf="cargandoResultados" class="ion-text-center">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <p class="sin-datos" *ngIf="!cargandoResultados && resultadosPredicciones.length === 0">
+      Todavía no hay predicciones generadas para revisar.
+    </p>
+
+    <ion-list *ngIf="!cargandoResultados && resultadosPredicciones.length > 0">
+      <ion-item *ngFor="let pred of resultadosPredicciones">
+        <ion-label>
+          <h2>{{ pred.fecha | date:'dd/MM/yyyy' }} · {{ pred.modelo_utilizado }}</h2>
+          <p>Predicha: {{ pred.ocupacion_predicha }}%
+            <ng-container *ngIf="pred.ocupacion_real !== null"> · Real: {{ pred.ocupacion_real }}%</ng-container>
+          </p>
+          <ion-badge [color]="pred.estado === 'validada' ? 'success' : pred.estado === 'descartada' ? 'medium' : 'warning'">
+            {{ pred.estado }}
+          </ion-badge>
+        </ion-label>
+        <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="success" (click)="validarResultado(pred)">
+          <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="danger" (click)="descartarResultado(pred)">
+          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
   </div>
 
 </ion-content>

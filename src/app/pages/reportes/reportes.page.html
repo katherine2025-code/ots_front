@@ -7,16 +7,45 @@
       <p class="subtitle">Análisis completo de datos turísticos del Observatorio</p>
     </div>
     <div class="header-right">
-      <ion-button color="primary" fill="solid" size="default" (click)="descargarPDF()">
-        <ion-icon name="download-outline" slot="start"></ion-icon>
-        PDF
-      </ion-button>
       <ion-button color="medium" fill="outline" size="default" (click)="cargarEstadisticas()">
         <ion-icon name="refresh-outline" slot="start"></ion-icon>
         Actualizar
       </ion-button>
     </div>
   </div>
+
+  <!-- FILTROS -->
+  <section class="filtros-card">
+    <div class="filtros-grid">
+      <ion-item>
+        <ion-select label="Feriado" label-placement="stacked" placeholder="Todos" [(ngModel)]="filtroFeriado" interface="popover">
+          <ion-select-option value="">Todos</ion-select-option>
+          <ion-select-option *ngFor="let f of feriados" [value]="f">{{ f }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Desde" label-placement="stacked" type="date" [(ngModel)]="filtroFechaInicio"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Hasta" label-placement="stacked" type="date" [(ngModel)]="filtroFechaFin"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-select label="Año" label-placement="stacked" placeholder="Todos" [(ngModel)]="filtroAnio" interface="popover">
+          <ion-select-option [value]="null">Todos</ion-select-option>
+          <ion-select-option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+    <div class="filtros-acciones">
+      <ion-button size="small" (click)="aplicarFiltros()">
+        <ion-icon name="filter-outline" slot="start"></ion-icon>
+        Filtrar
+      </ion-button>
+      <ion-button size="small" fill="outline" color="medium" *ngIf="hayFiltrosActivos" (click)="limpiarFiltros()">
+        Quitar filtros
+      </ion-button>
+    </div>
+  </section>
 
   <!-- Estado de carga -->
   <div *ngIf="!estadisticas && !cargando" class="loading-state">
@@ -71,14 +100,14 @@
       </div>
     </div>
 
-    <!-- TARJETA 1: GASTO PROMEDIO -->
+    <!-- TARJETA 1: GASTO PROMEDIO POR FERIADO -->
     <ion-card>
       <ion-card-header>
         <ion-card-title>
           <ion-icon name="wallet-outline" class="card-icon"></ion-icon>
-          Gasto Promedio por Persona por Día
+          Gasto Promedio del Turista
         </ion-card-title>
-        <ion-card-subtitle>Según categoría de alojamiento (USD)</ion-card-subtitle>
+        <ion-card-subtitle>Por feriado (USD), calendario oficial con margen de análisis</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <div class="chart-container">
@@ -96,7 +125,10 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <div class="ocupacion-grid">
+        <p class="sin-datos" *ngIf="estadisticas?.ocupacion?.ocupacion_promedio === null">
+          No hay registros de ocupación con capacidad conocida para esta selección.
+        </p>
+        <div class="ocupacion-grid" *ngIf="estadisticas?.ocupacion?.ocupacion_promedio !== null">
           <div class="chart-container">
             <canvas id="ocupacionChart"></canvas>
           </div>
@@ -130,7 +162,10 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <div class="paises-grid">
+        <p class="sin-datos" *ngIf="!estadisticas?.paises?.length">
+          No hay encuestas con país de residencia registrado para esta selección.
+        </p>
+        <div class="paises-grid" *ngIf="estadisticas?.paises?.length">
           <div class="chart-container">
             <canvas id="paisesChart"></canvas>
           </div>
@@ -165,7 +200,10 @@
         <ion-card-subtitle>Escala 1-5 (1=Muy Insatisfecho, 5=Muy Satisfecho)</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <div class="satisfaccion-grid">
+        <p class="sin-datos" *ngIf="estadisticas?.encuestas?.satisfaccion_promedio === null">
+          No hay respuestas de satisfacción (1-5) registradas para esta selección.
+        </p>
+        <div class="satisfaccion-grid" *ngIf="estadisticas?.encuestas?.satisfaccion_promedio !== null">
           <div class="chart-container">
             <canvas id="satisfaccionChart"></canvas>
           </div>
@@ -187,11 +225,59 @@
       </ion-card-content>
     </ion-card>
 
+    <!-- TABULACIÓN POR PREGUNTA (Encuesta Turística) -->
+    <section class="tabulacion" *ngIf="tabulacion">
+      <div class="tabulacion-intro">
+        <h2>Tabulación de la Encuesta Turística</h2>
+        <p>
+          Sobre {{ tabulacion.totalEncuestas }} encuestas cargadas. Cada pregunta muestra el
+          porcentaje solo entre las respuestas donde el dato se pudo leer del archivo original
+          (el detalle de cuántas quedaron sin dato está debajo del título).
+        </p>
+        <p class="aviso-pendiente">
+          Estas son las 13 de 37 preguntas del cuestionario que hoy tienen columna propia en la
+          base de datos. Las 24 restantes (transporte, gasto por rubro, satisfacción detallada,
+          etc.) están pendientes de incorporar al ETL.
+        </p>
+      </div>
+
+      <ng-container *ngFor="let p of tabulacion.preguntas; let i = index">
+        <h3 class="seccion-titulo" *ngIf="esNuevaSeccion(i)">
+          Sección {{ letraSeccion(p.seccion) }}. {{ p.seccion }}
+        </h3>
+        <ion-card class="pregunta-card">
+          <ion-card-header>
+            <ion-card-title>{{ p.titulo }}</ion-card-title>
+            <ion-card-subtitle>{{ p.totalReal }} respuestas · {{ p.sinDato }} sin dato legible</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="pregunta-grid">
+              <ul class="lista-opciones">
+                <li *ngFor="let o of p.opciones; let j = index">
+                  <span class="punto" [style.background]="colorOpcion(i, j)"></span>
+                  <span class="etiqueta">{{ o.etiqueta }}</span>
+                  <span class="porcentaje">{{ o.porcentaje }}%</span>
+                </li>
+              </ul>
+              <div class="chart-container pequeno">
+                <canvas [id]="'chart-pregunta-' + i"></canvas>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ng-container>
+    </section>
+
     <!-- FOOTER -->
     <div class="report-footer">
       <p><strong>Universidad Estatal Península de Santa Elena - UPSE</strong></p>
       <p>Observatorio Turístico Sostenible (OTS)</p>
-      <p>Período: {{ periodoReporte }}</p>
+      <p *ngIf="hayFiltrosActivos">
+        Filtros: {{ filtroFeriado || '—' }}
+        <ng-container *ngIf="filtroFechaInicio || filtroFechaFin"> · {{ filtroFechaInicio || '…' }} a {{ filtroFechaFin || '…' }}</ng-container>
+        <ng-container *ngIf="filtroAnio"> · Año {{ filtroAnio }}</ng-container>
+      </p>
+      <p *ngIf="!hayFiltrosActivos">Período: todos los datos disponibles</p>
       <p class="generated">Generado: {{ fechaGeneracion | date:'dd/MM/yyyy HH:mm' }}</p>
     </div>
 

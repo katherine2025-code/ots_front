@@ -242,10 +242,10 @@
             <h2>{{ pred.fecha_objetivo | date:'dd/MM/yyyy' }}</h2>
             <p>Ocupación predicha: {{ pred.ocupacion_predicha }}% (Precisión: {{ pred.precision }}%)</p>
           </ion-label>
-          <ion-button fill="clear" color="success" (click)="validarPrediccion(pred)">
+          <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="success" (click)="validarPrediccion(pred)">
             <ion-icon name="checkmark-outline"></ion-icon>
           </ion-button>
-          <ion-button fill="clear" color="danger" (click)="descartarPrediccion(pred)">
+          <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="danger" (click)="descartarPrediccion(pred)">
             <ion-icon name="close-outline"></ion-icon>
           </ion-button>
         </ion-item>
