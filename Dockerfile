@@ -1,5 +1,7 @@
 # ---- Etapa 1: build de Angular/Ionic ----
-FROM node:20-alpine AS build
+# Node 22, no 20: @capacitor/cli exige Node >=22 y con 20 el build funciona pero deja un warning
+# (EBADENGINE) en cada build.
+FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
