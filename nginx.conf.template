@@ -11,18 +11,13 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # environment.prod.ts usa apiUrl = '/api' (ruta relativa), así que nginx reenvía esas
-    # llamadas al backend. BACKEND_HOST/BACKEND_PORT se definen en el Dockerfile (por defecto
-    # "backend" y 3000 - el nombre del servicio en docker-compose) y se pueden sobrescribir con
-    # -e al correr el contenedor.
-    location /api/ {
-        proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT}/api/;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+    # NOTA: no hay proxy a /api aquí. Front y backend son apps separadas en Dokploy, cada una con
+    # su propio dominio (no comparten red interna por nombre), así que environment.prod.ts llama
+    # directo a la URL completa del backend - ver apiUrl ahí. Antes esto tenía un
+    # "location /api/ { proxy_pass http://backend:3000; }", pero "backend" no existe como nombre
+    # resoluble en este despliegue: nginx no podía arrancar (fallaba al resolver ese host al
+    # iniciar) y por eso el contenedor daba "Bad Gateway" - todo el bloque sobraba una vez que el
+    # front llama directo al backend.
 
     gzip on;
     gzip_types text/plain text/css application/javascript application/json image/svg+xml;

@@ -15,13 +15,9 @@ RUN npm run build -- --configuration production
 # ---- Etapa 2: servir el build estático con nginx en el puerto 80 ----
 FROM nginx:1.27-alpine
 
-# Plantilla con ${BACKEND_HOST}/${BACKEND_PORT}: la imagen base de nginx corre envsubst sobre
-# los archivos en /etc/nginx/templates/*.template y escribe el resultado en conf.d al arrancar,
-# así el backend se puede apuntar distinto en cada entorno sin reconstruir la imagen.
+# Se mantiene como "template" (aunque hoy no tenga ninguna variable ${...} que sustituir) para no
+# tener que tocar el Dockerfile si en el futuro nginx necesita volver a generar algo dinámico.
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/www /usr/share/nginx/html
-
-ENV BACKEND_HOST=backend
-ENV BACKEND_PORT=3000
 
 EXPOSE 80
