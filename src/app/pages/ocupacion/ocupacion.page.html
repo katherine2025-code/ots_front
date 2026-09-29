@@ -73,8 +73,8 @@
                 <th>Feriado</th>
                 <th>Hotel</th>
                 <th>Ocupación</th>
-                <th>Habitaciones</th>
-                <th>Turistas</th>
+                <th title="Habitaciones ocupadas en un día promedio del período reportado, de la capacidad total del hotel">Hab. ocupadas / día</th>
+                <th title="Turistas en un día promedio del período reportado (nacionales + extranjeros)">Turistas / día</th>
                 <th>Estado</th>
               </tr>
             </thead>
@@ -103,8 +103,24 @@
                     </span>
                   </ng-template>
                 </td>
-                <td>{{ item.habitaciones_ocupadas || 0 }}/{{ item.habitaciones_totales || 0 }}</td>
-                <td>{{ item.total_turistas || 0 }}</td>
+                <td>
+                  <ng-container *ngIf="tieneCapacidad(item); else habSinCapacidad">
+                    {{ porDia(item.habitaciones_ocupadas, item) }} de {{ item.habitaciones_totales }}
+                  </ng-container>
+                  <ng-template #habSinCapacidad>{{ porDia(item.habitaciones_ocupadas, item) }}</ng-template>
+                  <div class="detalle-dias" *ngIf="item.dias_reportados > 1">promedio de {{ item.dias_reportados }} días</div>
+                </td>
+                <td>
+                  <ng-container *ngIf="item.total_turistas != null; else turistasSinDato">
+                    {{ porDia(item.total_turistas, item) }}
+                    <div class="detalle-dias">
+                      {{ porDia(item.checkin_nacionales, item) }} nac. · {{ porDia(item.checkin_extranjeros, item) }} ext.
+                    </div>
+                  </ng-container>
+                  <ng-template #turistasSinDato>
+                    <span class="sin-datos" title="El archivo original de esta carga no trae la cantidad de turistas">—</span>
+                  </ng-template>
+                </td>
                 <td>
                   <ion-badge [color]="tieneCapacidad(item) ? getOcupacionClass(item.ocupacion_porcentaje) : 'medium'">
                     {{ tieneCapacidad(item) ? getOcupacionLabel(item.ocupacion_porcentaje) : 'Sin datos' }}

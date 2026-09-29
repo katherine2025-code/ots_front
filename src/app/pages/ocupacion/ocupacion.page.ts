@@ -112,6 +112,14 @@ export class OcupacionPage implements OnInit {
     return (item.habitaciones_totales || 0) > 0;
   }
 
+  // Las cargas de Kobo guardan una fila por envío con los TOTALES de los días del feriado
+  // (dias_reportados); se muestra el promedio por día, que es lo comparable con la capacidad.
+  // Las filas sin dias_reportados (app y CSV) ya son de un solo día.
+  porDia(total: number | null, item: any): number {
+    const dias = item.dias_reportados > 0 ? item.dias_reportados : 1;
+    return Math.round((total || 0) / dias);
+  }
+
   getOcupacionClass(valor: number): string {
     if (!valor) return 'low';
     if (valor >= 80) return 'high';
