@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
-import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { IonicModule } from '@ionic/angular';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 import { ThemeService } from './core/services/theme.service';
 
@@ -14,7 +14,7 @@ const RUTAS_SIN_SIDEBAR = ['/login', '/registro'];
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule, IonApp, IonRouterOutlet, SidebarComponent],
+  imports: [CommonModule, RouterModule, IonicModule, SidebarComponent],
 })
 export class AppComponent implements OnInit {
   mostrarSidebar = !RUTAS_SIN_SIDEBAR.some(ruta => this.router.url.startsWith(ruta));
