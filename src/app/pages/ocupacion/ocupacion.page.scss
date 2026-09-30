@@ -315,3 +315,10 @@
         }
     }
 }
+// Registro con mas ocupacion que capacidad (error de digitacion): se marca en vez de mostrar 100%
+.ocupacion-value.inconsistente {
+    display: inline-block;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--ion-color-warning-shade);
+}

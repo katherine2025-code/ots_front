@@ -88,8 +88,9 @@ export class OcupacionPage implements OnInit {
 
     // Solo se promedian registros con capacidad conocida (habitaciones_totales > 0). Un registro
     // en 0% porque no se sabe la capacidad del hotel ese día no debe contar como "0% de ocupación".
+    // Tampoco los inconsistentes (más ocupadas que habitaciones): su 100% es un tope, no un dato.
     const valores = this.ocupacion
-      .filter(item => (item.habitaciones_totales || 0) > 0)
+      .filter(item => this.tieneCapacidad(item) && !this.inconsistenteHab(item))
       .map(item => parseFloat(item.ocupacion_porcentaje) || 0);
 
     if (valores.length === 0) {
@@ -110,6 +111,14 @@ export class OcupacionPage implements OnInit {
   // ETL que no traían ese dato) no es "ocupación baja": es un dato faltante y se marca aparte.
   tieneCapacidad(item: any): boolean {
     return (item.habitaciones_totales || 0) > 0;
+  }
+
+  // Dato inconsistente: el hotel reportó más habitaciones ocupadas que las que tiene. El ETL topa
+  // el porcentaje en 100%, pero ese 100% no es real: se marca para revisar y no entra en los
+  // promedios. Se compara con los totales del período (capacidad x días), sin redondeos.
+  inconsistenteHab(item: any): boolean {
+    return this.tieneCapacidad(item) &&
+      (item.habitaciones_ocupadas || 0) > item.habitaciones_totales * (item.dias_reportados || 1);
   }
 
   // Las cargas de Kobo guardan una fila por envío con los TOTALES de los días del feriado

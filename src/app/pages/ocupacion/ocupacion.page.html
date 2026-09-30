@@ -87,6 +87,11 @@
                 </td>
                 <td>{{ item.hotel?.nombre || 'N/A' }}</td>
                 <td>
+                  <span class="ocupacion-value inconsistente" *ngIf="inconsistenteHab(item); else tasaHab"
+                    title="El hotel reportó más habitaciones ocupadas que las que tiene (posible error de digitación). No se usa en los promedios.">
+                    Dato inconsistente
+                  </span>
+                  <ng-template #tasaHab>
                   <div class="ocupacion-cell" *ngIf="tieneCapacidad(item); else sinCapacidad">
                     <span class="ocupacion-value" [ngClass]="getOcupacionClass(item.ocupacion_porcentaje)">
                       {{ item.ocupacion_porcentaje }}%
@@ -101,6 +106,7 @@
                     <span class="ocupacion-value sin-datos" title="No se registró la capacidad (habitaciones totales) de este hotel ese día">
                       Sin datos
                     </span>
+                  </ng-template>
                   </ng-template>
                 </td>
                 <td>
@@ -122,9 +128,12 @@
                   </ng-template>
                 </td>
                 <td>
-                  <ion-badge [color]="tieneCapacidad(item) ? getOcupacionClass(item.ocupacion_porcentaje) : 'medium'">
-                    {{ tieneCapacidad(item) ? getOcupacionLabel(item.ocupacion_porcentaje) : 'Sin datos' }}
-                  </ion-badge>
+                  <ion-badge color="warning" *ngIf="inconsistenteHab(item); else estadoNormal">Revisar</ion-badge>
+                  <ng-template #estadoNormal>
+                    <ion-badge [color]="tieneCapacidad(item) ? getOcupacionClass(item.ocupacion_porcentaje) : 'medium'">
+                      {{ tieneCapacidad(item) ? getOcupacionLabel(item.ocupacion_porcentaje) : 'Sin datos' }}
+                    </ion-badge>
+                  </ng-template>
                 </td>
               </tr>
             </tbody>
