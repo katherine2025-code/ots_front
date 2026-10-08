@@ -361,6 +361,26 @@
     min-height: -webkit-fill-available;
   }
 }
+.forgot-section {
+  text-align: center;
+  margin-top: 14px;
+}
+
+.forgot-link {
+  background: none;
+  border: none;
+  color: #2e86c1;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px;
+  text-decoration: underline;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
 .register-section {
   text-align: center;
   margin-top: 20px;

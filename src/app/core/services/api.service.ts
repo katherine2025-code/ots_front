@@ -175,7 +175,9 @@ export class ApiService {
         // descarta - importante para que las reglas de rol se entiendan.
         errorMessage = error.error?.error || error.error?.message || 'No tienes permisos para realizar esta acción.';
       } else if (error.status === 404) {
-        errorMessage = 'Recurso no encontrado.';
+        // Se respeta el motivo específico del backend (ej. "No existe una cuenta
+        // registrada con ese correo.") en lugar de un genérico que lo descarta.
+        errorMessage = error.error?.error || error.error?.message || 'Recurso no encontrado.';
       } else if (error.status === 409) {
         errorMessage = error.error?.message || 'Conflicto: El recurso ya existe.';
       } else if (error.status === 422) {

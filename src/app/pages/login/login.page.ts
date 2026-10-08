@@ -71,6 +71,11 @@ export class LoginPage {
     this.router.navigate(['/registro']);
   }
 
+  // Ir a la pantalla de "¿Olvidaste tu contraseña?"
+  irAOlvide(): void {
+    this.router.navigate(['/olvide-password']);
+  }
+
   private markFormGroupTouched(formGroup: FormGroup) {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();

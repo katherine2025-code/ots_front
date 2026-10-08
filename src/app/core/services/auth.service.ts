@@ -52,6 +52,16 @@ export class AuthService {
     return this.api.post<any>('auth/registro', data);
   }
 
+  // MÉTODO OLVIDÉ MI CONTRASEÑA (solicita el enlace por correo)
+  olvidePassword(correo: string): Observable<{ mensaje: string }> {
+    return this.api.post<{ mensaje: string }>('auth/olvide-password', { correo });
+  }
+
+  // MÉTODO RESETEAR CONTRASEÑA (con el token que llegó al correo)
+  resetPassword(token: string, password: string): Observable<{ mensaje: string }> {
+    return this.api.post<{ mensaje: string }>('auth/reset-password', { token, password });
+  }
+
   // MÉTODO LOGOUT
   logout(): void {
     // Eliminar de ambos almacenamientos

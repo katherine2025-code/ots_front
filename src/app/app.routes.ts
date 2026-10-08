@@ -20,6 +20,16 @@ export const routes: Routes = [
     canActivate: [noAuthGuard]
   },
   {
+    path: 'olvide-password',
+    loadComponent: () => import('./pages/olvide-password/olvide-password.page').then(m => m.OlvidePasswordPage),
+    canActivate: [noAuthGuard]
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./pages/reset-password/reset-password.page').then(m => m.ResetPasswordPage),
+    canActivate: [noAuthGuard]
+  },
+  {
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.page').then(m => m.DashboardPage),
     canActivate: [authGuard, adminOInvestigadorGuard]
