@@ -116,6 +116,26 @@
       </ion-card-content>
     </ion-card>
 
+    <!-- TARJETA 1B: GASTO PROMEDIO POR RUBRO -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="pie-chart-outline" class="card-icon"></ion-icon>
+          Estructura del Gasto Diario por Persona
+        </ion-card-title>
+        <ion-card-subtitle>Promedio por rubro (USD/día), según la selección de filtros</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="sin-datos" *ngIf="!tieneGastoPorRubro">
+          No hay desglose de gasto por rubro para esta selección (los datos cargados antes de la
+          actualización no lo incluyen).
+        </p>
+        <div class="chart-container" *ngIf="tieneGastoPorRubro">
+          <canvas id="gastoRubroChart"></canvas>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
     <!-- TARJETA 2: OCUPACIÓN HOTELERA -->
     <ion-card>
       <ion-card-header>
@@ -235,9 +255,10 @@
           (el detalle de cuántas quedaron sin dato está debajo del título).
         </p>
         <p class="aviso-pendiente">
-          Estas son las 13 de 37 preguntas del cuestionario que hoy tienen columna propia en la
-          base de datos. Las 24 restantes (transporte, gasto por rubro, satisfacción detallada,
-          etc.) están pendientes de incorporar al ETL.
+          Estas son las 25 de 37 preguntas del cuestionario que hoy se tabulan (las que se pueden
+          identificar con certeza en el archivo de Kobo). Las restantes (los 5 gastos por rubro y
+          las escalas de "acuerdo" de satisfacción) quedan pendientes porque el export de Kobo no
+          las trae con una etiqueta que permita distinguirlas sin riesgo de confundirlas.
         </p>
       </div>
 

@@ -57,6 +57,10 @@ export class ReportesPage implements OnInit {
     return !!(this.filtroFeriado || this.filtroFechaInicio || this.filtroFechaFin || this.filtroAnio);
   }
 
+  get tieneGastoPorRubro(): boolean {
+    return (this.estadisticas?.gastoPorRubro || []).some((r: any) => r.promedio !== null && r.promedio > 0);
+  }
+
   aplicarFiltros() {
     this.cargarEstadisticas();
   }
@@ -90,6 +94,7 @@ export class ReportesPage implements OnInit {
 
       setTimeout(() => {
         this.crearGraficoGastoPorFeriado();
+        this.crearGraficoGastoPorRubro();
         this.crearGraficoOcupacion();
         this.crearGraficoPaises();
         this.crearGraficoSatisfaccion();
@@ -118,8 +123,10 @@ export class ReportesPage implements OnInit {
 
       const colores = p.opciones.map((_: any, j: number) => PALETA[j % PALETA.length]);
       // Pocas opciones: dona (se lee mejor como proporción del total). Muchas opciones o
-      // etiquetas largas: barra horizontal (los nombres no se amontonan).
-      const tipo = p.opciones.length <= 4 ? 'doughnut' : 'bar';
+      // etiquetas largas: barra horizontal (los nombres no se amontonan). Las de opción
+      // múltiple SIEMPRE van en barra: sus porcentajes no suman 100 (cada encuestado marca
+      // varias), así que una dona sería engañosa.
+      const tipo = (p.multiple || p.opciones.length > 4) ? 'bar' : 'doughnut';
 
       const chart = new Chart(ctx, {
         type: tipo,
@@ -199,6 +206,38 @@ export class ReportesPage implements OnInit {
         scales: {
           y: { beginAtZero: true, ticks: { callback: (value) => '$' + value } }
         }
+      }
+    });
+  }
+
+  crearGraficoGastoPorRubro() {
+    const ctx = document.getElementById('gastoRubroChart') as HTMLCanvasElement;
+    if (!ctx) return;
+    if (this.charts.gastoRubro) this.charts.gastoRubro.destroy();
+
+    const datos: any[] = (this.estadisticas?.gastoPorRubro || []).filter((r: any) => r.promedio !== null);
+    if (!datos.length) return;
+
+    this.charts.gastoRubro = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: datos.map(d => d.rubro),
+        datasets: [{
+          label: 'Gasto Promedio por Rubro (USD/día)',
+          data: datos.map(d => Number(d.promedio)),
+          backgroundColor: 'rgba(26, 188, 156, 0.75)',
+          borderColor: 'rgba(26, 188, 156, 1)',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'Gasto Promedio por Rubro (USD/día)', font: { size: 13, weight: 'bold' } }
+        },
+        scales: { y: { beginAtZero: true, ticks: { callback: (value) => '$' + value } } }
       }
     });
   }
