@@ -303,10 +303,6 @@
               <td>{{ item.fecha_inicio | date:'short' }}</td>
               <td>{{ item.fecha_fin | date:'short' }}</td>
               <td class="actions-cell">
-                <button *ngIf="item.estado === 'COMPLETADO'" class="btn-action btn-info"
-                  (click)="verReporteDetalle(item.id_etl)" title="Ver Reporte Detallado" style="margin-right: 5px;">
-                  <ion-icon name="bar-chart-outline"></ion-icon>
-                </button>
                 <button *ngIf="item.estado === 'COMPLETADO'" class="btn-action btn-primary"
                   (click)="descargarReportePDF(item.id_etl)" title="Descargar Reporte PDF" style="margin-right: 5px;">
                   <ion-icon name="document-text-outline"></ion-icon>
