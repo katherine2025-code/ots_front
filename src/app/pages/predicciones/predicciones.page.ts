@@ -252,11 +252,10 @@ export class PrediccionesPage implements OnInit {
   async predecir() {
     this.prediciendo = true;
     try {
+      // El simulador simplificado solo pide la fecha y la temporada; el backend completa los
+      // demás factores (check-in, tarifa, clima) con valores típicos de esa temporada.
       const datos = {
         fecha_objetivo: this.fechaObjetivo,
-        checkin_nacionales: this.checkinNacionales,
-        checkin_extranjeros: this.checkinExtranjeros,
-        tarifa_cobrada: this.tarifaCobrada,
         temporada: this.temporada
       };
 

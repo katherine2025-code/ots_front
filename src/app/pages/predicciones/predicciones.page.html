@@ -21,7 +21,13 @@
         Entrenamiento Comparativo de Modelos ML
       </h2>
       <p>Entrenamiento simultáneo de <strong>Random Forest</strong>, <strong>XGBoost</strong> y <strong>Prophet</strong> para comparar su
-        precisión.</p>
+        precisión. El sistema usa automáticamente el modelo más preciso (🏆 ganador) para las predicciones.</p>
+      <ul class="glosario" *ngIf="comparacion">
+        <li><strong>Precisión</strong>: qué tan acertado es el modelo (más alto es mejor).</li>
+        <li><strong>MAE</strong>: error promedio en puntos de ocupación (más bajo es mejor).</li>
+        <li><strong>RMSE</strong>: error promedio penalizando los fallos grandes (más bajo es mejor).</li>
+        <li><strong>R²</strong>: qué tanto explica el modelo los datos, de 0 a 1 (más cerca de 1 es mejor).</li>
+      </ul>
     </div>
 
     <ion-button expand="block" color="primary" size="large" class="train-button" (click)="entrenarModelo()"
@@ -149,27 +155,20 @@
 
     <!-- MODO 1: SIMULADOR -->
     <div *ngIf="modoPrediccion === 'simulador'">
-      <div class="form-grid">
+      <p class="modo-ayuda">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        Estima la ocupación esperada para <strong>un día</strong>. Elige la fecha y la temporada;
+        el modelo completa el resto de factores automáticamente.
+      </p>
+      <div class="form-grid dos-col">
         <ion-item>
-          <ion-label position="floating">Fecha Objetivo</ion-label>
+          <ion-label position="floating">Fecha a predecir</ion-label>
           <ion-input type="date" [(ngModel)]="fechaObjetivo"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label position="floating">Check-in Nacionales</ion-label>
-          <ion-input type="number" min="0" [(ngModel)]="checkinNacionales"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Check-in Extranjeros</ion-label>
-          <ion-input type="number" min="0" [(ngModel)]="checkinExtranjeros"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Tarifa Cobrada (USD)</ion-label>
-          <ion-input type="number" min="0" [(ngModel)]="tarifaCobrada"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>Temporada</ion-label>
+          <ion-label position="floating">Temporada</ion-label>
           <ion-select [(ngModel)]="temporada">
-            <ion-select-option value="Alta">Alta (Feriados)</ion-select-option>
+            <ion-select-option value="Alta">Alta (feriados / vacaciones)</ion-select-option>
             <ion-select-option value="Media">Media</ion-select-option>
             <ion-select-option value="Baja">Baja</ion-select-option>
           </ion-select>
