@@ -597,3 +597,54 @@ ion-card-content {
 .ion-palette-dark .leaflet-container {
     background: #1e2530;
 }
+
+/* ============================================
+   IMPRESIÓN / GUARDAR COMO PDF
+   Al imprimir una página (p. ej. "Ver Reporte Detallado") debe salir SOLO el contenido,
+   no el menú lateral ni el botón de tema. Además, ion-content por defecto solo imprime
+   lo visible en pantalla: se fuerza a mostrar todo su contenido.
+   ============================================ */
+@media print {
+    ion-menu,
+    .boton-tema,
+    ion-back-button,
+    .ion-no-print {
+        display: none !important;
+    }
+
+    ion-split-pane {
+        display: block !important;
+    }
+
+    #main-content,
+    ion-router-outlet#main-content {
+        position: static !important;
+        width: 100% !important;
+        left: 0 !important;
+        contain: none !important;
+    }
+
+    // ion-content usa scroll interno (position:absolute): se neutraliza para que imprima
+    // TODO el reporte, no solo la parte visible.
+    ion-content {
+        --offset-top: 0 !important;
+        --offset-bottom: 0 !important;
+        --overflow: visible !important;
+        position: static !important;
+        height: auto !important;
+        overflow: visible !important;
+        contain: none !important;
+    }
+
+    ion-content::part(scroll) {
+        position: static !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    // Que los colores de fondo (encabezado del reporte, tablas) se impriman tal cual.
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
