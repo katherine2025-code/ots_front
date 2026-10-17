@@ -9,6 +9,12 @@ import { PrediccionService } from 'src/app/core/services/prediccion.service';
 
 Chart.register(...registerables);
 
+// Colores para que los gráficos se lean sobre el panel oscuro del dashboard.
+const EJE_TICK = '#8ea6c8';
+const EJE_GRID = 'rgba(255,255,255,0.06)';
+const LEYENDA = '#cbd5e1';
+const TITULO_CHART = '#e8eef7';
+
 @Component({
   selector: 'app-predicciones',
   templateUrl: './predicciones.page.html',
@@ -232,15 +238,17 @@ export class PrediccionesPage implements OnInit {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { position: 'bottom', labels: { color: LEYENDA } },
           title: {
             display: true,
             text: 'Comparación: Random Forest vs XGBoost vs Prophet',
+            color: TITULO_CHART,
             font: { size: 14, weight: 'bold' }
           }
         },
         scales: {
-          y: { beginAtZero: true }
+          x: { ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } },
+          y: { beginAtZero: true, ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } }
         }
       }
     });
@@ -310,18 +318,21 @@ export class PrediccionesPage implements OnInit {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { position: 'bottom', labels: { color: LEYENDA } },
           title: {
             display: true,
             text: `Predicción con ${this.prediccion.modelo || 'Modelo ML'}`,
+            color: TITULO_CHART,
             font: { size: 14, weight: 'bold' }
           }
         },
         scales: {
+          x: { ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } },
           y: {
             beginAtZero: true,
             max: 100,
-            title: { display: true, text: 'Ocupación (%)' }
+            title: { display: true, text: 'Ocupación (%)', color: EJE_TICK },
+            ticks: { color: EJE_TICK }, grid: { color: EJE_GRID }
           }
         }
       }
@@ -406,18 +417,21 @@ export class PrediccionesPage implements OnInit {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { position: 'bottom', labels: { color: LEYENDA } },
           title: {
             display: true,
             text: `Tendencia de Ocupación (${this.resultadoRango.fecha_inicio} a ${this.resultadoRango.fecha_fin})`,
+            color: TITULO_CHART,
             font: { size: 13, weight: 'bold' }
           }
         },
         scales: {
+          x: { ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } },
           y: {
             beginAtZero: true,
             max: 100,
-            title: { display: true, text: 'Ocupación (%)' }
+            title: { display: true, text: 'Ocupación (%)', color: EJE_TICK },
+            ticks: { color: EJE_TICK }, grid: { color: EJE_GRID }
           }
         }
       }
@@ -458,9 +472,12 @@ export class PrediccionesPage implements OnInit {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          title: { display: true, text: 'Ocupación por Día de Semana', font: { size: 12, weight: 'bold' } }
+          title: { display: true, text: 'Ocupación por Día de Semana', color: TITULO_CHART, font: { size: 12, weight: 'bold' } }
         },
-        scales: { y: { beginAtZero: true, max: 100 } }
+        scales: {
+          x: { ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } },
+          y: { beginAtZero: true, max: 100, ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } }
+        }
       }
     });
   }
@@ -496,8 +513,8 @@ export class PrediccionesPage implements OnInit {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom' },
-          title: { display: true, text: 'Comparación por Temporada', font: { size: 12, weight: 'bold' } }
+          legend: { position: 'bottom', labels: { color: LEYENDA } },
+          title: { display: true, text: 'Comparación por Temporada', color: TITULO_CHART, font: { size: 12, weight: 'bold' } }
         }
       }
     });
@@ -573,18 +590,21 @@ export class PrediccionesPage implements OnInit {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { position: 'bottom', labels: { color: LEYENDA } },
           title: {
             display: true,
             text: `Real vs Predicho (Precisión: ${this.precisionPromedio}%)`,
+            color: TITULO_CHART,
             font: { size: 13, weight: 'bold' }
           }
         },
         scales: {
+          x: { ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } },
           y: {
             beginAtZero: true,
             max: 100,
-            title: { display: true, text: 'Ocupación (%)' }
+            title: { display: true, text: 'Ocupación (%)', color: EJE_TICK },
+            ticks: { color: EJE_TICK }, grid: { color: EJE_GRID }
           }
         }
       }
