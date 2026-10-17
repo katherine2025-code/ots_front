@@ -329,6 +329,12 @@ export class EtlPage implements OnInit, OnDestroy {
 
     const doc = new jsPDF('l', 'mm', 'a4');
 
+    // Logo del OTS en el encabezado (si se puede cargar). El logo es apaisado (402x60 px).
+    const logo = await this.cargarLogo();
+    if (logo) {
+      try { doc.addImage(logo, 'PNG', 15, 8, 40, 6); } catch { /* si falla, se omite el logo */ }
+    }
+
     doc.setFontSize(16);
     doc.setTextColor(41, 128, 185);
     doc.text('OBSERVATORIO TURÍSTICO SOSTENIBLE - UPSE', 140, 15, { align: 'center' });
@@ -403,6 +409,21 @@ export class EtlPage implements OnInit, OnDestroy {
         headStyles: { fillColor: [52, 152, 219], textColor: 255 },
         styles: { fontSize: 9 },
         columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 60 }, 2: { cellWidth: 140 } }
+      });
+
+      // RESUMEN EN TEXTO: redacta en prosa los hallazgos principales, para acompañar los cuadros.
+      currentY = (doc as any).lastAutoTable.finalY + 8;
+      doc.setFontSize(12);
+      doc.setTextColor(41, 128, 185);
+      doc.text('RESUMEN', 15, currentY);
+
+      const resumen = this.redactarResumen(proceso, estadisticas);
+      autoTable(doc, {
+        startY: currentY + 3,
+        body: [[resumen]],
+        theme: 'plain',
+        styles: { fontSize: 10, textColor: [60, 60, 60], cellPadding: 1 },
+        columnStyles: { 0: { cellWidth: 265 } }
       });
     }
 
@@ -483,6 +504,44 @@ export class EtlPage implements OnInit, OnDestroy {
     const nombreArchivo = `reporte-${proceso.id_etl}-${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(nombreArchivo);
     console.log('📄 Reporte PDF generado:', nombreArchivo);
+  }
+
+  // Carga el logo del OTS como data URL para incrustarlo en el PDF. Devuelve null si no se
+  // puede (sin red, archivo movido): en ese caso el PDF se genera igual, solo sin logo.
+  private async cargarLogo(): Promise<string | null> {
+    try {
+      const resp = await fetch('assets/icon/logo-ots.png');
+      if (!resp.ok) return null;
+      const blob = await resp.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const lector = new FileReader();
+        lector.onloadend = () => resolve(lector.result as string);
+        lector.onerror = reject;
+        lector.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  // Redacta en prosa los hallazgos principales del proceso, para acompañar los cuadros del reporte.
+  private redactarResumen(proceso: any, e: any): string {
+    const total = e.total_registros || 0;
+    const pct = (n: number) => (total ? ((n || 0) / total * 100).toFixed(1) : '0.0');
+    if (proceso.tipo_datos === 'encuestas') {
+      return `Durante este proceso se incorporaron ${total} encuestas a turistas, provenientes de `
+        + `${e.paises_diferentes || 0} países distintos. El gasto promedio diario por persona fue de `
+        + `$${e.gasto_promedio || 0} y la satisfacción general promedió ${e.satisfaccion_promedio || 0} `
+        + `sobre 5. La edad promedio de los encuestados fue de ${e.edad_promedio || 0} años. En cuanto al `
+        + `género, el ${pct(e.genero_femenino)}% se identificó como mujer y el ${pct(e.genero_masculino)}% `
+        + `como hombre. El ${pct(e.satisfechos)}% de los visitantes se declaró satisfecho (calificación de `
+        + `4 o más sobre 5), lo que refleja una experiencia turística mayormente positiva en el destino.`;
+    }
+    return `Se procesaron ${total} registros de ocupación hotelera. La ocupación promedio fue del `
+      + `${e.ocupacion_promedio || 0}%, con una tarifa promedio de $${e.tarifa_promedio || 0} por `
+      + `habitación y un total de ${e.total_huespedes || 0} huéspedes entre nacionales y extranjeros. `
+      + `La ocupación registrada osciló entre un mínimo del ${e.ocupacion_minima || 0}% y un máximo del `
+      + `${e.ocupacion_maxima || 0}%.`;
   }
 
   // ==========================================

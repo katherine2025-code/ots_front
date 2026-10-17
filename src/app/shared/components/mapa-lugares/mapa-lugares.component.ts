@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
-import { LugarVisita } from 'src/app/core/services/lugares.service';
+import { LugarVisita, PuntoGps } from 'src/app/core/services/lugares.service';
 
 // Centro aproximado de la península de Santa Elena
 const CENTRO: L.LatLngExpression = [-2.0, -80.85];
@@ -21,6 +21,7 @@ const ZOOM_INICIAL = 9;
 })
 export class MapaLugaresComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() lugares: LugarVisita[] = [];
+  @Input() puntosGps: PuntoGps[] = [];
   @ViewChild('contenedor', { static: true }) contenedor!: ElementRef<HTMLDivElement>;
 
   private mapa?: L.Map;
@@ -64,20 +65,40 @@ export class MapaLugaresComponent implements AfterViewInit, OnChanges, OnDestroy
     if (!this.mapa) return;
 
     // Si los datos no cambiaron no se redibuja (evita trabajo y parpadeos en cada refresco)
-    const firma = JSON.stringify((this.lugares || []).map(l => [l.nombre, l.visitas, l.lat, l.lng]));
+    const gps = (this.puntosGps || []).filter(p => p && p.lat != null && p.lng != null);
+    const firma = JSON.stringify([
+      (this.lugares || []).map(l => [l.nombre, l.visitas, l.lat, l.lng]),
+      gps.length
+    ]);
     if (firma === this.firmaDibujada) return;
     this.firmaDibujada = firma;
 
     this.capa.clearLayers();
 
     const puntos = (this.lugares || []).filter(l => l.lat !== null && l.lng !== null && l.visitas > 0);
+    const limites: L.LatLngTuple[] = [];
+
+    // Capa de puntos GPS reales (ubicación de cada encuesta): puntos pequeños y translúcidos
+    // que muestran la distribución real. Se dibujan PRIMERO para que los círculos de lugares
+    // (más grandes) queden encima.
+    for (const p of gps) {
+      const posicion: L.LatLngTuple = [p.lat, p.lng];
+      limites.push(posicion);
+      L.circleMarker(posicion, {
+        radius: 3, color: '#2A6F97', weight: 0, fillColor: '#2A6F97', fillOpacity: 0.35
+      }).addTo(this.capa);
+    }
+
     if (puntos.length === 0) {
-      this.mapa.setView(CENTRO, ZOOM_INICIAL);
+      if (gps.length > 0) {
+        this.mapa.fitBounds(L.latLngBounds(limites), { padding: [40, 40], maxZoom: 12 });
+      } else {
+        this.mapa.setView(CENTRO, ZOOM_INICIAL);
+      }
       return;
     }
 
     const maximo = Math.max(...puntos.map(p => p.visitas));
-    const limites: L.LatLngTuple[] = [];
 
     for (const p of puntos) {
       const intensidad = p.visitas / maximo;                 // 0..1

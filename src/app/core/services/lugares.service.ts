@@ -11,9 +11,15 @@ export interface LugarVisita {
   canton: string | null;
 }
 
+export interface PuntoGps {
+  lat: number;
+  lng: number;
+}
+
 export interface GrupoLugares {
   encuestas: number;    // turistas encuestados que respondieron lugares visitados
   lugares: LugarVisita[];
+  puntosGps?: PuntoGps[];   // ubicación GPS real de cada encuesta (formato nuevo del cuestionario)
 }
 
 export interface FeriadoLugares extends GrupoLugares {
