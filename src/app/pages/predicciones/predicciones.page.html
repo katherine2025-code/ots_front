@@ -228,6 +228,18 @@
           <ion-icon name="time-outline"></ion-icon>
           <ion-label>30 días</ion-label>
         </ion-chip>
+        <ion-chip color="tertiary" (click)="seleccionarRangoRapido(90)">
+          <ion-icon name="time-outline"></ion-icon>
+          <ion-label>3 meses</ion-label>
+        </ion-chip>
+        <ion-chip color="tertiary" (click)="seleccionarRangoRapido(180)">
+          <ion-icon name="time-outline"></ion-icon>
+          <ion-label>6 meses</ion-label>
+        </ion-chip>
+        <ion-chip color="tertiary" (click)="seleccionarRangoRapido(365)">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <ion-label>1 año</ion-label>
+        </ion-chip>
       </div>
 
       <div class="form-grid">
