@@ -74,21 +74,6 @@ export class EtlService {
     return this.http.delete(`${this.apiUrl}/registro/${id}`);
   }
 
-  procesarCSV(file: File, tipo: string): Observable<any> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('tipo', tipo);
-    return this.http.post(`${this.apiUrl}/procesar`, formData);
-  }
-
-  obtenerHistorial(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/historial`);
-  }
-
-  obtenerDetalles(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/detalles/${id}`);
-  }
-
   // MÉTODOS ML (vía proxy del backend; entrenar y predecir están en prediccion.service.ts)
 
   getMetricas(): Observable<any> {
