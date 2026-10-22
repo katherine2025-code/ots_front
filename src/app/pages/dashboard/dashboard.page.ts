@@ -350,12 +350,6 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  getPrecisionClass(precision: number): string {
-    if (precision >= 90) return 'high';
-    if (precision >= 75) return 'medium';
-    return 'low';
-  }
-
   navegarA(ruta: string): void {
     this.router.navigate([ruta]);
   }

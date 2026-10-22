@@ -40,10 +40,6 @@
         <div class="kpi-content">
           <h3>{{ metricas.totalHoteles }}</h3>
           <p>Hoteles Registrados</p>
-          <span class="kpi-trend">
-            <ion-icon name="trending-up-outline"></ion-icon>
-            +12% vs mes anterior
-          </span>
         </div>
       </div>
 
@@ -54,10 +50,6 @@
         <div class="kpi-content">
           <h3>{{ metricas.ocupacionPromedio | number:'1.1-1' }}%</h3>
           <p>Ocupación Promedio</p>
-          <span class="kpi-trend">
-            <ion-icon name="trending-up-outline"></ion-icon>
-            +5.3% vs mes anterior
-          </span>
         </div>
       </div>
 
@@ -68,10 +60,6 @@
         <div class="kpi-content">
           <h3>{{ metricas.prediccionesHoy }}</h3>
           <p>Predicciones Hoy</p>
-          <span class="kpi-trend">
-            <ion-icon name="trending-up-outline"></ion-icon>
-            +8 nuevas
-          </span>
         </div>
       </div>
 
@@ -82,10 +70,6 @@
         <div class="kpi-content">
           <h3>{{ metricas.precisionModelo | number:'1.1-1' }}%</h3>
           <p>Precisión del Modelo</p>
-          <span class="kpi-trend" [ngClass]="getPrecisionClass(metricas.precisionModelo)">
-            <ion-icon name="trending-up-outline"></ion-icon>
-            +2.1% mejora
-          </span>
         </div>
       </div>
     </div>
