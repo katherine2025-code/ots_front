@@ -186,22 +186,6 @@
       font-size: 14px;
       color: var(--ots-text-muted);
     }
-
-    .kpi-trend {
-      font-size: 12px;
-      color: #10b981;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      &.medium {
-        color: #f59e0b;
-      }
-
-      &.low {
-        color: #ef4444;
-      }
-    }
   }
 
   &.kpi-primary .kpi-icon {
