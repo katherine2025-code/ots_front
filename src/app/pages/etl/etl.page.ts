@@ -32,7 +32,6 @@ export class EtlPage implements OnInit, OnDestroy {
   estadisticas: any = null;
   estadoProcesos: any = null;
   logsErrores: any[] = [];
-  ejecucionesProgramadas: any[] = [];
 
   tipoCarga: string = 'ocupacion';
   filtroHistorial: string = '';
@@ -86,7 +85,6 @@ export class EtlPage implements OnInit, OnDestroy {
     this.cargarEstadisticas();
     this.cargarEstadoProcesos();
     this.cargarLogsErrores();
-    this.cargarEjecucionesProgramadas();
   }
 
   cargarTiposDatos() {
@@ -132,13 +130,6 @@ export class EtlPage implements OnInit, OnDestroy {
     this.etlService.getLogsErrores(10).subscribe({
       next: (data) => this.logsErrores = data,
       error: (err) => console.error('Error logs:', err)
-    });
-  }
-
-  cargarEjecucionesProgramadas() {
-    this.etlService.getEjecucionesProgramadas().subscribe({
-      next: (data) => this.ejecucionesProgramadas = data,
-      error: (err) => console.error('Error programadas:', err)
     });
   }
 
@@ -579,13 +570,6 @@ export class EtlPage implements OnInit, OnDestroy {
         this.cargarEstadoProcesos();
       },
       error: (err) => alert(err.error?.error || 'Error al reintentar')
-    });
-  }
-
-  cancelarProgramacion(id: number) {
-    this.etlService.cancelarEjecucion(id).subscribe({
-      next: () => this.cargarEjecucionesProgramadas(),
-      error: (err) => alert(err.error?.error || 'Error al cancelar')
     });
   }
 

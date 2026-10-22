@@ -49,10 +49,6 @@
       <ion-icon name="time-outline"></ion-icon>
       Historial
     </button>
-    <button [class.active]="tabActiva === 'programadas'" (click)="cambiarTab('programadas')" class="tab-button">
-      <ion-icon name="calendar-outline"></ion-icon>
-      Programadas
-    </button>
     <button [class.active]="tabActiva === 'logs'" (click)="cambiarTab('logs')" class="tab-button">
       <ion-icon name="bug-outline"></ion-icon>
       Logs de Errores
@@ -321,48 +317,6 @@
         <div *ngIf="historial.length === 0" class="no-data">
           <ion-icon name="folder-open-outline"></ion-icon>
           <p>No hay registros en el historial</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB: Programadas -->
-  <div *ngIf="tabActiva === 'programadas'" class="tab-content">
-    <div class="table-card">
-      <div class="table-header">
-        <h3>Ejecuciones Programadas</h3>
-      </div>
-      <div class="table-container">
-        <table class="data-table" *ngIf="ejecucionesProgramadas.length > 0">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Tipo</th>
-              <th>Fecha Programada</th>
-              <th>Repeticion</th>
-              <th>Usuario</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of ejecucionesProgramadas">
-              <td>{{ item.id_etl }}</td>
-              <td>{{ item.tipo_datos }}</td>
-              <td>{{ item.fecha_programada | date:'medium' }}</td>
-              <td>{{ item.repeticion }}</td>
-              <td>{{ item.usuario?.nombres || 'N/A' }}</td>
-              <td>
-                <button class="btn-action btn-delete" (click)="cancelarProgramacion(item.id_etl)">
-                  <ion-icon name="close-circle-outline"></ion-icon>
-                  Cancelar
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div *ngIf="ejecucionesProgramadas.length === 0" class="no-data">
-          <ion-icon name="calendar-outline"></ion-icon>
-          <p>No hay ejecuciones programadas</p>
         </div>
       </div>
     </div>

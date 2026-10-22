@@ -42,10 +42,6 @@ export class EtlService {
     return this.http.get(`${this.apiUrl}/logs-errores?limit=${limit}`);
   }
 
-  getEjecucionesProgramadas(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/ejecuciones-programadas`);
-  }
-
   getHistoricalPredictions(limite?: number, dias?: number): Observable<any> {
     let params = new HttpParams();
 
@@ -80,10 +76,6 @@ export class EtlService {
     return this.http.post(`${this.apiUrl}/reintentar/${id}`, {});
   }
 
-  cancelarEjecucion(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/cancelar/${id}`, {});
-  }
-
   procesarCSV(file: File, tipo: string): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
@@ -100,21 +92,9 @@ export class EtlService {
   }
 
   // MÉTODOS ML (Microservicio Python)
-
-  entrenarModelo(): Observable<any> {
-    return this.http.post(`${this.mlUrl}/entrenar`, {});
-  }
-
-  predecirOcupacion(datos: any): Observable<any> {
-    return this.http.post(`${this.mlUrl}/predecir`, datos);
-  }
-
-  predecirOcupacionRango(fechaInicio: string, fechaFin: string): Observable<any> {
-    return this.http.post(`${this.mlUrl}/predecir-rango`, {
-      fecha_inicio: fechaInicio,
-      fecha_fin: fechaFin
-    });
-  }
+  // Entrenar y predecir van por el backend (ver prediccion.service.ts). getMetricas y
+  // getHistoricalPredictions todavía llaman directo a mlUrl (localhost:5000): en producción eso
+  // apunta a la máquina del usuario y falla. Pendiente: exponerlos a través del backend.
 
   getMetricas(): Observable<any> {
     return this.http.get(`${this.mlUrl}/metricas`);
