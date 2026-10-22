@@ -10,7 +10,9 @@ import { environment } from 'src/environments/environment';
 export class EtlService {
   // Ver api.service.ts: dentro de la app nativa 'localhost' apunta al propio celular, no al servidor.
   private apiUrl = `${Capacitor.isNativePlatform() ? environment.apiUrlNative : environment.apiUrl}/etl`;
-  private mlUrl = 'http://localhost:5000'; // Microservicio Python
+  // El microservicio Python no se llama nunca desde el navegador (no es público y exige un token
+  // de servicio): el backend hace de proxy en /api/predicciones/ml/* (ver prediccionRoutes.js).
+  private mlProxyUrl = `${Capacitor.isNativePlatform() ? environment.apiUrlNative : environment.apiUrl}/predicciones/ml`;
 
   constructor(private http: HttpClient) { }
 
@@ -52,7 +54,7 @@ export class EtlService {
       params = params.set('dias', dias.toString());
     }
 
-    return this.http.get(`${this.mlUrl}/predicciones-historicas`, { params });
+    return this.http.get(`${this.mlProxyUrl}/historicas`, { params });
   }
 
   cargarArchivo(file: File, tipo: string): Observable<any> {
@@ -91,12 +93,9 @@ export class EtlService {
     return this.http.get(`${this.apiUrl}/detalles/${id}`);
   }
 
-  // MÉTODOS ML (Microservicio Python)
-  // Entrenar y predecir van por el backend (ver prediccion.service.ts). getMetricas y
-  // getHistoricalPredictions todavía llaman directo a mlUrl (localhost:5000): en producción eso
-  // apunta a la máquina del usuario y falla. Pendiente: exponerlos a través del backend.
+  // MÉTODOS ML (vía proxy del backend; entrenar y predecir están en prediccion.service.ts)
 
   getMetricas(): Observable<any> {
-    return this.http.get(`${this.mlUrl}/metricas`);
+    return this.http.get(`${this.mlProxyUrl}/metricas`);
   }
 }
