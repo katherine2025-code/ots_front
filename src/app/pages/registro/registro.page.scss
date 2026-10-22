@@ -126,6 +126,22 @@
   }
 }
 
+.nota-rol {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 20px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--ots-text);
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 1.2rem;
+    color: #2e86c1;
+  }
+}
+
 .error-message-small {
   color: #e53e3e;
   font-size: 12px;

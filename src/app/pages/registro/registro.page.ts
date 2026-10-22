@@ -17,7 +17,6 @@ export class RegistroPage {
   registroForm: FormGroup;
   loading = false;
   error = '';
-  readonly ROLES = ROLES;
 
   constructor(
     private fb: FormBuilder,
@@ -28,8 +27,7 @@ export class RegistroPage {
       nombres: ['', [Validators.required, Validators.minLength(2)]],
       apellidos: ['', [Validators.required, Validators.minLength(2)]],
       correo: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      id_rol: [ROLES.INVESTIGADOR, [Validators.required]]
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
@@ -51,7 +49,7 @@ export class RegistroPage {
       apellidos: this.f['apellidos'].value,
       correo: this.f['correo'].value,
       password: this.f['password'].value,
-      id_rol: this.f['id_rol'].value
+      id_rol: ROLES.ENCUESTADOR // único rol de autoregistro (ver authService.registrar en el backend)
     };
 
     this.authService.registro(registroData).subscribe({
