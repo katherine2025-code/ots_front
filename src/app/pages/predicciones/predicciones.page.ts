@@ -156,15 +156,40 @@ export class PrediccionesPage implements OnInit {
       const response: any = await this.etlService.getMetricas().toPromise();
       this.metricas = response;
 
-      if (response && response.comparacion) {
+      // /metricas del microservicio NO trae 'comparacion' ni 'mejor_modelo' (eso solo viene en la
+      // respuesta de POST /entrenar). Trae: entrenado (hay modelo en uso, aunque se esté
+      // reentrenando otro en segundo plano), estado_modelo, modelo_usado y metricas por algoritmo.
+      if (response?.entrenado) {
         this.modeloListo = true;
-        this.comparacion = response.comparacion;
-        this.modeloUsado = response.mejor_modelo || 'Modelo listo';
+        this.modeloUsado = response.modelo_usado || 'Modelo listo';
+        this.comparacion = this.armarComparacion(response.metricas, response.modelo_usado);
+        if (this.comparacion) {
+          setTimeout(() => this.crearGraficoComparacion(), 100);
+        }
         console.log('📊 Métricas cargadas:', this.metricas);
       }
     } catch (error) {
       console.error('Error cargando métricas:', error);
     }
+  }
+
+  // Arma 'comparacion' con el mismo formato que devuelve POST /entrenar (ver generar_comparacion en
+  // modelo.py del microservicio) a partir de las métricas por algoritmo de /metricas, para que el
+  // panel y el gráfico de comparación se vean al abrir la página y no solo justo después de
+  // entrenar. Devuelve null si no hay métricas (p. ej. un modelo antiguo sin modelo_ganador.json).
+  private armarComparacion(metricas: any, ganador: string): any {
+    const rf = metricas?.['Random Forest'];
+    if (!rf) return null;
+    const xgboost = metricas['XGBoost'] || {};
+    const prophet = metricas['Prophet'] || null;
+    const precisiones = [rf, xgboost, prophet].filter(m => m).map(m => m.precision || 0);
+    return {
+      ganador,
+      random_forest: rf,
+      xgboost,
+      prophet,
+      diferencia_precision: Math.round((Math.max(...precisiones) - Math.min(...precisiones)) * 100) / 100
+    };
   }
 
   async entrenarModelo() {

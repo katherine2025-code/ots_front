@@ -542,7 +542,8 @@ export class EtlPage implements OnInit, OnDestroy {
   async confirmarEliminar(id: number) {
     const alerta = await this.alertController.create({
       header: 'Confirmar',
-      message: '¿Estás seguro de eliminar este registro del historial?',
+      message: '¿Eliminar esta carga fallida del historial? No afecta a los datos ya cargados. '
+        + 'Para reintentarla, vuelve a subir el archivo.',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {
@@ -561,16 +562,6 @@ export class EtlPage implements OnInit, OnDestroy {
       ]
     });
     await alerta.present();
-  }
-
-  reintentar(id: number) {
-    this.etlService.reintentarProceso(id).subscribe({
-      next: () => {
-        this.cargarHistorial();
-        this.cargarEstadoProcesos();
-      },
-      error: (err) => alert(err.error?.error || 'Error al reintentar')
-    });
   }
 
   getEstadoClass(estado: string): string {
