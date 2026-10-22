@@ -303,11 +303,10 @@
                   (click)="descargarReportePDF(item.id_etl)" title="Descargar Reporte PDF" style="margin-right: 5px;">
                   <ion-icon name="document-text-outline"></ion-icon>
                 </button>
-                <button *ngIf="item.estado === 'ERROR'" class="btn-action btn-retry" (click)="reintentar(item.id_etl)"
-                  title="Reintentar" style="margin-right: 5px;">
-                  <ion-icon name="refresh-outline"></ion-icon>
-                </button>
-                <button class="btn-action btn-delete" (click)="confirmarEliminar(item.id_etl)" title="Eliminar">
+                <!-- Solo cargas fallidas: las completadas son el registro de qué se cargó y quién
+                     (el backend rechaza borrarlas). Para reintentar, se vuelve a subir el archivo. -->
+                <button *ngIf="item.estado === 'ERROR'" class="btn-action btn-delete"
+                  (click)="confirmarEliminar(item.id_etl)" title="Eliminar del historial">
                   <ion-icon name="trash-outline"></ion-icon>
                 </button>
               </td>

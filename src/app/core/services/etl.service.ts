@@ -74,10 +74,6 @@ export class EtlService {
     return this.http.delete(`${this.apiUrl}/registro/${id}`);
   }
 
-  reintentarProceso(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reintentar/${id}`, {});
-  }
-
   procesarCSV(file: File, tipo: string): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
