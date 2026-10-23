@@ -58,8 +58,17 @@
           <ion-icon name="analytics-outline"></ion-icon>
         </div>
         <div class="kpi-content">
-          <h3>{{ metricas.prediccionesHoy }}</h3>
-          <p>Predicciones Hoy</p>
+          <h3 class="kpi-texto">{{ modelo.usado || '—' }}</h3>
+          <p>Modelo en uso</p>
+          <span class="kpi-detalle" [ngSwitch]="modelo.estado">
+            <ng-container *ngSwitchCase="'entrenando'">Reentrenando en segundo plano…</ng-container>
+            <ng-container *ngSwitchCase="'ausente'">Sin entrenar todavía</ng-container>
+            <ng-container *ngSwitchCase="'no_disponible'">Servicio de ML no disponible</ng-container>
+            <ng-container *ngSwitchCase="'cargando'">Consultando…</ng-container>
+            <ng-container *ngSwitchDefault>
+              <ng-container *ngIf="modelo.fechaEntrenamiento">Entrenado el {{ modelo.fechaEntrenamiento | date:'dd/MM/yyyy HH:mm' }}</ng-container>
+            </ng-container>
+          </span>
         </div>
       </div>
 
@@ -68,8 +77,9 @@
           <ion-icon name="checkmark-circle-outline"></ion-icon>
         </div>
         <div class="kpi-content">
-          <h3>{{ metricas.precisionModelo | number:'1.1-1' }}%</h3>
+          <h3>{{ modelo.precision !== null ? (modelo.precision | number:'1.1-1') + '%' : '—' }}</h3>
           <p>Precisión del Modelo</p>
+          <span class="kpi-detalle" *ngIf="modelo.precision !== null">del modelo en uso, sobre datos de prueba</span>
         </div>
       </div>
     </div>

@@ -45,9 +45,17 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
   metricas = {
     totalHoteles: 0,
-    ocupacionPromedio: 0,
-    prediccionesHoy: 0,
-    precisionModelo: 0
+    ocupacionPromedio: 0
+  };
+
+  // Modelo ML en uso, tal como lo reporta el microservicio (/api/predicciones/ml/metricas).
+  // estado: 'cargado' | 'entrenando' | 'ausente' | 'cargando' | 'no_disponible' (el servicio ML
+  // no respondió). precision y usado son null si no hay modelo entrenado.
+  modelo: { estado: string; usado: string | null; precision: number | null; fechaEntrenamiento: string | null } = {
+    estado: 'cargando',
+    usado: null,
+    precision: null,
+    fechaEntrenamiento: null
   };
 
   datosOcupacion: any[] = [];
@@ -234,13 +242,21 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    this.prediccionService.getMetricasModelo().subscribe({
-      next: (metricas: any) => {
-        this.metricas.prediccionesHoy = metricas.predicciones_hoy || 0;
-        this.metricas.precisionModelo = metricas.precision_promedio || 0;
+    // Antes las tarjetas usaban /api/predicciones/metricas, que cuenta filas de la tabla
+    // predicciones (en la que nada escribe: "Predicciones Hoy" era siempre 0) y devolvía una
+    // precisión fija de 85% cuando no había predicciones validadas.
+    this.prediccionService.getMetricasModeloML().subscribe({
+      next: (m: any) => {
+        const entrenado = !!m?.entrenado;
+        this.modelo = {
+          estado: m?.estado_modelo || (entrenado ? 'cargado' : 'ausente'),
+          usado: entrenado ? m.modelo_usado : null,
+          precision: entrenado && m.precision != null ? Number(m.precision) : null,
+          fechaEntrenamiento: entrenado ? m.fecha_entrenamiento || null : null
+        };
       },
       error: () => {
-        // Manejar error
+        this.modelo = { estado: 'no_disponible', usado: null, precision: null, fechaEntrenamiento: null };
       }
     });
 
