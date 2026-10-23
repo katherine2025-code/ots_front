@@ -227,24 +227,5 @@
       </div>
     </div>
 
-    <!-- Predicciones Recientes -->
-    <div class="recent-predictions" *ngIf="!loading && prediccionesRecientes.length > 0">
-      <h3>Predicciones Recientes</h3>
-      <ion-list>
-        <ion-item *ngFor="let pred of prediccionesRecientes">
-          <ion-label>
-            <h2>{{ pred.fecha_objetivo | date:'dd/MM/yyyy' }}</h2>
-            <p>Ocupación predicha: {{ pred.ocupacion_predicha }}% (Precisión: {{ pred.precision }}%)</p>
-          </ion-label>
-          <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="success" (click)="validarPrediccion(pred)">
-            <ion-icon name="checkmark-outline"></ion-icon>
-          </ion-button>
-          <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="danger" (click)="descartarPrediccion(pred)">
-            <ion-icon name="close-outline"></ion-icon>
-          </ion-button>
-        </ion-item>
-      </ion-list>
-    </div>
-
   </div>
 </ion-content>

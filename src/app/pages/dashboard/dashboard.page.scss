@@ -281,40 +281,6 @@
   }
 }
 
-// ✅ NUEVO: Lista de Predicciones Recientes
-.recent-predictions {
-  margin-top: 20px;
-  background: var(--ots-surface);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-
-  h3 {
-    margin: 0 0 16px 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--ots-text);
-  }
-
-  ion-item {
-    --background: transparent;
-    --border-color: var(--ots-border);
-
-    h2 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--ots-text);
-      margin-bottom: 4px;
-    }
-
-    p {
-      font-size: 13px;
-      color: var(--ots-text-muted);
-      margin: 0;
-    }
-  }
-}
-
 // Responsive Design
 @media (max-width: 1024px) {
   .charts-row {
@@ -450,23 +416,6 @@ ion-content {
     }
   }
 
-  .recent-predictions {
-    padding: 16px;
-
-    h3 {
-      font-size: 14px;
-    }
-
-    ion-item {
-      h2 {
-        font-size: 13px;
-      }
-
-      p {
-        font-size: 12px;
-      }
-    }
-  }
 }
 
 // Móviles muy pequeños

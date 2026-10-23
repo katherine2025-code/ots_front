@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router, RouterLink } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { HotelService } from 'src/app/core/services/hotel.service';
 import { PrediccionService } from 'src/app/core/services/prediccion.service';
 import { OcupacionService } from 'src/app/core/services/ocupacion.service';
@@ -59,7 +61,6 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   };
 
   datosOcupacion: any[] = [];
-  prediccionesRecientes: any[] = [];
   loading = true;
 
   // ===== Jornada de recolección en curso (resumen) =====
@@ -223,23 +224,20 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   cargarDashboard(): void {
     this.loading = true;
 
-    this.hotelService.getHoteles().subscribe({
-      next: (hoteles: any[]) => {
+    // El spinner se quita cuando responden las dos fuentes de las tarjetas principales (aunque
+    // alguna falle). Antes dependía de la lista de "Predicciones recientes", ya retirada.
+    forkJoin({
+      hoteles: this.hotelService.getHoteles().pipe(catchError(() => of(null))),
+      stats: this.ocupacionService.getEstadisticas().pipe(catchError(() => of(null)))
+    }).subscribe(({ hoteles, stats }: { hoteles: any[] | null; stats: any }) => {
+      if (hoteles) {
         this.metricas.totalHoteles = hoteles.length;
-      },
-      error: () => {
-        // Manejar error
       }
-    });
-
-    this.ocupacionService.getEstadisticas().subscribe({
-      next: (stats: any) => {
+      if (stats) {
         this.metricas.ocupacionPromedio = stats.ocupacion_promedio || 0;
         this.datosOcupacion = stats.ultimos_30_dias || [];
-      },
-      error: () => {
-        // Manejar error
       }
+      this.loading = false;
     });
 
     // Antes las tarjetas usaban /api/predicciones/metricas, que cuenta filas de la tabla
@@ -257,16 +255,6 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       },
       error: () => {
         this.modelo = { estado: 'no_disponible', usado: null, precision: null, fechaEntrenamiento: null };
-      }
-    });
-
-    this.prediccionService.getPredicciones({ limite: 10 }).subscribe({
-      next: (predicciones: any[]) => {
-        this.prediccionesRecientes = predicciones;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
       }
     });
   }
@@ -368,21 +356,6 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
   navegarA(ruta: string): void {
     this.router.navigate([ruta]);
-  }
-
-  validarPrediccion(prediccion: any): void {
-    this.prediccionService.validarPrediccion(prediccion.id_prediccion).subscribe({
-      next: () => { prediccion.estado = 'validada'; },
-      error: (err) => console.error('Error al validar predicción:', err)
-    });
-  }
-
-  descartarPrediccion(prediccion: any): void {
-    if (!confirm(`¿Estás seguro de descartar la predicción del ${prediccion.fecha_objetivo}?`)) return;
-    this.prediccionService.descartarPrediccion(prediccion.id_prediccion, 'Descartada desde el dashboard').subscribe({
-      next: () => { prediccion.estado = 'descartada'; },
-      error: (err) => console.error('Error al descartar predicción:', err)
-    });
   }
 
   generarReporte(): void {
