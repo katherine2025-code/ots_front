@@ -52,4 +52,10 @@ export class PrediccionService {
   getMetricasModelo(): Observable<any> {
     return this.api.get<any>('predicciones/metricas');
   }
+
+  // Estado y precisión del modelo ML EN USO (proxy del backend al microservicio): entrenado,
+  // estado_modelo, modelo_usado, precision y fecha_entrenamiento.
+  getMetricasModeloML(): Observable<any> {
+    return this.api.get<any>('predicciones/ml/metricas');
+  }
 }
