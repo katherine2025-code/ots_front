@@ -221,7 +221,7 @@
         <div class="chart-container">
           <canvas #chartPredicciones [hidden]="sinDatosPredicciones"></canvas>
           <p class="sin-datos-chart" *ngIf="sinDatosPredicciones">
-            Todavía no hay predicciones validadas contra un dato real para compararlas.
+            {{ mensajePredicciones || 'Todavía no hay datos para comparar lo predicho con lo real.' }}
           </p>
         </div>
       </div>

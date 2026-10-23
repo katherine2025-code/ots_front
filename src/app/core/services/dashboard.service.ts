@@ -18,6 +18,13 @@ export interface PredichoVsReal {
   mes: string;
   predicho: number;
   real: number;
+  registros: number;
+}
+
+// datos vacío + mensaje cuando no hay modelo entrenado o aún no hay registros para comparar.
+export interface RespuestaPredichoVsReal {
+  datos: PredichoVsReal[];
+  mensaje: string | null;
 }
 
 @Injectable({
@@ -36,8 +43,9 @@ export class DashboardService {
     return this.api.get<OcupacionPorParroquia[]>('dashboard/ocupacion-parroquia');
   }
 
-  // Solo predicciones ya validadas (con ocupación real registrada); vacío si aún no hay ninguna.
-  getPredichoVsReal(): Observable<PredichoVsReal[]> {
-    return this.api.get<PredichoVsReal[]>('dashboard/predicho-vs-real');
+  // Ocupación predicha por el modelo en uso vs. la real, por mes (validación histórica del
+  // microservicio sobre los registros de ocupación cargados).
+  getPredichoVsReal(): Observable<RespuestaPredichoVsReal> {
+    return this.api.get<RespuestaPredichoVsReal>('dashboard/predicho-vs-real');
   }
 }

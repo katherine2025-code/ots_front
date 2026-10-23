@@ -89,6 +89,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   sinDatosTemporada = false;
   sinDatosParroquia = false;
   sinDatosPredicciones = false;
+  mensajePredicciones = '';
 
   constructor(
     private hotelService: HotelService,
@@ -292,13 +293,14 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // Ocupación predicha vs. real por mes: solo predicciones ya validadas contra un dato real.
-  // Mientras el modelo no tenga predicciones validadas, este gráfico queda honestamente vacío
-  // (con un aviso) en vez de mostrar una comparación inventada.
+  // Ocupación predicha vs. real por mes: el modelo en uso predice cada registro real de ocupación
+  // y se compara con el valor observado (validación histórica del microservicio). Sin modelo
+  // entrenado o sin registros, se muestra el aviso que manda el backend en vez de un gráfico vacío.
   cargarGraficoPredicciones() {
     this.dashboardService.getPredichoVsReal().subscribe({
-      next: (datos) => {
+      next: ({ datos, mensaje }) => {
         this.sinDatosPredicciones = datos.length === 0;
+        this.mensajePredicciones = mensaje || '';
         if (this.sinDatosPredicciones || !this.chartPrediccionesRef) return;
 
         const ctx = this.chartPrediccionesRef.nativeElement.getContext('2d');
@@ -319,7 +321,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           }
         });
       },
-      error: () => { this.sinDatosPredicciones = true; }
+      error: () => {
+        this.sinDatosPredicciones = true;
+        this.mensajePredicciones = 'No se pudo consultar el servicio de predicción.';
+      }
     });
   }
 
