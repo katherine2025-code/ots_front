@@ -3,7 +3,6 @@ import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Capacitor } from '@capacitor/core';
-import { StorageService } from './storage.service';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -15,26 +14,14 @@ export class ApiService {
   // en el navegador se usa environment.apiUrl (relativa en producción, localhost en desarrollo).
   private baseUrl = Capacitor.isNativePlatform() ? environment.apiUrlNative : environment.apiUrl;
 
-  constructor(
-    private http: HttpClient,
-    private storage: StorageService
-  ) { }
+  constructor(private http: HttpClient) { }
 
   // ==========================================
   // HEADERS
   // ==========================================
 
   private getHeaders(): HttpHeaders {
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-
-    const token = this.storage.get('token');
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    return headers;
+    return new HttpHeaders({ 'Content-Type': 'application/json' });
   }
 
   // ==========================================

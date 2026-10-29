@@ -19,6 +19,8 @@ export class StorageService {
   }
 
   clear(): void {
-    localStorage.clear();
+    Object.keys(localStorage)
+      .filter(k => k.startsWith(this.prefix))
+      .forEach(k => localStorage.removeItem(k));
   }
 }

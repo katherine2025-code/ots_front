@@ -1,27 +1,14 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // Intentar obtener de localStorage primero
-  let token = localStorage.getItem('token');
+  // StorageService usa el prefijo 'ots_' → la clave real es 'ots_token'
+  const raw = localStorage.getItem('ots_token');
+  const token = raw ? raw.replace(/['"]+/g, '') : null;
 
-  if (!token) {
-    // Ionic Storage guarda en localStorage con prefijo
-    const ionicStorage = JSON.parse(localStorage.getItem('_ionic/storage') || '{}');
-    token = ionicStorage?.token || null;
-  }
-
-  // Si hay token, agregarlo al header
   if (token) {
-    // Limpiar el token (quitar comillas si las tiene)
-    const cleanToken = token.replace(/['"]+/g, '');
-
-    // Clonar la petición y agregar el header
     const authReq = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${cleanToken}`
-      }
+      setHeaders: { Authorization: `Bearer ${token}` }
     });
-
     return next(authReq);
   }
 

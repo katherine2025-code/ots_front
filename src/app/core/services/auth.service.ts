@@ -22,14 +22,8 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.api.post<AuthResponse>('auth/login', credentials).pipe(
       tap(response => {
-        // Guardar en Ionic Storage
         this.storage.set('token', response.token);
         this.storage.set('usuario', JSON.stringify(response.usuario));
-
-        // TAMBIÉN guardar en localStorage (para el interceptor)
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('usuario', JSON.stringify(response.usuario));
-
         this.currentUserSubject.next(response.usuario);
       })
     );
@@ -58,12 +52,8 @@ export class AuthService {
 
   // MÉTODO LOGOUT
   logout(): void {
-    // Eliminar de ambos almacenamientos
     this.storage.remove('token');
     this.storage.remove('usuario');
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    
     this.currentUserSubject.next(null);
   }
 
