@@ -92,7 +92,8 @@ export const routes: Routes = [
   },
   {
     path: 'reporte-detalle/:id',
-    loadComponent: () => import('./pages/reporte-detalles/reporte-detalles.page').then(m => m.ReporteDetallePage)
+    loadComponent: () => import('./pages/reporte-detalles/reporte-detalles.page').then(m => m.ReporteDetallePage),
+    canActivate: [authGuard]
   },
 
   // ==========================================
