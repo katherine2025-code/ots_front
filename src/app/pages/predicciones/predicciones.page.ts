@@ -77,12 +77,6 @@ export class PrediccionesPage implements OnInit {
   chartTemporada: any = null;
   chartHistoricas: any = null;
 
-  // ==========================================
-  // RESULTADOS DE PREDICCIONES (SOLO ADMINISTRADOR)
-  // ==========================================
-  resultadosPredicciones: any[] = [];
-  cargandoResultados: boolean = false;
-
   constructor(
     private etlService: EtlService,
     private authService: AuthService,
@@ -101,8 +95,9 @@ export class PrediccionesPage implements OnInit {
     return this.authService.isSuperAdmin();
   }
 
-  // Administrador "puro" (no Super Administrador): en Predicciones solo ve y
-  // valida/descarta resultados, no entrena modelos ni genera predicciones nuevas.
+  // Administrador "puro" (no Super Administrador): no entrena modelos ni genera predicciones. La
+  // lista de resultados que podía validar/descartar se retiró (nada guardaba predicciones), así que
+  // solo ve un aviso que lo remite al dashboard.
   get esSoloAdmin(): boolean {
     return this.isAdmin && !this.isSuperAdmin;
   }
@@ -132,7 +127,6 @@ export class PrediccionesPage implements OnInit {
     this.fechaFinRango = masSieteDias.toISOString().split('T')[0];
 
     this.cargarMetricas();
-    if (this.esSoloAdmin) this.cargarResultados();
   }
 
   // ==========================================
@@ -655,46 +649,5 @@ export class PrediccionesPage implements OnInit {
     if (valor >= 80) return 'Alta';
     if (valor >= 50) return 'Media';
     return 'Baja';
-  }
-
-  // ==========================================
-  // RESULTADOS DE PREDICCIONES (SOLO ADMINISTRADOR)
-  // Lista las predicciones ya generadas (tabla `predicciones`) para que el
-  // Administrador las revise y confirme si acertaron o no, sin poder entrenar
-  // modelos ni generar predicciones nuevas (eso es de Super Administrador).
-  // ==========================================
-  async cargarResultados() {
-    this.cargandoResultados = true;
-    try {
-      const response: any = await this.prediccionService.getPredicciones({ limite: 20 }).toPromise();
-      this.resultadosPredicciones = response || [];
-    } catch (error) {
-      console.error('Error cargando resultados de predicciones:', error);
-      this.mostrarToast('❌ Error al cargar los resultados de predicciones', 'danger');
-    } finally {
-      this.cargandoResultados = false;
-    }
-  }
-
-  async validarResultado(pred: any) {
-    try {
-      await this.prediccionService.validarPrediccion(pred.id_prediccion).toPromise();
-      pred.estado = 'validada';
-      this.mostrarToast('✅ Predicción validada', 'success');
-    } catch (error) {
-      console.error('Error al validar predicción:', error);
-      this.mostrarToast('❌ No se pudo validar la predicción', 'danger');
-    }
-  }
-
-  async descartarResultado(pred: any) {
-    try {
-      await this.prediccionService.descartarPrediccion(pred.id_prediccion, 'Descartada desde Predicciones').toPromise();
-      pred.estado = 'descartada';
-      this.mostrarToast('Predicción descartada', 'medium');
-    } catch (error) {
-      console.error('Error al descartar predicción:', error);
-      this.mostrarToast('❌ No se pudo descartar la predicción', 'danger');
-    }
   }
 }

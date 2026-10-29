@@ -390,44 +390,17 @@
     </div>
   </div>
 
-  <!-- SECCIÓN 4: RESULTADOS DE PREDICCIONES (SOLO ADMINISTRADOR) -->
+  <!-- ADMINISTRADOR: no entrena ni genera predicciones (Super Administrador e Investigador). La
+       lista de "Resultados" para validar/descartar se retiró: nada guardaba predicciones. -->
   <div class="section-card" *ngIf="esSoloAdmin">
     <div class="section-header">
       <h2>
-        <ion-icon name="list-outline" class="section-icon"></ion-icon>
-        Resultados de Predicciones
+        <ion-icon name="information-circle-outline" class="section-icon"></ion-icon>
+        Predicciones
       </h2>
-      <p>Predicciones generadas por Super Administrador o Investigador. Puedes confirmar si acertaron
-        (validar) o descartarlas, pero no entrenar modelos ni generar predicciones nuevas.</p>
+      <p>Las predicciones las generan el Super Administrador y los Investigadores. El modelo en uso,
+        su precisión y la comparación de lo predicho con la ocupación real están en el Dashboard.</p>
     </div>
-
-    <div *ngIf="cargandoResultados" class="ion-text-center">
-      <ion-spinner name="crescent"></ion-spinner>
-    </div>
-
-    <p class="sin-datos" *ngIf="!cargandoResultados && resultadosPredicciones.length === 0">
-      Todavía no hay predicciones generadas para revisar.
-    </p>
-
-    <ion-list *ngIf="!cargandoResultados && resultadosPredicciones.length > 0">
-      <ion-item *ngFor="let pred of resultadosPredicciones">
-        <ion-label>
-          <h2>{{ pred.fecha | date:'dd/MM/yyyy' }} · {{ pred.modelo_utilizado }}</h2>
-          <p>Predicha: {{ pred.ocupacion_predicha }}%
-            <ng-container *ngIf="pred.ocupacion_real !== null"> · Real: {{ pred.ocupacion_real }}%</ng-container>
-          </p>
-          <ion-badge [color]="pred.estado === 'validada' ? 'success' : pred.estado === 'descartada' ? 'medium' : 'warning'">
-            {{ pred.estado }}
-          </ion-badge>
-        </ion-label>
-        <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="success" (click)="validarResultado(pred)">
-          <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="danger" (click)="descartarResultado(pred)">
-          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
-        </ion-button>
-      </ion-item>
-    </ion-list>
   </div>
 
 </ion-content>
