@@ -47,6 +47,9 @@
           <span class="categoria-badge" [ngClass]="'categoria-' + hotel.categoria">
             {{ hotel.categoria }} ★
           </span>
+          <span class="canton-badge" [ngClass]="hotel.canton === 'Salinas' ? 'salinas' : 'santa-elena'">
+            {{ hotel.canton || 'Sin clasificar' }}
+          </span>
         </ion-card-subtitle>
       </ion-card-header>
 
@@ -57,7 +60,7 @@
         </p>
         <p class="direccion">
           <ion-icon name="map-outline"></ion-icon>
-          {{ hotel.parroquia || 'Parroquia no registrada' }} · Cantón {{ hotel.canton || 'sin clasificar' }}
+          Parroquia {{ hotel.parroquia || 'no registrada' }} · Cantón {{ hotel.canton || 'sin clasificar' }}
         </p>
 
         <div class="hotel-stats">
@@ -65,9 +68,9 @@
             <ion-icon name="bed-outline"></ion-icon>
             {{ hotel.habitaciones_totales || 0 }} habitaciones
           </span>
-          <span class="stat-item" *ngIf="hotel.precio_promedio">
+          <span class="stat-item">
             <ion-icon name="cash-outline"></ion-icon>
-            ${{ hotel.precio_promedio }} promedio
+            {{ hotel.precio_promedio ? ('$' + (hotel.precio_promedio | number:'1.2-2') + ' promedio') : 'Precio sin registrar' }}
           </span>
           <span class="stat-item status" [ngClass]="hotel.estado === 'Activo' ? 'activo' : 'inactivo'">
             <ion-icon name="ellipse-outline"></ion-icon>

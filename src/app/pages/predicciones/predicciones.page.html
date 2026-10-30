@@ -2,8 +2,8 @@
   <!-- HEADER -->
   <div class="page-header">
     <div class="header-left">
-      <h1>Predicciones</h1>
-      <p class="subtitle">Análisis predictivo de ocupación hotelera con Machine Learning</p>
+      <h1>Predicciones - Tasa de Ocupación Hotelera</h1>
+      <p class="subtitle">Análisis predictivo con Machine Learning para el Observatorio Turístico Sostenible</p>
     </div>
     <div class="header-right">
       <ion-badge color="primary" class="model-badge">
@@ -13,201 +13,123 @@
     </div>
   </div>
 
-  <!-- SECCIÓN 1: ENTRENAMIENTO COMPARATIVO (SOLO SUPER ADMINISTRADOR) -->
+  <!-- SECCIÓN 1: SELECCIÓN DE MODELO (SOLO SUPER ADMINISTRADOR) -->
   <div class="section-card" *ngIf="isSuperAdmin">
     <div class="section-header">
       <h2>
-        <ion-icon name="analytics-outline" class="section-icon"></ion-icon>
-        Entrenamiento Comparativo de Modelos ML
+        <ion-icon name="trophy-outline" class="section-icon"></ion-icon>
+        Selección del Modelo para Análisis Predictivo
       </h2>
-      <p>Entrenamiento simultáneo de <strong>Random Forest</strong>, <strong>XGBoost</strong> y <strong>Prophet</strong> para comparar su
-        precisión. El sistema usa automáticamente el modelo más preciso (🏆 ganador) para las predicciones.</p>
+      <p>Se entrenan Random Forest, XGBoost y Prophet con registros históricos reales. El sistema selecciona automáticamente el modelo con mayor precisión para generar las proyecciones.</p>
     </div>
 
-    <ion-button expand="block" color="primary" size="large" class="train-button" (click)="entrenarModelo()"
+    <ion-button color="primary" size="default" class="train-button compact" (click)="entrenarModelo()"
       [disabled]="entrenando">
       <ion-spinner name="crescent" *ngIf="entrenando" slot="start"></ion-spinner>
       <ion-icon name="play-circle-outline" slot="start" *ngIf="!entrenando"></ion-icon>
-      {{ entrenando ? 'ENTRENANDO MODELOS...' : 'ENTRENAR ALGORITMOS' }}
+      {{ entrenando ? 'ENTRENANDO MODELOS...' : 'ENTRENAR MODELOS' }}
     </ion-button>
 
-    <!-- Tarjetas Comparativas -->
-    <div class="metrics-grid" *ngIf="comparacion">
-      <div class="metric-card rf-card">
-        <div class="card-header">
-          <ion-icon name="leaf-outline"></ion-icon>
-          <h3>Random Forest</h3>
-          <span class="badge" [class.winner]="comparacion.ganador === 'Random Forest'">
-            {{ comparacion.ganador === 'Random Forest' ? '🏆 GANADOR' : 'Alternativo' }}
-          </span>
+    <div class="winner-summary" *ngIf="comparacion && modeloListo">
+      <div class="winner-card">
+        <div class="winner-header">
+          <ion-icon name="trophy"></ion-icon>
+          <div>
+            <span class="winner-label">Modelo seleccionado para predicción</span>
+            <h3 class="winner-name">{{ comparacion.ganador }}</h3>
+          </div>
         </div>
-        <div class="metric-values">
-          <div class="metric-item">
-            <span class="metric-label">Precisión</span>
-            <span class="metric-value">{{ comparacion.random_forest.precision }}%</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">RMSE</span>
-            <span class="metric-value">{{ comparacion.random_forest.rmse }}</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">MAE</span>
-            <span class="metric-value">{{ comparacion.random_forest.mae }}</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">R² Score</span>
-            <span class="metric-value">{{ comparacion.random_forest.r2 }}</span>
+        <div class="winner-metrics">
+          <div class="winner-metric">
+            <span class="wm-label">Precisión</span>
+            <span class="wm-value">{{ (comparacion.ganador === 'Random Forest' ? comparacion.random_forest?.precision : comparacion.ganador === 'XGBoost' ? comparacion.xgboost?.precision : comparacion.prophet?.precision) || 0 }}%</span>
           </div>
         </div>
       </div>
-
-      <div class="metric-card xgb-card">
-        <div class="card-header">
-          <ion-icon name="flash-outline"></ion-icon>
-          <h3>XGBoost</h3>
-          <span class="badge" [class.winner]="comparacion.ganador === 'XGBoost'">
-            {{ comparacion.ganador === 'XGBoost' ? '🏆 GANADOR' : 'Alternativo' }}
-          </span>
+      <div class="data-info">
+        <div class="info-item">
+          <ion-icon name="server-outline"></ion-icon>
+          <span><strong>Registros históricos utilizados:</strong> {{ registrosHistoricos || 0 }}</span>
         </div>
-        <div class="metric-values">
-          <div class="metric-item">
-            <span class="metric-label">Precisión</span>
-            <span class="metric-value">{{ comparacion.xgboost.precision }}%</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">RMSE</span>
-            <span class="metric-value">{{ comparacion.xgboost.rmse }}</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">MAE</span>
-            <span class="metric-value">{{ comparacion.xgboost.mae }}</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">R² Score</span>
-            <span class="metric-value">{{ comparacion.xgboost.r2 }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="metric-card prophet-card" *ngIf="comparacion.prophet">
-        <div class="card-header">
-          <ion-icon name="trending-up-outline"></ion-icon>
-          <h3>Prophet</h3>
-          <span class="badge" [class.winner]="comparacion.ganador === 'Prophet'">
-            {{ comparacion.ganador === 'Prophet' ? '🏆 GANADOR' : 'Alternativo' }}
-          </span>
-        </div>
-        <div class="metric-values">
-          <div class="metric-item">
-            <span class="metric-label">Precisión</span>
-            <span class="metric-value">{{ comparacion.prophet.precision }}%</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">RMSE</span>
-            <span class="metric-value">{{ comparacion.prophet.rmse }}</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">MAE</span>
-            <span class="metric-value">{{ comparacion.prophet.mae }}</span>
-          </div>
-          <div class="metric-item">
-            <span class="metric-label">R² Score</span>
-            <span class="metric-value">{{ comparacion.prophet.r2 }}</span>
-          </div>
+        <div class="info-item" *ngIf="fechaEntrenamiento">
+          <ion-icon name="time-outline"></ion-icon>
+          <span><strong>Fecha de último entrenamiento:</strong> {{ fechaEntrenamiento | date:'dd/MM/yyyy HH:mm' }}</span>
         </div>
       </div>
     </div>
 
-    <!-- Gráfico Comparativo -->
-    <div class="chart-container" *ngIf="comparacion">
-      <canvas id="chartComparacion"></canvas>
-    </div>
+    <ion-accordion-group class="models-accordion" *ngIf="comparacion && modeloListo">
+      <ion-accordion value="detalle">
+        <ion-item slot="header" color="light">
+          <ion-icon name="analytics-outline" slot="start"></ion-icon>
+          <ion-label>Ver detalle comparativo de los 3 modelos</ion-label>
+        </ion-item>
+        <div class="accordion-content" slot="content">
+          <div class="metrics-grid-compact">
+            <div class="metric-card-mini rf-card">
+              <div class="card-header-mini">
+                <h4>Random Forest</h4>
+                <span class="mini-badge" [class.winner]="comparacion.ganador === 'Random Forest'">
+                  {{ comparacion.ganador === 'Random Forest' ? 'GANADOR' : 'Alternativo' }}
+                </span>
+              </div>
+              <div class="mini-metric">
+                <span class="mini-label">Precisión</span>
+                <span class="mini-value">{{ comparacion.random_forest?.precision || 0 }}%</span>
+              </div>
+            </div>
+            <div class="metric-card-mini xgb-card">
+              <div class="card-header-mini">
+                <h4>XGBoost</h4>
+                <span class="mini-badge" [class.winner]="comparacion.ganador === 'XGBoost'">
+                  {{ comparacion.ganador === 'XGBoost' ? 'GANADOR' : 'Alternativo' }}
+                </span>
+              </div>
+              <div class="mini-metric">
+                <span class="mini-label">Precisión</span>
+                <span class="mini-value">{{ comparacion.xgboost?.precision || 0 }}%</span>
+              </div>
+            </div>
+            <div class="metric-card-mini prophet-card" *ngIf="comparacion.prophet && comparacion.prophet?.precision > 0">
+              <div class="card-header-mini">
+                <h4>Prophet</h4>
+                <span class="mini-badge" [class.winner]="comparacion.ganador === 'Prophet'">
+                  {{ comparacion.ganador === 'Prophet' ? 'GANADOR' : 'Alternativo' }}
+                </span>
+              </div>
+              <div class="mini-metric">
+                <span class="mini-label">Precisión</span>
+                <span class="mini-value">{{ comparacion.prophet?.precision || 0 }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
   </div>
 
-  <!-- SECCIÓN 2: GENERAR PREDICCIÓN (SUPER ADMINISTRADOR E INVESTIGADOR) -->
-  <div class="section-card" *ngIf="isSuperAdmin || isInvestigador">
+  <!-- SECCIÓN 2: PROYECCIÓN POR RANGO (SUPER ADMINISTRADOR E INVESTIGADOR) -->
+  <div class="section-card" *ngIf="puedeGenerar">
     <div class="section-header">
       <h2>
         <ion-icon name="trending-up-outline" class="section-icon"></ion-icon>
-        Módulo de Proyección Turística
+        Proyección de Ocupación Hotelera por Rango de Fechas
       </h2>
-      <p *ngIf="isSuperAdmin">Seleccione el modo de cálculo: simulación puntual o proyección por rango de fechas.</p>
-      <p *ngIf="isInvestigador">Proyección inteligente de ocupación hotelera basada en Machine Learning.</p>
+      <p>Proyección basada en el modelo seleccionado con datos históricos reales del Observatorio Turístico Sostenible.</p>
     </div>
 
-    <!-- Selector de Modo -->
-    <ion-segment *ngIf="isSuperAdmin" [(ngModel)]="modoPrediccion" color="primary" class="segment-selector">
-      <ion-segment-button value="simulador">
-        <ion-icon name="options-outline"></ion-icon>
-        <ion-label>Simulador</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="rango">
-        <ion-icon name="calendar-outline"></ion-icon>
-        <ion-label>Proyección</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-
-    <!-- MODO 1: SIMULADOR -->
-    <div *ngIf="modoPrediccion === 'simulador'">
-      <p class="modo-ayuda">
-        <ion-icon name="information-circle-outline"></ion-icon>
-        Estima la ocupación esperada para <strong>un día</strong>. Elige la fecha y la temporada;
-        el modelo completa el resto de factores automáticamente.
-      </p>
-      <div class="form-grid dos-col">
-        <ion-item>
-          <ion-label position="floating">Fecha a predecir</ion-label>
-          <ion-input type="date" [(ngModel)]="fechaObjetivo"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Temporada</ion-label>
-          <ion-select [(ngModel)]="temporada">
-            <ion-select-option value="Alta">Alta (feriados / vacaciones)</ion-select-option>
-            <ion-select-option value="Media">Media</ion-select-option>
-            <ion-select-option value="Baja">Baja</ion-select-option>
-          </ion-select>
-        </ion-item>
+    <div class="data-info" *ngIf="comparacion && modeloListo">
+      <div class="info-item">
+        <ion-icon name="checkmark-done-circle-outline"></ion-icon>
+        <span><strong>Modelo seleccionado:</strong> {{ modeloUsado }}</span>
       </div>
-
-      <ion-button expand="block" color="secondary" size="large" (click)="predecir()" [disabled]="prediciendo">
-        <ion-spinner name="crescent" *ngIf="prediciendo" slot="start"></ion-spinner>
-        <ion-icon name="analytics-outline" slot="start" *ngIf="!prediciendo"></ion-icon>
-        {{ prediciendo ? 'CALCULANDO...' : 'GENERAR PREDICCIÓN' }}
-      </ion-button>
-
-      <!-- Resultado -->
-      <div class="prediction-result" *ngIf="prediccion">
-        <div class="result-card">
-          <div class="result-header">
-            <ion-icon name="checkmark-circle-outline"></ion-icon>
-            <h3>Predicción con {{ prediccion.modelo }}</h3>
-          </div>
-          <div class="result-value">
-            <span class="value-label">Ocupación Predicha:</span>
-            <span class="value-number">{{ prediccion.ocupacion_predicha }}%</span>
-          </div>
-          <div class="result-range">
-            <div class="range-item">
-              <span class="range-label">Mínimo</span>
-              <span class="range-value">{{ prediccion.rango_prediccion.minimo }}%</span>
-            </div>
-            <div class="range-item">
-              <span class="range-label">Máximo</span>
-              <span class="range-value">{{ prediccion.rango_prediccion.maximo }}%</span>
-            </div>
-            <div class="range-item">
-              <span class="range-label">Error Estimado</span>
-              <span class="range-value">±{{ prediccion.error_estimado }}%</span>
-            </div>
-          </div>
-        </div>
-        <div class="chart-container">
-          <canvas id="chartPrediccion"></canvas>
-        </div>
+      <div class="info-item">
+        <ion-icon name="server-outline"></ion-icon>
+        <span><strong>Registros históricos utilizados:</strong> {{ registrosHistoricos || 0 }}</span>
       </div>
     </div>
 
-    <!-- MODO 2: PROYECCIÓN POR RANGO -->
+    <!-- PROYECCIÓN POR RANGO -->
     <div *ngIf="modoPrediccion === 'rango'">
       <div class="quick-ranges">
         <ion-chip color="tertiary" (click)="seleccionarRangoRapido(7)">
@@ -255,6 +177,14 @@
 
       <!-- Resultado Rango -->
       <div class="prediction-result" *ngIf="resultadoRango">
+        <div class="section-header">
+          <h2>
+            <ion-icon name="bar-chart-outline" class="section-icon"></ion-icon>
+            Análisis Estadístico de la Proyección
+          </h2>
+          <p>Gráficas estadísticas basadas en datos reales procesados por el modelo {{ modeloUsado }}</p>
+        </div>
+
         <div class="metrics-grid-small">
           <div class="metric-box">
             <h3>{{ resultadoRango.total_dias }}</h3>
@@ -265,12 +195,12 @@
             <p>Ocupación Promedio</p>
           </div>
           <div class="metric-box warning">
-            <h3>{{ resultadoRango.dia_pico?.fecha || '-' }}</h3>
-            <p>Pico ({{ resultadoRango.dia_pico?.ocupacion_predicha || 0 }}%)</p>
+            <h3>{{ getOcupacionMax() }}%</h3>
+            <p>Ocupación Máxima</p>
           </div>
-          <div class="metric-box primary">
-            <h3>~{{ resultadoRango.turistas_estimados_totales || 0 }}</h3>
-            <p>Turistas Proyectados</p>
+          <div class="metric-box danger">
+            <h3>{{ getOcupacionMin() }}%</h3>
+            <p>Ocupación Mínima</p>
           </div>
         </div>
 
@@ -286,6 +216,10 @@
           <div class="chart-container small">
             <canvas id="chartTemporada"></canvas>
           </div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="chartHistograma"></canvas>
         </div>
 
         <!-- Tabla desglosada -->
@@ -321,84 +255,157 @@
     </div>
   </div>
 
-  <!-- SECCIÓN 3: VALIDACIÓN HISTÓRICA (SOLO SUPER ADMINISTRADOR) -->
-  <div class="section-card" *ngIf="isSuperAdmin">
+  <!-- SECCIÓN 3: VALIDACIÓN HISTÓRICA (SOLO LECTURA: SUPER ADMIN, ADMIN E INVESTIGADOR) -->
+  <div class="section-card" *ngIf="puedeVerResultados">
     <div class="section-header">
       <h2>
         <ion-icon name="time-outline" class="section-icon"></ion-icon>
         Validación con Datos Históricos
       </h2>
-      <p>Compara predicciones con valores reales para evaluar la precisión del modelo.</p>
+      <p>
+        Desempeño real del modelo {{ modeloUsado }} sobre el 30% de registros que no se usaron para
+        entrenarlo. Se muestran las mismas predicciones con las que se calculó la precisión oficial
+        del modelo, sin recalcular ni inflar los resultados.
+      </p>
+    </div>
+
+    <div class="evaluacion-info">
+      <ion-badge [color]="conjuntoEvaluado === 'prueba' ? 'success' : 'medium'">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        {{ conjuntoEvaluado === 'prueba' ? 'Evaluado sobre el 30% de prueba' : 'Evaluado sobre todo el histórico' }}
+      </ion-badge>
+      <span class="evaluacion-fecha" *ngIf="fechaEntrenamiento">
+        Último entrenamiento: {{ fechaEntrenamiento | date:'dd/MM/yyyy HH:mm' }}
+      </span>
     </div>
 
     <ion-button expand="block" color="medium" size="large" (click)="cargarPrediccionesHistoricas()"
       [disabled]="cargandoHistoricas">
       <ion-spinner name="crescent" *ngIf="cargandoHistoricas" slot="start"></ion-spinner>
       <ion-icon name="refresh-outline" slot="start" *ngIf="!cargandoHistoricas"></ion-icon>
-      {{ cargandoHistoricas ? 'VALIDANDO...' : 'VALIDAR PREDICCIONES' }}
+      {{ cargandoHistoricas ? 'CARGANDO VALIDACIÓN...' : 'ACTUALIZAR VALIDACIÓN' }}
     </ion-button>
 
-    <div class="metrics-grid-small" *ngIf="prediccionesHistoricas.length > 0">
-      <div class="metric-box">
-        <h3>{{ totalRegistrosAnalizados }}</h3>
-        <p>Registros</p>
-      </div>
-      <div class="metric-box success">
-        <h3>{{ precisionPromedio }}%</h3>
-        <p>Precisión</p>
-      </div>
-      <div class="metric-box warning">
-        <h3>±{{ errorPromedio }}%</h3>
-        <p>Error Promedio</p>
-      </div>
+    <div *ngIf="cargandoHistoricas && prediccionesHistoricas.length === 0" class="ion-text-center">
+      <ion-spinner name="crescent"></ion-spinner>
     </div>
 
-    <div class="chart-container" *ngIf="prediccionesHistoricas.length > 0">
-      <canvas id="chartHistoricas"></canvas>
-    </div>
+    <p class="sin-datos" *ngIf="!cargandoHistoricas && prediccionesHistoricas.length === 0">
+      No hay registros de validación disponibles. Entrene el modelo para generarlos.
+    </p>
 
-    <div class="table-container" *ngIf="prediccionesHistoricas.length > 0">
-      <h3>Detalle de Validaciones</h3>
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Real</th>
-              <th>Predicho</th>
-              <th>Error</th>
-              <th>Precisión</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let pred of prediccionesHistoricas | slice:0:10">
-              <td>{{ pred.fecha | date:'dd/MM/yyyy' }}</td>
-              <td>{{ pred.valor_real }}%</td>
-              <td [class.success]="pred.error < 5" [class.error]="pred.error >= 5">
-                {{ pred.valor_predicho }}%
-              </td>
-              <td>±{{ pred.error }}%</td>
-              <td>
-                <ion-badge [color]="pred.precision >= 90 ? 'success' : pred.precision >= 70 ? 'warning' : 'danger'">
-                  {{ pred.precision }}%
-                </ion-badge>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <ng-container *ngIf="prediccionesHistoricas.length > 0">
+      <div class="metrics-grid-small">
+        <div class="metric-box primary">
+          <h3>{{ totalRegistrosAnalizados }}</h3>
+          <p>Registros evaluados</p>
+        </div>
+        <div class="metric-box success">
+          <h3>{{ precisionModelo }}%</h3>
+          <p>Precisión del modelo</p>
+        </div>
+        <div class="metric-box warning">
+          <h3>{{ rmseModelo }}</h3>
+          <p>RMSE (puntos)</p>
+        </div>
+        <div class="metric-box warning">
+          <h3>{{ maeModelo }}</h3>
+          <p>MAE (puntos)</p>
+        </div>
+        <div class="metric-box primary">
+          <h3>{{ r2Modelo }}</h3>
+          <p>R²</p>
+        </div>
+        <div class="metric-box danger">
+          <h3>{{ mape }}%</h3>
+          <p>MAPE (error relativo)</p>
+        </div>
       </div>
-    </div>
+
+      <p class="nota-metricas">
+        La precisión del modelo es {{ precisionModelo }}% y se calcula como 100 − MAPE
+        ({{ mape }}% de error relativo medio) sobre los {{ totalRegistrosAnalizados }} registros del
+        30% de prueba. El R² de {{ r2Modelo }} indica qué proporción de la variación de la ocupación
+        explica el modelo; en datos turísticos irregulares es normal que sea moderado y se muestra
+        tal cual, sin ajustar. La precisión por registro no se recorta: si el error supera el 100%
+        del valor real, aparece negativa en la tabla y en el histograma.
+      </p>
+
+      <div class="chart-container">
+        <canvas id="chartHistoricas"></canvas>
+      </div>
+
+      <div class="charts-row-small">
+        <div class="chart-container small">
+          <canvas id="chartHistErrores"></canvas>
+        </div>
+        <div class="chart-container small">
+          <canvas id="chartHistPrecision"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="chartDispersion"></canvas>
+      </div>
+
+      <div class="table-container">
+        <h3>Detalle de Validaciones (últimos 10 registros)</h3>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Real</th>
+                <th>Predicho</th>
+                <th>Error</th>
+                <th>Precisión</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pred of prediccionesHistoricas | slice:0:10">
+                <td>{{ pred.fecha | date:'dd/MM/yyyy' }}</td>
+                <td>{{ pred.valor_real }}%</td>
+                <td [class.success]="pred.error < 10" [class.error]="pred.error >= 10">
+                  {{ pred.valor_predicho }}%
+                </td>
+                <td>±{{ pred.error }} pts</td>
+                <td>
+                  <ion-badge [color]="pred.precision >= 70 ? 'success' : pred.precision >= 50 ? 'warning' : 'danger'">
+                    {{ pred.precision }}%
+                  </ion-badge>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
   </div>
 
-  <!-- SECCIÓN 4: RESULTADOS DE PREDICCIONES (SOLO ADMINISTRADOR) -->
-  <div class="section-card" *ngIf="esSoloAdmin">
+  <!-- SECCIÓN 4: RESULTADOS DE PREDICCIONES (SUPER ADMIN, ADMIN E INVESTIGADOR) -->
+  <div class="section-card" *ngIf="puedeVerResultados">
     <div class="section-header">
       <h2>
         <ion-icon name="list-outline" class="section-icon"></ion-icon>
         Resultados de Predicciones
       </h2>
-      <p>Predicciones generadas por Super Administrador o Investigador. Puedes confirmar si acertaron
-        (validar) o descartarlas, pero no entrenar modelos ni generar predicciones nuevas.</p>
+      <p *ngIf="puedeValidar">
+        Predicciones y proyecciones generadas en el módulo. Puedes validarlas o descartarlas; el
+        Investigador y el Administrador las consultan en solo lectura.
+      </p>
+      <p *ngIf="!puedeValidar">
+        Predicciones y proyecciones generadas en el módulo, en solo lectura. El Super Administrador
+        es quien valida o descarta cada resultado.
+      </p>
+    </div>
+
+    <div class="resultados-toolbar">
+      <ion-button fill="outline" size="small" color="tertiary" (click)="cargarResultados()"
+        [disabled]="cargandoResultados">
+        <ion-icon name="refresh-outline" slot="start"></ion-icon>
+        Actualizar
+      </ion-button>
+      <span class="resultados-contador">{{ resultadosPredicciones.length }} resultados</span>
     </div>
 
     <div *ngIf="cargandoResultados" class="ion-text-center">
@@ -406,26 +413,42 @@
     </div>
 
     <p class="sin-datos" *ngIf="!cargandoResultados && resultadosPredicciones.length === 0">
-      Todavía no hay predicciones generadas para revisar.
+      Todavía no hay predicciones generadas. Genera una proyección por rango para verla aquí.
     </p>
 
-    <ion-list *ngIf="!cargandoResultados && resultadosPredicciones.length > 0">
+    <ion-list class="lista-resultados" *ngIf="!cargandoResultados && resultadosPredicciones.length > 0">
       <ion-item *ngFor="let pred of resultadosPredicciones">
         <ion-label>
-          <h2>{{ pred.fecha | date:'dd/MM/yyyy' }} · {{ pred.modelo_utilizado }}</h2>
-          <p>Predicha: {{ pred.ocupacion_predicha }}%
-            <ng-container *ngIf="pred.ocupacion_real !== null"> · Real: {{ pred.ocupacion_real }}%</ng-container>
+          <h2>
+            {{ pred.hotel?.nombre || 'Proyección general' }}
+            <span class="hotel-canton" *ngIf="pred.hotel?.canton">· {{ pred.hotel.canton }}</span>
+          </h2>
+          <p>
+            {{ pred.fecha | date:'dd/MM/yyyy' }} · {{ pred.modelo_utilizado }} ·
+            Predicha: <strong>{{ pred.ocupacion_predicha }}%</strong>
+            <ng-container *ngIf="pred.ocupacion_real !== null && pred.ocupacion_real !== undefined">
+              · Real: {{ pred.ocupacion_real }}%
+            </ng-container>
           </p>
-          <ion-badge [color]="pred.estado === 'validada' ? 'success' : pred.estado === 'descartada' ? 'medium' : 'warning'">
-            {{ pred.estado }}
+          <p class="precision-linea">
+            Precisión del modelo: {{ pred.precision_modelo !== null && pred.precision_modelo !== undefined ? pred.precision_modelo : '—' }}%
+            <ng-container *ngIf="pred.intervalo_confianza_min !== null && pred.intervalo_confianza_max !== null">
+              · Rango: {{ pred.intervalo_confianza_min }}% - {{ pred.intervalo_confianza_max }}%
+            </ng-container>
+          </p>
+          <ion-badge
+            [color]="pred.estado === 'validada' ? 'success' : pred.estado === 'descartada' ? 'medium' : 'warning'">
+            {{ pred.estado | titlecase }}
           </ion-badge>
         </ion-label>
-        <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="success" (click)="validarResultado(pred)">
-          <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="danger" (click)="descartarResultado(pred)">
-          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
-        </ion-button>
+        <ng-container *ngIf="puedeValidar">
+          <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="success" (click)="validarResultado(pred)">
+            <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button *ngIf="pred.estado === 'pendiente'" fill="clear" color="danger" (click)="descartarResultado(pred)">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ng-container>
       </ion-item>
     </ion-list>
   </div>

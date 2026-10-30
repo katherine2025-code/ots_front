@@ -57,7 +57,9 @@ export const routes: Routes = [
   {
     path: 'predicciones',
     loadComponent: () => import('./pages/predicciones/predicciones.page').then(m => m.PrediccionesPage),
-    canActivate: [authGuard]
+    // Solo Super Administrador (0), Administrador (1) e Investigador (2) ven
+    // resultados. El Encuestador (3) no tiene acceso a esta página.
+    canActivate: [authGuard, adminOInvestigadorGuard]
   },
   {
     path: 'reportes',

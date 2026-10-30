@@ -30,7 +30,13 @@ export class HotelesListaPage implements OnInit {
     this.loading = true;
     this.hotelService.getHoteles().subscribe({
       next: (data: any[]) => {
-        this.hoteles = data || [];
+        // Orden estable: primero por cantón (Santa Elena / Salinas) y luego por nombre,
+        // para que la lista no mezcle hoteles de los dos cantones.
+        this.hoteles = (data || []).slice().sort((a, b) => {
+          const ca = String(a.canton || 'zzz').localeCompare(String(b.canton || 'zzz'));
+          if (ca !== 0) return ca;
+          return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es', { sensitivity: 'base' });
+        });
         this.loading = false;
       },
       error: (err: any) => {

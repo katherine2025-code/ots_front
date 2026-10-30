@@ -72,11 +72,11 @@
                                 <p>{{ hotel.habitaciones_totales || 0 }}</p>
                             </div>
                         </div>
-                        <div class="info-item" *ngIf="hotel.precio_promedio">
+                        <div class="info-item">
                             <ion-icon name="cash-outline"></ion-icon>
                             <div>
                                 <strong>Precio Promedio</strong>
-                                <p>${{ hotel.precio_promedio }}</p>
+                                <p>{{ hotel.precio_promedio ? ('$' + (hotel.precio_promedio | number:'1.2-2')) : 'Sin registrar' }}</p>
                             </div>
                         </div>
                         <div class="info-item">

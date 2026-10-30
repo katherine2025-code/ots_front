@@ -87,6 +87,29 @@
 
     ion-card-subtitle {
         margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .canton-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+
+        &.santa-elena {
+            background: rgba(37, 99, 235, 0.14);
+            color: #2563eb;
+        }
+
+        &.salinas {
+            background: rgba(5, 150, 105, 0.14);
+            color: #059669;
+        }
     }
 
     .categoria-badge {
