@@ -22,9 +22,6 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.api.post<AuthResponse>('auth/login', credentials).pipe(
       tap(response => {
-        console.log('[AuthService] Response del login:', response);
-        console.log('[AuthService] Token:', response.token);
-        console.log('[AuthService] Usuario:', response.usuario);
 
         // Guardar en Ionic Storage
         this.storage.set('token', response.token);
@@ -34,7 +31,6 @@ export class AuthService {
         localStorage.setItem('token', response.token);
         localStorage.setItem('usuario', JSON.stringify(response.usuario));
         
-        console.log('[AuthService] Token guardado en ambos almacenamientos');
         
         this.currentUserSubject.next(response.usuario);
       })
@@ -60,6 +56,14 @@ export class AuthService {
   // MÉTODO RESETEAR CONTRASEÑA (con el token que llegó al correo)
   resetPassword(token: string, password: string): Observable<{ mensaje: string }> {
     return this.api.post<{ mensaje: string }>('auth/reset-password', { token, password });
+  }
+
+  // MÉTODO CAMBIAR CONTRASEÑA (usuario autenticado; el backend verifica la actual)
+  cambiarPassword(passwordActual: string, passwordNueva: string): Observable<{ mensaje: string }> {
+    return this.api.put<{ mensaje: string }>('auth/cambiar-password', {
+      password_actual: passwordActual,
+      password_nueva: passwordNueva
+    });
   }
 
   // MÉTODO LOGOUT

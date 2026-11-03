@@ -2,12 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { Chart, registerables } from 'chart.js';
+import { Chart } from 'chart.js';
 import { EtlService } from 'src/app/core/services/etl.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { PrediccionService } from 'src/app/core/services/prediccion.service';
 
-Chart.register(...registerables);
 
 // Colores de ejes y textos de los gráficos sobre fondo blanco.
 const EJE_TICK = '#64748b';
@@ -160,7 +159,6 @@ export class PrediccionesPage implements OnInit {
         if (this.comparacion) {
           setTimeout(() => this.crearGraficoComparacion(), 100);
         }
-        console.log('📊 Métricas cargadas:', this.metricas);
       }
     } catch (error) {
       console.error('Error cargando métricas:', error);
@@ -190,7 +188,6 @@ export class PrediccionesPage implements OnInit {
     this.entrenando = true;
     try {
       const response: any = await this.prediccionService.entrenarModelo().toPromise();
-      console.log('🧠 Entrenamiento completado:', response);
 
       this.metricas = response.metricas;
       this.comparacion = response.comparacion;
@@ -394,7 +391,6 @@ export class PrediccionesPage implements OnInit {
         .toPromise();
 
       this.resultadoRango = response;
-      console.log('📊 Proyección por rango:', response);
 
       setTimeout(() => this.crearGraficoRango(), 100);
       this.mostrarToast(`✅ Proyección para ${response.total_dias} días generada`, 'success');
@@ -553,7 +549,6 @@ export class PrediccionesPage implements OnInit {
       this.totalRegistrosAnalizados = response.total_registros || 0;
       this.modeloUsado = response.modelo_usado || 'Modelo histórico';
 
-      console.log('📊 Predicciones históricas:', response);
 
       setTimeout(() => this.crearGraficoHistoricas(), 100);
       this.mostrarToast(`✅ ${response.total_registros} registros históricos validados`, 'success');

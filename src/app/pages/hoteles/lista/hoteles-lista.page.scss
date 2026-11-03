@@ -264,6 +264,8 @@
   }
 
   .buscador {
+    // En columna, la base de 320px pasaría a ser ALTURA: se anula
+    flex: 0 0 auto;
     max-width: none;
   }
 

@@ -1,69 +1,76 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/dashboard"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Mi Perfil</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <div class="ots-page perfil" *ngIf="usuario">
+    <header class="page-header">
+      <div class="header-left">
+        <span class="ots-eyebrow">Cuenta</span>
+        <h1>Mi perfil</h1>
+        <p class="subtitle">Tus datos de acceso al sistema</p>
+      </div>
+    </header>
 
-<ion-content class="ion-padding">
-  <div class="profile-header" *ngIf="usuario">
-    <div class="avatar-large">
-      {{ usuario.nombres?.charAt(0) }}{{ usuario.apellidos?.charAt(0) }}
+    <div class="columnas">
+      <!-- Datos de la cuenta -->
+      <section class="ots-card">
+        <div class="identidad">
+          <div class="avatar">{{ iniciales }}</div>
+          <div>
+            <h2>{{ usuario.nombres }} {{ usuario.apellidos }}</h2>
+            <span class="badge primary">{{ rolNombre }}</span>
+          </div>
+        </div>
+
+        <dl class="datos">
+          <div class="fila">
+            <dt>Nombres</dt>
+            <dd>{{ usuario.nombres }}</dd>
+          </div>
+          <div class="fila">
+            <dt>Apellidos</dt>
+            <dd>{{ usuario.apellidos }}</dd>
+          </div>
+          <div class="fila">
+            <dt>Correo</dt>
+            <dd>{{ usuario.correo }}</dd>
+          </div>
+        </dl>
+        <p class="nota">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Para corregir tu nombre, correo o rol, pídeselo a un administrador desde el módulo Usuarios.
+        </p>
+      </section>
+
+      <!-- Cambiar contraseña -->
+      <section class="ots-card">
+        <span class="ots-eyebrow">Seguridad</span>
+        <h2 class="titulo-seccion">Cambiar contraseña</h2>
+
+        <form (ngSubmit)="cambiarPassword()" class="form-password">
+          <label class="campo">
+            <span>Contraseña actual</span>
+            <input type="password" name="actual" [(ngModel)]="passwordActual" autocomplete="current-password" required>
+          </label>
+          <label class="campo">
+            <span>Nueva contraseña</span>
+            <input type="password" name="nueva" [(ngModel)]="passwordNueva" autocomplete="new-password" minlength="6" required>
+            <small class="ayuda" [class.ok]="passwordNueva.length >= 6">Mínimo 6 caracteres</small>
+          </label>
+          <label class="campo">
+            <span>Confirmar nueva contraseña</span>
+            <input type="password" name="confirmar" [(ngModel)]="passwordConfirmar" autocomplete="new-password" required>
+            <small class="ayuda error" *ngIf="passwordConfirmar && passwordConfirmar !== passwordNueva">No coincide con la nueva contraseña</small>
+          </label>
+
+          <p class="error-alert" *ngIf="errorPassword" role="alert">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            {{ errorPassword }}
+          </p>
+
+          <ion-button type="submit" expand="block" [disabled]="!puedeGuardar">
+            <ion-spinner name="crescent" *ngIf="guardando"></ion-spinner>
+            <ng-container *ngIf="!guardando">Actualizar contraseña</ng-container>
+          </ion-button>
+        </form>
+      </section>
     </div>
-    <h2>{{ usuario.nombres }} {{ usuario.apellidos }}</h2>
-    <ion-badge [color]="usuario.id_rol === 1 ? 'success' : 'secondary'">
-      {{ usuario.id_rol === 1 ? 'Administrador' : 'Investigador' }}
-    </ion-badge>
-  </div>
-
-  <div class="profile-section">
-    <h3>Información Personal</h3>
-    
-    <ion-list>
-      <ion-item>
-        <ion-label position="floating">Nombres</ion-label>
-        <ion-input [(ngModel)]="perfilForm.nombres" disabled></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="floating">Apellidos</ion-label>
-        <ion-input [(ngModel)]="perfilForm.apellidos" disabled></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="floating">Correo Electrónico</ion-label>
-        <ion-input type="email" [(ngModel)]="perfilForm.correo" disabled></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="floating">Teléfono</ion-label>
-        <ion-input type="tel" [(ngModel)]="perfilForm.telefono"></ion-input>
-      </ion-item>
-    </ion-list>
-
-    <ion-button expand="block" (click)="guardarCambios()" color="primary">
-      Guardar Cambios
-    </ion-button>
-  </div>
-
-  <div class="profile-section">
-    <h3>Seguridad</h3>
-    <ion-button expand="block" (click)="cambiarContrasena()" color="secondary">
-      Cambiar Contraseña
-    </ion-button>
-  </div>
-
-  <div class="profile-section">
-    <h3>Preferencias</h3>
-    <ion-item>
-      <ion-label>Notificaciones por Email</ion-label>
-      <ion-toggle checked></ion-toggle>
-    </ion-item>
-    <ion-item>
-      <ion-label>Modo Oscuro</ion-label>
-      <ion-toggle></ion-toggle>
-    </ion-item>
   </div>
 </ion-content>

@@ -1,40 +1,165 @@
-.profile-header {
-  text-align: center;
-  padding: 30px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 12px;
-  margin-bottom: 20px;
+// perfil.page.scss — usa la base común (global.scss / variables.scss)
+.perfil {
+  max-width: 1000px;
+}
 
-  .avatar-large {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.2);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5em;
-    font-weight: bold;
-    margin: 0 auto 15px auto;
-  }
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
 
-  h2 {
-    margin: 0 0 10px 0;
+  @media (max-width: 820px) {
+    grid-template-columns: 1fr;
   }
 }
 
-.profile-section {
-  background: var(--ots-surface);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.identidad {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
 
-  h3 {
-    margin: 0 0 15px 0;
-    color: var(--ots-text);
-    font-size: 1.2em;
+  .avatar {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--ots-primary-soft);
+    color: var(--ion-color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
   }
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ots-text);
+  }
+
+  .badge {
+    padding: 2px 10px;
+  }
+}
+
+.datos {
+  margin: 12px 0 0;
+
+  .fila {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--ots-border);
+
+    &:last-child { border-bottom: none; }
+  }
+
+  dt {
+    font-size: 13px;
+    color: var(--ots-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ots-text);
+    word-break: break-word;
+  }
+}
+
+.nota {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ots-text-muted);
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+    margin-top: 2px;
+  }
+}
+
+.titulo-seccion {
+  margin: 4px 0 16px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ots-text);
+}
+
+.form-password {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ots-text);
+  }
+
+  input {
+    height: 46px;
+    padding: 0 14px;
+    border: 1px solid var(--ots-border);
+    border-radius: 10px;
+    background: var(--ots-surface-alt);
+    // 16px evita el zoom automático de Safari en iPhone
+    font-size: 16px;
+    color: var(--ots-text);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+    &:focus {
+      border-color: var(--ion-color-primary);
+      background: var(--ots-surface);
+      box-shadow: 0 0 0 3px var(--ots-primary-soft);
+    }
+  }
+
+  .ayuda {
+    font-size: 12px;
+    color: var(--ots-text-muted);
+
+    &.ok { color: var(--ots-success); }
+    &.error { color: var(--ots-danger); }
+  }
+}
+
+.error-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ots-danger-soft);
+  color: var(--ots-danger);
+  font-size: 13px;
+  font-weight: 500;
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+}
+
+ion-button ion-spinner {
+  width: 20px;
+  height: 20px;
 }

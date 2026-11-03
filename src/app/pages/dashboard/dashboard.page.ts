@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router, RouterLink } from '@angular/router';
-import { Chart, registerables } from 'chart.js';
+import { Chart } from 'chart.js';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HotelService } from 'src/app/core/services/hotel.service';
@@ -18,7 +18,6 @@ import { DashboardService } from 'src/app/core/services/dashboard.service';
 
 const GRUPO_VACIO: GrupoLugares = { encuestas: 0, lugares: [] };
 
-Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
@@ -364,7 +363,6 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   generarReporte(): void {
-    console.log('Generar reporte');
     this.router.navigate(['/reportes']);
   }
 }

@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { EtlService } from 'src/app/core/services/etl.service';
-import { Chart, registerables } from 'chart.js';
+import { Chart } from 'chart.js';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-Chart.register(...registerables);
 
 @Component({
   selector: 'app-etl-detalles',
