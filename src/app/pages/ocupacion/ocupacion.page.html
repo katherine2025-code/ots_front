@@ -1,152 +1,164 @@
-<ion-content class="ion-padding">
-  <!-- Header -->
-  <div class="page-header">
-    <div class="header-left">
-      <h1>Ocupación Hotelera</h1>
-      <p class="subtitle">Monitoreo de ocupación por hotel y fecha</p>
-    </div>
-    <div class="header-right">
-      <ion-button fill="outline" color="primary" size="small" (click)="cargarOcupacion()">
-        <ion-icon name="refresh-outline" slot="start"></ion-icon>
-        Actualizar
-      </ion-button>
-    </div>
-  </div>
+<ion-content>
+  <div class="ots-page">
+    <!-- Encabezado -->
+    <header class="page-header">
+      <div class="header-left">
+        <span class="ots-eyebrow">Monitoreo</span>
+        <h1>Ocupación hotelera</h1>
+        <p class="subtitle">Ocupación por hotel y fecha, a partir de las encuestas y cargas ETL</p>
+      </div>
+      <div class="header-right">
+        <ion-button fill="outline" size="small" (click)="cargarOcupacion()" [disabled]="loading">
+          <ion-icon name="refresh-outline" slot="start"></ion-icon>
+          Actualizar
+        </ion-button>
+      </div>
+    </header>
 
-  <!-- Filtro por feriado -->
-  <div class="filtro-feriado" *ngIf="!cargandoFeriados">
-    <ion-item lines="none" *ngIf="feriadosDisponibles.length > 0 || totalSinFeriado > 0">
-      <ion-icon name="calendar-outline" slot="start"></ion-icon>
-      <ion-select label="Feriado" label-placement="stacked" interface="popover" [value]="feriadoSeleccionado"
-        (ionChange)="cambiarFeriado($event.detail.value)">
-        <ion-select-option [value]="TODOS">Todos los feriados</ion-select-option>
-        <ion-select-option *ngFor="let f of feriadosDisponibles" [value]="f.feriado">
-          {{ f.feriado }} ({{ f.total }})
-        </ion-select-option>
-        <ion-select-option *ngIf="totalSinFeriado > 0" [value]="SIN_FERIADO">
-          Sin feriado asignado ({{ totalSinFeriado }})
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
-    <p class="sin-jornadas" *ngIf="feriadosDisponibles.length === 0 && totalSinFeriado === 0">
-      Todavía no hay ningún registro de ocupación con feriado asignado. El feriado se guarda
-      automáticamente cuando un encuestador responde la encuesta de hotel dentro de una jornada
-      programada en <a routerLink="/cronograma">Cronograma</a>.
-    </p>
-  </div>
+    <!-- Filtro por feriado -->
+    <div class="toolbar" *ngIf="!cargandoFeriados">
+      <div class="ots-select" *ngIf="feriadosDisponibles.length > 0 || totalSinFeriado > 0">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-select aria-label="Feriado" interface="popover" [value]="feriadoSeleccionado"
+          (ionChange)="cambiarFeriado($event.detail.value)">
+          <ion-select-option [value]="TODOS">Todos los feriados</ion-select-option>
+          <ion-select-option *ngFor="let f of feriadosDisponibles" [value]="f.feriado">
+            {{ f.feriado }} ({{ f.total }})
+          </ion-select-option>
+          <ion-select-option *ngIf="totalSinFeriado > 0" [value]="SIN_FERIADO">
+            Sin feriado asignado ({{ totalSinFeriado }})
+          </ion-select-option>
+        </ion-select>
+      </div>
+      <p class="aviso" *ngIf="feriadosDisponibles.length === 0 && totalSinFeriado === 0">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>Todavía no hay registros con feriado asignado. El feriado se guarda automáticamente cuando un
+        encuestador responde la encuesta de hotel dentro de una jornada programada en
+        <a routerLink="/cronograma">Cronograma</a>.</span>
+      </p>
+    </div>
 
-  <!-- Resumen de métricas -->
-  <div class="metrics-grid" *ngIf="!loading && ocupacion.length > 0">
-    <div class="metric-card">
-      <div class="metric-value">{{ ocupacionPromedio | number:'1.1-1' }}%</div>
-      <div class="metric-label">Ocupación Promedio</div>
+    <!-- Métricas -->
+    <div class="kpi-grid" *ngIf="!loading && ocupacion.length > 0">
+      <div class="metric-card">
+        <div class="metric-icon primary"><ion-icon name="analytics-outline"></ion-icon></div>
+        <div class="metric-info">
+          <span class="metric-value">{{ ocupacionPromedio | number:'1.1-1' }}%</span>
+          <span class="metric-label">Ocupación promedio</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon success"><ion-icon name="trending-up-outline"></ion-icon></div>
+        <div class="metric-info">
+          <span class="metric-value">{{ ocupacionMaxima | number:'1.1-1' }}%</span>
+          <span class="metric-label">Máxima</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon warning"><ion-icon name="trending-down-outline"></ion-icon></div>
+        <div class="metric-info">
+          <span class="metric-value">{{ ocupacionMinima | number:'1.1-1' }}%</span>
+          <span class="metric-label">Mínima</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon primary"><ion-icon name="document-text-outline"></ion-icon></div>
+        <div class="metric-info">
+          <span class="metric-value">{{ totalRegistros }}</span>
+          <span class="metric-label">Registros</span>
+        </div>
+      </div>
     </div>
-    <div class="metric-card">
-      <div class="metric-value">{{ ocupacionMaxima | number:'1.1-1' }}%</div>
-      <div class="metric-label">Máxima Ocupación</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-value">{{ ocupacionMinima | number:'1.1-1' }}%</div>
-      <div class="metric-label">Mínima Ocupación</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-value">{{ totalRegistros }}</div>
-      <div class="metric-label">Total Registros</div>
-    </div>
-  </div>
 
-  <!-- Estado de carga -->
-  <div *ngIf="loading" class="loading-state">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Cargando datos de ocupación...</p>
-  </div>
+    <!-- Carga -->
+    <div *ngIf="loading" class="ots-card" aria-busy="true">
+      <ion-skeleton-text animated style="width: 30%; height: 16px"></ion-skeleton-text>
+      <ion-skeleton-text animated style="width: 100%; height: 14px; margin-top: 16px" *ngFor="let i of [1,2,3,4,5]"></ion-skeleton-text>
+    </div>
 
-  <!-- Tabla de ocupación -->
-  <div class="table-container" *ngIf="!loading && ocupacion.length > 0">
-    <ion-card>
-      <ion-card-content>
-        <div class="table-responsive">
-          <table class="ocupacion-table">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Feriado</th>
-                <th>Hotel</th>
-                <th>Ocupación</th>
-                <th title="Habitaciones ocupadas en un día promedio del período reportado, de la capacidad total del hotel">Hab. ocupadas / día</th>
-                <th title="Turistas en un día promedio del período reportado (nacionales + extranjeros)">Turistas / día</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of ocupacion">
-                <td>{{ item.fecha | date:'dd/MM/yyyy' }}</td>
-                <td>
-                  <ion-badge color="tertiary" *ngIf="item.feriado; else sinFeriadoTd">{{ item.feriado }}</ion-badge>
-                  <ng-template #sinFeriadoTd><span class="sin-datos">—</span></ng-template>
-                </td>
-                <td>{{ item.hotel?.nombre || 'N/A' }}</td>
-                <td>
-                  <span class="ocupacion-value inconsistente" *ngIf="inconsistenteHab(item); else tasaHab"
-                    title="El hotel reportó más habitaciones ocupadas que las que tiene (posible error de digitación). No se usa en los promedios.">
-                    Dato inconsistente
-                  </span>
-                  <ng-template #tasaHab>
+    <!-- Tabla -->
+    <section class="tabla-card ots-card" *ngIf="!loading && ocupacion.length > 0">
+      <div class="tabla-cabecera">
+        <h2>Registros de ocupación</h2>
+        <span class="leyenda">
+          <span class="punto alta"></span> Alta ≥ 80%
+          <span class="punto media"></span> Media 50–79%
+          <span class="punto baja"></span> Baja &lt; 50%
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Hotel</th>
+              <th>Feriado</th>
+              <th>Ocupación</th>
+              <th title="Habitaciones ocupadas en un día promedio del período reportado, de la capacidad total del hotel">Hab. ocupadas / día</th>
+              <th title="Turistas en un día promedio del período reportado (nacionales + extranjeros)">Turistas / día</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of ocupacion">
+              <td class="fecha">{{ item.fecha | date:'dd/MM/yyyy' }}</td>
+              <td class="hotel">{{ item.hotel?.nombre || 'N/A' }}</td>
+              <td>
+                <span class="badge primary" *ngIf="item.feriado; else sinFeriadoTd">{{ item.feriado }}</span>
+                <ng-template #sinFeriadoTd><span class="sin-datos">—</span></ng-template>
+              </td>
+              <td>
+                <span class="inconsistente" *ngIf="inconsistenteHab(item); else tasaHab"
+                  title="El hotel reportó más habitaciones ocupadas que las que tiene (posible error de digitación). No se usa en los promedios.">
+                  Dato inconsistente
+                </span>
+                <ng-template #tasaHab>
                   <div class="ocupacion-cell" *ngIf="tieneCapacidad(item); else sinCapacidad">
-                    <span class="ocupacion-value" [ngClass]="getOcupacionClass(item.ocupacion_porcentaje)">
-                      {{ item.ocupacion_porcentaje }}%
-                    </span>
-                    <div class="ocupacion-bar">
-                      <div class="ocupacion-bar-fill" [style.width.%]="item.ocupacion_porcentaje"
-                        [ngClass]="getOcupacionClass(item.ocupacion_porcentaje)">
-                      </div>
+                    <span class="valor">{{ item.ocupacion_porcentaje }}%</span>
+                    <div class="barra" aria-hidden="true">
+                      <div [style.width.%]="item.ocupacion_porcentaje" [ngClass]="getOcupacionClass(item.ocupacion_porcentaje)"></div>
                     </div>
                   </div>
                   <ng-template #sinCapacidad>
-                    <span class="ocupacion-value sin-datos" title="No se registró la capacidad (habitaciones totales) de este hotel ese día">
-                      Sin datos
-                    </span>
+                    <span class="sin-datos" title="No se registró la capacidad (habitaciones totales) de este hotel ese día">Sin datos</span>
                   </ng-template>
-                  </ng-template>
-                </td>
-                <td>
-                  <ng-container *ngIf="tieneCapacidad(item); else habSinCapacidad">
-                    {{ porDia(item.habitaciones_ocupadas, item) }} de {{ item.habitaciones_totales }}
-                  </ng-container>
-                  <ng-template #habSinCapacidad>{{ porDia(item.habitaciones_ocupadas, item) }}</ng-template>
-                  <div class="detalle-dias" *ngIf="item.dias_reportados > 1">promedio de {{ item.dias_reportados }} días</div>
-                </td>
-                <td>
-                  <ng-container *ngIf="item.total_turistas != null; else turistasSinDato">
-                    {{ porDia(item.total_turistas, item) }}
-                    <div class="detalle-dias">
-                      {{ porDia(item.checkin_nacionales, item) }} nac. · {{ porDia(item.checkin_extranjeros, item) }} ext.
-                    </div>
-                  </ng-container>
-                  <ng-template #turistasSinDato>
-                    <span class="sin-datos" title="El archivo original de esta carga no trae la cantidad de turistas">—</span>
-                  </ng-template>
-                </td>
-                <td>
-                  <ion-badge color="warning" *ngIf="inconsistenteHab(item); else estadoNormal">Revisar</ion-badge>
-                  <ng-template #estadoNormal>
-                    <ion-badge [color]="tieneCapacidad(item) ? getOcupacionClass(item.ocupacion_porcentaje) : 'medium'">
-                      {{ tieneCapacidad(item) ? getOcupacionLabel(item.ocupacion_porcentaje) : 'Sin datos' }}
-                    </ion-badge>
-                  </ng-template>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </ion-card-content>
-    </ion-card>
-  </div>
+                </ng-template>
+              </td>
+              <td>
+                <ng-container *ngIf="tieneCapacidad(item); else habSinCapacidad">
+                  {{ porDia(item.habitaciones_ocupadas, item) }} <span class="de">de {{ item.habitaciones_totales }}</span>
+                </ng-container>
+                <ng-template #habSinCapacidad>{{ porDia(item.habitaciones_ocupadas, item) }}</ng-template>
+                <div class="detalle-dias" *ngIf="item.dias_reportados > 1">promedio de {{ item.dias_reportados }} días</div>
+              </td>
+              <td>
+                <ng-container *ngIf="item.total_turistas != null; else turistasSinDato">
+                  {{ porDia(item.total_turistas, item) }}
+                  <div class="detalle-dias">
+                    {{ porDia(item.checkin_nacionales, item) }} nac. · {{ porDia(item.checkin_extranjeros, item) }} ext.
+                  </div>
+                </ng-container>
+                <ng-template #turistasSinDato>
+                  <span class="sin-datos" title="El archivo original de esta carga no trae la cantidad de turistas">—</span>
+                </ng-template>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="getEstadoBadge(item)">
+                  {{ inconsistenteHab(item) ? 'Revisar' : (tieneCapacidad(item) ? getOcupacionLabel(item.ocupacion_porcentaje) : 'Sin datos') }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- Mensaje cuando no hay datos -->
-  <div *ngIf="!loading && ocupacion.length === 0" class="empty-state">
-    <ion-icon name="analytics-outline" class="empty-icon"></ion-icon>
-    <h3>No hay datos de ocupación</h3>
-    <p>Los datos de ocupación se cargarán cuando estén disponibles</p>
+    <!-- Vacío -->
+    <div *ngIf="!loading && ocupacion.length === 0" class="empty-state ots-card">
+      <ion-icon name="analytics-outline" class="empty-icon"></ion-icon>
+      <h3>No hay datos de ocupación</h3>
+      <p>Aparecerán aquí cuando los encuestadores respondan la encuesta de hotel o se cargue un archivo en Carga ETL.</p>
+    </div>
   </div>
 </ion-content>

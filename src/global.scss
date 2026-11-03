@@ -261,6 +261,34 @@ ion-card {
     }
 }
 
+// Selector con ícono (ion-select dentro de una caja con borde), para filtros de página
+.ots-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 260px;
+    max-width: 100%;
+    height: 44px;
+    padding: 0 6px 0 14px;
+    background: var(--ots-surface);
+    border: 1px solid var(--ots-border);
+    border-radius: 10px;
+
+    > ion-icon {
+        font-size: 18px;
+        color: var(--ots-text-muted);
+        flex-shrink: 0;
+    }
+
+    ion-select {
+        flex: 1;
+        min-height: 42px;
+        --padding-start: 0;
+        font-size: 15px;
+        color: var(--ots-text);
+    }
+}
+
 // Etiqueta pequeña sobre un título de sección ("RECOLECCIÓN DE DATOS EN CAMPO")
 .ots-eyebrow {
     display: block;
