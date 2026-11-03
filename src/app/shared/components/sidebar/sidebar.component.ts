@@ -53,8 +53,16 @@ export class SidebarComponent implements OnInit {
     }
   }
 
+  // Iniciales para el avatar cuando no hay foto: primer nombre + primer apellido (ej. "KM")
+  get iniciales(): string {
+    const primera = (texto: unknown) => String(texto || '').trim().charAt(0).toUpperCase();
+    return (primera(this.usuario?.nombres) + primera(this.usuario?.apellidos)) || '?';
+  }
+
   isActive(ruta: string): boolean {
-    return this.router.url === ruta || this.router.url.startsWith(ruta + '/');
+    // Sin ?parámetros ni #ancla: "/hoteles?pagina=2" también debe marcar "Hoteles"
+    const url = this.router.url.split(/[?#]/)[0];
+    return url === ruta || url.startsWith(ruta + '/');
   }
 
   onImageError(event: any) {
