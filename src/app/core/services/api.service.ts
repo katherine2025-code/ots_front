@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Capacitor } from '@capacitor/core';
-import { StorageService } from './storage.service';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -15,125 +14,48 @@ export class ApiService {
   // en el navegador se usa environment.apiUrl (relativa en producción, localhost en desarrollo).
   private baseUrl = Capacitor.isNativePlatform() ? environment.apiUrlNative : environment.apiUrl;
 
-  constructor(
-    private http: HttpClient,
-    private storage: StorageService
-  ) { }
+  constructor(private http: HttpClient) { }
 
-  // ==========================================
-  // HEADERS
-  // ==========================================
+  // El token lo agrega auth.interceptor a TODAS las peticiones (también a las de etl.service, que usa
+  // HttpClient directo); aquí no se repite. Content-Type tampoco: HttpClient lo pone según el cuerpo
+  // (JSON para objetos, multipart para FormData).
 
-  private getHeaders(): HttpHeaders {
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
+  // Quita null/undefined: así un filtro vacío no viaja como "?feriado=undefined"
+  private params(params?: Record<string, any>): HttpParams {
+    let httpParams = new HttpParams();
+    Object.entries(params || {}).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        httpParams = httpParams.set(key, value);
+      }
     });
-
-    const token = this.storage.get('token');
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    return headers;
+    return httpParams;
   }
 
-  // ==========================================
-  // GET
-  // ==========================================
-
-  get<T>(endpoint: string, params?: any): Observable<T> {
-    let httpParams = new HttpParams();
-    if (params) {
-      Object.keys(params).forEach(key => {
-        if (params[key] !== null && params[key] !== undefined) {
-          httpParams = httpParams.set(key, params[key]);
-        }
-      });
-    }
-
-
-    return this.http.get<T>(`${this.baseUrl}/${endpoint}`, {
-      headers: this.getHeaders(),
-      params: httpParams
-    }).pipe(
-      catchError(this.handleError)
-    );
+  get<T>(endpoint: string, params?: Record<string, any>): Observable<T> {
+    return this.http.get<T>(`${this.baseUrl}/${endpoint}`, { params: this.params(params) })
+      .pipe(catchError(this.handleError));
   }
 
-  // ==========================================
-  // GET BLOB (para descargar archivos)
-  // ==========================================
-
-  getBlob(endpoint: string, params?: any): Observable<Blob> {
-    let httpParams = new HttpParams();
-    if (params) {
-      Object.keys(params).forEach(key => {
-        if (params[key] !== null && params[key] !== undefined) {
-          httpParams = httpParams.set(key, params[key]);
-        }
-      });
-    }
-
-
-    return this.http.get(`${this.baseUrl}/${endpoint}`, {
-      headers: this.getHeaders(),
-      params: httpParams,
-      responseType: 'blob'
-    }).pipe(
-      catchError(this.handleError)
-    );
+  // Para descargar archivos
+  getBlob(endpoint: string, params?: Record<string, any>): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${endpoint}`, { params: this.params(params), responseType: 'blob' })
+      .pipe(catchError(this.handleError));
   }
-
-  // ==========================================
-  // POST
-  // ==========================================
 
   post<T>(endpoint: string, body: any): Observable<T> {
-
-    return this.http.post<T>(`${this.baseUrl}/${endpoint}`, body, {
-      headers: this.getHeaders()
-    }).pipe(
-      catchError(this.handleError)
-    );
+    return this.http.post<T>(`${this.baseUrl}/${endpoint}`, body).pipe(catchError(this.handleError));
   }
-
-  // ==========================================
-  // PUT
-  // ==========================================
 
   put<T>(endpoint: string, body: any): Observable<T> {
-
-    return this.http.put<T>(`${this.baseUrl}/${endpoint}`, body, {
-      headers: this.getHeaders()
-    }).pipe(
-      catchError(this.handleError)
-    );
+    return this.http.put<T>(`${this.baseUrl}/${endpoint}`, body).pipe(catchError(this.handleError));
   }
-
-  // ==========================================
-  // PATCH (agregado para compatibilidad)
-  // ==========================================
 
   patch<T>(endpoint: string, body: any): Observable<T> {
-
-    return this.http.patch<T>(`${this.baseUrl}/${endpoint}`, body, {
-      headers: this.getHeaders()
-    }).pipe(
-      catchError(this.handleError)
-    );
+    return this.http.patch<T>(`${this.baseUrl}/${endpoint}`, body).pipe(catchError(this.handleError));
   }
 
-  // ==========================================
-  // DELETE
-  // ==========================================
-
   delete<T>(endpoint: string): Observable<T> {
-
-    return this.http.delete<T>(`${this.baseUrl}/${endpoint}`, {
-      headers: this.getHeaders()
-    }).pipe(
-      catchError(this.handleError)
-    );
+    return this.http.delete<T>(`${this.baseUrl}/${endpoint}`).pipe(catchError(this.handleError));
   }
 
   // ==========================================

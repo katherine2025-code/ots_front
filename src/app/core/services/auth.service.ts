@@ -15,6 +15,9 @@ export class AuthService {
     private api: ApiService,
     private storage: StorageService
   ) {
+    // Versiones anteriores guardaban la sesión también en "token"/"usuario" (sin prefijo): se limpia
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
     this.loadUserFromStorage();
   }
 
@@ -23,15 +26,10 @@ export class AuthService {
     return this.api.post<AuthResponse>('auth/login', credentials).pipe(
       tap(response => {
 
-        // Guardar en Ionic Storage
+        // Una sola copia de la sesión (StorageService: "ots_token" / "ots_usuario"); el
+        // interceptor lee de ahí mismo.
         this.storage.set('token', response.token);
         this.storage.set('usuario', JSON.stringify(response.usuario));
-        
-        // TAMBIÉN guardar en localStorage (para el interceptor)
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('usuario', JSON.stringify(response.usuario));
-        
-        
         this.currentUserSubject.next(response.usuario);
       })
     );
@@ -71,8 +69,6 @@ export class AuthService {
     // Eliminar de ambos almacenamientos
     this.storage.remove('token');
     this.storage.remove('usuario');
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
     
     this.currentUserSubject.next(null);
   }

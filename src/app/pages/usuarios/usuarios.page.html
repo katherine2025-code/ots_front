@@ -33,7 +33,7 @@
               <th>Correo</th>
               <th>Rol</th>
               <th>Estado</th>
-              <th class="text-center">Acciones</th>
+              <th class="ion-text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -52,7 +52,7 @@
                   {{ usuario.estado === 1 ? 'Activo' : 'Inactivo' }}
                 </ion-badge>
               </td>
-              <td class="text-center">
+              <td class="ion-text-center">
                 <ng-container *ngIf="puedeGestionar(usuario); else sinPermiso">
                   <ion-button fill="clear" size="small" color="primary" (click)="editarUsuario(usuario)">
                     <ion-icon name="create-outline"></ion-icon>

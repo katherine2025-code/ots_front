@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
 import { environment } from 'src/environments/environment';
@@ -25,7 +25,9 @@ export class EtlService {
   }
 
   getHistorial(page: number = 1, limit: number = 20, filtro: string = ''): Observable<any> {
-    return this.http.get(`${this.apiUrl}/historial?page=${page}&limit=${limit}&filtro=${filtro}`);
+    // HttpParams codifica el filtro (un "&" o "#" escrito por el usuario no rompe la URL)
+    const params = new HttpParams().set('page', page).set('limit', limit).set('filtro', filtro);
+    return this.http.get(`${this.apiUrl}/historial`, { params });
   }
 
   getProcesoDetalle(id: number): Observable<any> {
@@ -41,7 +43,7 @@ export class EtlService {
   }
 
   getLogsErrores(limit: number = 10): Observable<any> {
-    return this.http.get(`${this.apiUrl}/logs-errores?limit=${limit}`);
+    return this.http.get(`${this.apiUrl}/logs-errores`, { params: new HttpParams().set('limit', limit) });
   }
 
   getHistoricalPredictions(limite?: number, dias?: number): Observable<any> {

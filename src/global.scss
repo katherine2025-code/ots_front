@@ -166,29 +166,9 @@ ion-split-pane {
 }
 
 /* ============================================
-   GRIDS RESPONSIVE - OTS
+   GRID DE KPIs
    ============================================ */
 
-// Grid de cards
-.ots-grid {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: 1fr;
-
-    @media (min-width: 576px) {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    @media (min-width: 992px) {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    @media (min-width: 1200px) {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-// Grid de KPIs
 .kpi-grid {
     display: grid;
     gap: 12px;
@@ -583,45 +563,6 @@ ion-card-content {
 }
 
 /* ============================================
-   UTILIDADES RESPONSIVE ADICIONALES
-   ============================================ */
-
-// Ocultar en móvil
-.hide-mobile {
-    @media (max-width: 576px) {
-        display: none !important;
-    }
-}
-
-// Ocultar en desktop
-.hide-desktop {
-    @media (min-width: 577px) {
-        display: none !important;
-    }
-}
-
-// Stack en móvil
-.stack-mobile {
-    @media (max-width: 576px) {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-}
-
-// Texto responsive
-.text-responsive {
-    font-size: 14px;
-
-    @media (min-width: 576px) {
-        font-size: 16px;
-    }
-
-    @media (min-width: 768px) {
-        font-size: 18px;
-    }
-}
-
-/* ============================================
    SCROLLBAR PERSONALIZADA
    ============================================ */
 
@@ -642,42 +583,6 @@ ion-card-content {
     &:hover {
         background: var(--ion-color-primary);
     }
-}
-
-/* ============================================
-   ANIMACIONES
-   ============================================ */
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fade-in {
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
-}
-
-.pulse {
-    animation: pulse 2s ease-in-out infinite;
 }
 
 /* ============================================
