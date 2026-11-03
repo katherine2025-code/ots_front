@@ -6,13 +6,19 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="icon" type="image/png" href="assets/icon/favicon.png">
+  <!-- La app ya tiene su propio tema oscuro: declararlo evita que el "modo oscuro forzado" de
+       Chrome (escritorio y Android) invierta los colores del modo claro, y darkreader-lock hace
+       lo mismo con la extensión Dark Reader. -->
+  <meta name="color-scheme" content="light dark">
+  <meta name="darkreader-lock">
   <!-- Aplica el tema guardado antes de que cargue Angular (evita el destello claro/oscuro) -->
   <script>
     (function () {
       try {
         var t = localStorage.getItem('ots_tema');
         var oscuro = t ? t === 'oscuro' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (oscuro) { document.documentElement.classList.add('ion-palette-dark'); document.documentElement.style.colorScheme = 'dark'; }
+        if (oscuro) { document.documentElement.classList.add('ion-palette-dark'); }
+        document.documentElement.style.colorScheme = oscuro ? 'dark' : 'light';
       } catch (e) { }
     })();
   </script>
