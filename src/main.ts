@@ -104,7 +104,9 @@ import {
   pieChartOutline,
   searchOutline,
   sendOutline,
-  trendingDownOutline
+  trendingDownOutline,
+  chevronDownOutline,
+  chevronUpOutline
 } from 'ionicons/icons';
 
 // ==========================================
@@ -202,7 +204,9 @@ addIcons({
   pieChartOutline,
   searchOutline,
   sendOutline,
-  trendingDownOutline
+  trendingDownOutline,
+  chevronDownOutline,
+  chevronUpOutline
 });
 
 // ==========================================
