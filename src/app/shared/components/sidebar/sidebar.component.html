@@ -1,15 +1,10 @@
 <ion-split-pane contentId="main-content" when="md">
   <!-- MENÚ LATERAL -->
   <ion-menu [contentId]="'main-content'" type="overlay" swipeGesture="true">
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>
-          <div class="menu-header">
-            <img src="assets/icon/logo-ots.png" alt="OTS Logo" class="logo-img" (error)="onLogoError($event)">
-            <span class="logo-text">OTS</span>
-          </div>
-        </ion-title>
-      </ion-toolbar>
+    <ion-header class="ion-no-border">
+      <div class="menu-header">
+        <img src="assets/icon/logo-ots.png" alt="OTS - Observatorio Turístico Sostenible" class="logo-img" (error)="onLogoError($event)">
+      </div>
     </ion-header>
 
     <ion-content>
@@ -116,22 +111,20 @@
     </ion-content>
 
     <!-- Footer con usuario -->
-    <ion-footer>
-      <ion-toolbar>
-        <div class="user-profile">
-          <ion-avatar slot="start">
-            <img *ngIf="fotoPerfil && fotoCargada" [src]="fotoPerfil" (error)="onImageError($event)">
-            <ion-icon *ngIf="!fotoPerfil || !fotoCargada" name="person-circle-outline"></ion-icon>
-          </ion-avatar>
-          <div class="user-info">
-            <span class="user-name">{{ usuario?.nombres }}</span>
-            <span class="user-role">{{ rolNombre }}</span>
-          </div>
-          <ion-button fill="clear" color="danger" (click)="logout()" slot="end">
-            <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
-          </ion-button>
+    <ion-footer class="ion-no-border">
+      <div class="user-profile">
+        <div class="avatar">
+          <img *ngIf="fotoPerfil && fotoCargada" [src]="fotoPerfil" alt="" (error)="onImageError($event)">
+          <span *ngIf="!fotoPerfil || !fotoCargada">{{ iniciales }}</span>
         </div>
-      </ion-toolbar>
+        <div class="user-info">
+          <span class="user-name">{{ usuario?.nombres }}</span>
+          <span class="user-role">{{ rolNombre }}</span>
+        </div>
+        <button type="button" class="logout-btn" (click)="logout()" aria-label="Cerrar sesión" title="Cerrar sesión">
+          <ion-icon name="log-out-outline"></ion-icon>
+        </button>
+      </div>
     </ion-footer>
   </ion-menu>
 
