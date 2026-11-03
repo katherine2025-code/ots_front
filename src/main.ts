@@ -7,6 +7,7 @@ import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
 import { routes } from './app/app.routes';
 import { authInterceptor } from './app/core/interceptors/auth.interceptor';
+import { aplicarEstiloGraficos } from './app/shared/chart-defaults';
 
 // ==========================================
 // IMPORTAR TODOS LOS ICONOS NECESARIOS
@@ -213,6 +214,8 @@ if (environment.production) {
 
 // La sesión guardada se conserva entre recargas hasta cerrar sesión o hasta que el token
 // caduque (ver AuthService.isAuthenticated y el manejo de 401 en auth.interceptor).
+
+aplicarEstiloGraficos();
 
 bootstrapApplication(AppComponent, {
   providers: [
