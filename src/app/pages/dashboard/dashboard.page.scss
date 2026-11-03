@@ -33,8 +33,8 @@
     color: var(--ots-text-muted);
   }
 
-  .rol {
-    padding: 6px 14px;
+  .fecha-hoy {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -45,7 +45,7 @@
 // KPIs: tarjeta blanca, el color solo en el ícono
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -71,6 +71,22 @@
   &.kpi-teal { --kpi-color: var(--ots-teal); --kpi-soft: var(--ots-teal-soft); }
   &.kpi-warning { --kpi-color: var(--ots-warning); --kpi-soft: var(--ots-warning-soft); }
   &.kpi-success { --kpi-color: var(--ots-success); --kpi-soft: var(--ots-success-soft); }
+  &.kpi-danger { --kpi-color: var(--ots-danger); --kpi-soft: var(--ots-danger-soft); }
+
+  .precision {
+    margin-left: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ots-success);
+  }
+
+  .enlace {
+    color: var(--ion-color-primary);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
 
   .kpi-icon {
     width: 44px;
@@ -405,4 +421,59 @@ ion-content {
 
   .base, .nota, .sin-datos { font-size: 12px; color: var(--ots-text-muted); margin: 0 0 10px; }
   .sin-datos { font-size: 13px; line-height: 1.45; }
+}
+
+// Avance contra la meta (solo encuestadores con meta) y aviso de quienes no la tienen
+.meta-avance {
+  margin-bottom: 14px;
+
+  .linea {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--ots-text-muted);
+
+    strong { color: var(--ots-text); font-variant-numeric: tabular-nums; }
+  }
+}
+
+.aviso-metas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--ots-warning-soft);
+  font-size: 13px;
+  color: #78350f;
+
+  ion-icon { font-size: 18px; flex-shrink: 0; }
+  span { flex: 1; min-width: 200px; }
+
+  a {
+    font-weight: 600;
+    color: #78350f;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
+// Sin meta: la barra compara con quien más encuestó, en un tono distinto al avance de meta
+.jornada-card .barra.sin-meta div {
+  background: #94a3b8;
+}
+
+.top-encuestadores .fila-encuestador {
+  grid-template-columns: minmax(110px, 220px) 1fr 96px;
+
+  .cuenta small {
+    display: block;
+    font-size: 11px;
+    color: var(--ots-text-muted);
+  }
 }

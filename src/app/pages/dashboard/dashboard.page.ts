@@ -63,9 +63,21 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   loading = true;
 
   // ===== Jornada de recolección en curso (resumen) =====
+  // "Lunes, 3 de noviembre de 2026": más útil en jornada de campo que repetir el nombre del sistema
+  readonly fechaHoy = (() => {
+    const t = new Date().toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  })();
+
   resumenJornada: AvanceJornada | null = null;
   topEncuestadores: FilaEncuestador[] = [];
   jornadaCargada = false;
+  // Cuántos encuestadores tienen meta en el cronograma y cuántos encuestan sin ella. La meta total
+  // solo cubre a los primeros: comparar TODO lo hecho contra esa meta daba cifras como "1157 / 5".
+  conMeta = 0;
+  sinMeta = 0;
+  hechoConMeta = 0;
+  private maxHecho = 0;
 
   // ===== Mapa: lugares más visitados por feriado =====
   mapaLugares: MapaLugares | null = null;
@@ -141,7 +153,13 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     this.cronogramaService.getResumen().subscribe({
       next: (r) => {
         this.resumenJornada = r.jornada ? (r as AvanceJornada) : null;
-        this.topEncuestadores = (this.resumenJornada?.encuestadores || []).slice(0, 5);
+        const filas = this.resumenJornada?.encuestadores || [];
+        this.topEncuestadores = filas.slice(0, 5);
+        const asignados = filas.filter(f => f.metaTotal > 0);
+        this.conMeta = asignados.length;
+        this.sinMeta = filas.length - asignados.length;
+        this.hechoConMeta = asignados.reduce((t, f) => t + f.hechoTotal, 0);
+        this.maxHecho = Math.max(0, ...filas.map(f => f.hechoTotal));
         this.jornadaCargada = true;
       },
       error: () => { this.jornadaCargada = true; }
@@ -150,6 +168,12 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
   porcentaje(hecho: number, meta: number): number {
     return meta > 0 ? Math.min(100, Math.round((hecho / meta) * 100)) : 0;
+  }
+
+  // Barra de un encuestador: avance sobre SU meta; si no tiene meta, comparado con quien más encuestó
+  barraEncuestador(e: FilaEncuestador): number {
+    if (e.metaTotal > 0) return this.porcentaje(e.hechoTotal, e.metaTotal);
+    return this.maxHecho > 0 ? Math.round((e.hechoTotal / this.maxHecho) * 100) : 0;
   }
 
   get estadoJornada(): string {

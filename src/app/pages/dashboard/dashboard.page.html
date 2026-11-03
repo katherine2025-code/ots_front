@@ -7,9 +7,8 @@
         <span class="ots-eyebrow">{{ isAdmin ? 'Panel de administración' : 'Panel de investigación' }}</span>
         <h1 *ngIf="usuario">{{ isAdmin ? 'Bienvenida' : 'Bienvenido/a' }}, {{ usuario.nombres }}</h1>
         <h1 *ngIf="!usuario">Dashboard</h1>
-        <p class="subtitle">Observatorio Turístico Sostenible · UPSE</p>
+        <p class="subtitle fecha-hoy">{{ fechaHoy }}</p>
       </div>
-      <span class="badge primary rol" *ngIf="usuario">{{ rolNombre }}</span>
     </header>
 
     <!-- Estado de Carga -->
@@ -40,33 +39,37 @@
         </div>
       </div>
 
-      <div class="kpi-card kpi-warning">
+      <!-- Modelo predictivo: nombre y precisión en una sola tarjeta -->
+      <div class="kpi-card" [ngClass]="modelo.estado === 'no_disponible' ? 'kpi-danger' : 'kpi-success'">
         <div class="kpi-icon">
-          <ion-icon name="analytics-outline"></ion-icon>
+          <ion-icon [name]="modelo.estado === 'no_disponible' ? 'cloud-offline-outline' : 'analytics-outline'"></ion-icon>
         </div>
-        <div class="kpi-content">
-          <h3 class="kpi-texto">{{ modelo.usado || '—' }}</h3>
-          <p>Modelo en uso</p>
-          <span class="kpi-detalle" [ngSwitch]="modelo.estado">
-            <ng-container *ngSwitchCase="'entrenando'">Reentrenando en segundo plano…</ng-container>
-            <ng-container *ngSwitchCase="'ausente'">Sin entrenar todavía</ng-container>
-            <ng-container *ngSwitchCase="'no_disponible'">Servicio de ML no disponible</ng-container>
-            <ng-container *ngSwitchCase="'cargando'">Consultando…</ng-container>
-            <ng-container *ngSwitchDefault>
-              <ng-container *ngIf="modelo.fechaEntrenamiento">Entrenado el {{ modelo.fechaEntrenamiento | date:'dd/MM/yyyy HH:mm' }}</ng-container>
-            </ng-container>
-          </span>
-        </div>
-      </div>
-
-      <div class="kpi-card kpi-success">
-        <div class="kpi-icon">
-          <ion-icon name="checkmark-circle-outline"></ion-icon>
-        </div>
-        <div class="kpi-content">
-          <h3>{{ modelo.precision !== null ? (modelo.precision | number:'1.1-1') + '%' : '—' }}</h3>
-          <p>Precisión del Modelo</p>
-          <span class="kpi-detalle" *ngIf="modelo.precision !== null">del modelo en uso, sobre datos de prueba</span>
+        <div class="kpi-content" [ngSwitch]="modelo.estado">
+          <ng-container *ngSwitchCase="'no_disponible'">
+            <h3 class="kpi-texto">Sin conexión</h3>
+            <p>Modelo predictivo</p>
+            <span class="kpi-detalle">El backend no logra comunicarse con el servicio de ML</span>
+          </ng-container>
+          <ng-container *ngSwitchCase="'ausente'">
+            <h3 class="kpi-texto">Sin entrenar</h3>
+            <p>Modelo predictivo</p>
+            <a class="kpi-detalle enlace" *ngIf="isAdmin" [routerLink]="['/predicciones']">Entrenar en Predicciones</a>
+          </ng-container>
+          <ng-container *ngSwitchCase="'cargando'">
+            <h3 class="kpi-texto">…</h3>
+            <p>Modelo predictivo</p>
+          </ng-container>
+          <ng-container *ngSwitchDefault>
+            <h3 class="kpi-texto">
+              {{ modelo.usado || '—' }}
+              <span class="precision" *ngIf="modelo.precision !== null">{{ modelo.precision | number:'1.1-1' }}%</span>
+            </h3>
+            <p>Modelo predictivo<ng-container *ngIf="modelo.precision !== null"> · precisión en datos de prueba</ng-container></p>
+            <span class="kpi-detalle" *ngIf="modelo.estado === 'entrenando'">Reentrenando en segundo plano…</span>
+            <span class="kpi-detalle" *ngIf="modelo.estado !== 'entrenando' && modelo.fechaEntrenamiento">
+              Entrenado el {{ modelo.fechaEntrenamiento | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </ng-container>
         </div>
       </div>
     </div>
@@ -89,30 +92,50 @@
       </div>
 
       <ng-container *ngIf="resumenJornada as r">
+        <!-- Lo hecho es el dato principal; la meta solo cuenta a quienes la tienen asignada -->
         <div class="jornada-kpis">
           <div class="jkpi">
-            <span>Hoy</span>
-            <strong>{{ r.totales.hechoHoy }} <small>/ {{ r.totales.metaHoy }}</small></strong>
-            <div class="barra"><div [style.width.%]="porcentaje(r.totales.hechoHoy, r.totales.metaHoy)"></div></div>
+            <span>Encuestas hoy</span>
+            <strong>{{ r.totales.hechoHoy }}</strong>
+            <small class="pie" *ngIf="r.totales.metaHoy > 0">Meta del día: {{ r.totales.metaHoy }} ({{ porcentaje(r.totales.hechoHoy, r.totales.metaHoy) }}%)</small>
+            <small class="pie" *ngIf="r.totales.metaHoy === 0">Sin meta para hoy</small>
           </div>
           <div class="jkpi">
-            <span>Toda la jornada</span>
-            <strong>{{ r.totales.hecho }} <small>/ {{ r.totales.meta }}</small></strong>
-            <div class="barra"><div [style.width.%]="porcentaje(r.totales.hecho, r.totales.meta)"></div></div>
+            <span>Encuestas en la jornada</span>
+            <strong>{{ r.totales.hecho }}</strong>
+            <small class="pie">{{ r.jornada.fechaInicio | date:'dd/MM' }} – {{ r.jornada.fechaFin | date:'dd/MM' }}</small>
           </div>
           <div class="jkpi">
             <span>Encuestadores</span>
             <strong>{{ r.encuestadores.length }}</strong>
-            <small class="pie">{{ r.jornada.fechaInicio | date:'dd/MM' }} – {{ r.jornada.fechaFin | date:'dd/MM' }}</small>
+            <small class="pie">{{ conMeta }} con meta · {{ sinMeta }} sin meta</small>
           </div>
         </div>
+
+        <!-- Avance contra la meta, solo si hay metas asignadas -->
+        <div class="meta-avance" *ngIf="conMeta > 0">
+          <div class="linea">
+            <span>Avance de quienes tienen meta ({{ conMeta }})</span>
+            <strong>{{ hechoConMeta }} de {{ r.totales.meta }} · {{ porcentaje(hechoConMeta, r.totales.meta) }}%</strong>
+          </div>
+          <div class="barra"><div [style.width.%]="porcentaje(hechoConMeta, r.totales.meta)"></div></div>
+        </div>
+
+        <p class="aviso-metas" *ngIf="sinMeta > 0">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>{{ sinMeta }} {{ sinMeta === 1 ? 'encuestador trabaja' : 'encuestadores trabajan' }} sin meta asignada en esta jornada.</span>
+          <a *ngIf="isAdmin" [routerLink]="['/cronograma']">Asignar metas</a>
+        </p>
 
         <div class="top-encuestadores" *ngIf="topEncuestadores.length > 0">
           <h4>Encuestadores con más encuestas</h4>
           <div class="fila-encuestador" *ngFor="let e of topEncuestadores; trackBy: trackPorId">
             <span class="nombre">{{ e.nombre }}</span>
-            <div class="barra"><div [style.width.%]="porcentaje(e.hechoTotal, e.metaTotal)"></div></div>
-            <span class="cuenta">{{ e.hechoTotal }}/{{ e.metaTotal }}</span>
+            <div class="barra" [class.sin-meta]="e.metaTotal === 0"><div [style.width.%]="barraEncuestador(e)"></div></div>
+            <span class="cuenta">
+              {{ e.hechoTotal }}<ng-container *ngIf="e.metaTotal > 0"> / {{ e.metaTotal }}</ng-container>
+              <small *ngIf="e.metaTotal === 0">sin meta</small>
+            </span>
           </div>
         </div>
       </ng-container>
