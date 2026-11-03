@@ -4,7 +4,6 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
 import { IonicModule } from '@ionic/angular';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
-import { ThemeService } from './core/services/theme.service';
 
 // Rutas públicas que no deben mostrar la barra lateral (usuario aún no autenticado)
 const RUTAS_SIN_SIDEBAR = ['/login', '/registro'];
@@ -19,11 +18,9 @@ const RUTAS_SIN_SIDEBAR = ['/login', '/registro'];
 export class AppComponent implements OnInit {
   mostrarSidebar = !RUTAS_SIN_SIDEBAR.some(ruta => this.router.url.startsWith(ruta));
 
-  constructor(private router: Router, public theme: ThemeService) { }
+  constructor(private router: Router) { }
 
   ngOnInit() {
-    this.theme.iniciar();
-
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event) => {

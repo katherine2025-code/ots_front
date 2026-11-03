@@ -1,5 +1,5 @@
-// El login es siempre blanco: NO usa las variables --ots-* (que cambian con .ion-palette-dark)
-// sino su propia paleta clara, para que el modo oscuro no lo deje a medias.
+// El login es siempre blanco: usa su propia paleta clara en lugar de las variables --ots-*
+// para mantener su diseño independiente del resto de la app.
 .login-content {
   --login-bg: #ffffff;
   --login-field-bg: #f8fafc;
@@ -16,7 +16,6 @@
   --padding-bottom: 0;
   --padding-start: 0;
   --padding-end: 0;
-  color-scheme: light;
 }
 
 .login-wrapper {
