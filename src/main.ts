@@ -187,12 +187,8 @@ if (environment.production) {
   enableProdMode();
 }
 
-// Forzar pantalla de login en cada arranque de la app:
-// se descarta cualquier sesión guardada de una ejecución anterior.
-localStorage.removeItem('ots_token');
-localStorage.removeItem('ots_usuario');
-localStorage.removeItem('token');
-localStorage.removeItem('usuario');
+// La sesión guardada se conserva entre recargas hasta cerrar sesión o hasta que el token
+// caduque (ver AuthService.isAuthenticated y el manejo de 401 en auth.interceptor).
 
 bootstrapApplication(AppComponent, {
   providers: [
