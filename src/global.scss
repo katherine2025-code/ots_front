@@ -31,10 +31,6 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/* ============================================
-   DARK MODE
-   ============================================ */
-@import '@ionic/angular/css/palettes/dark.class.css';
 @import 'leaflet/dist/leaflet.css';
 
 /* ============================================
@@ -544,69 +540,13 @@ ion-card-content {
 }
 
 /* ============================================
-   DARK MODE SOBRESCRITURAS OTS
-   ============================================ */
-
-.ion-palette-dark {
-    .page-header {
-        border-bottom-color: rgba(255, 255, 255, 0.06);
-    }
-
-    .metric-card {
-        background: var(--ion-card-background);
-    }
-
-    .badge {
-        &.success {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-        }
-
-        &.warning {
-            background: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
-        }
-
-        &.danger {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-        }
-
-        &.info {
-            background: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-        }
-
-        &.primary {
-            background: rgba(99, 102, 241, 0.2);
-            color: #818cf8;
-        }
-    }
-
-    .empty-state .empty-icon {
-        color: #4b5563;
-    }
-}
-/* ============================================
-   MAPAS (Leaflet) - tema oscuro
-   ============================================ */
-.ion-palette-dark .leaflet-tile-pane {
-    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
-}
-
-.ion-palette-dark .leaflet-container {
-    background: #1e2530;
-}
-
-/* ============================================
    IMPRESIÓN / GUARDAR COMO PDF
    Al imprimir una página (p. ej. "Ver Reporte Detallado") debe salir SOLO el contenido,
-   no el menú lateral ni el botón de tema. Además, ion-content por defecto solo imprime
+   no el menú lateral. Además, ion-content por defecto solo imprime
    lo visible en pantalla: se fuerza a mostrar todo su contenido.
    ============================================ */
 @media print {
     ion-menu,
-    .boton-tema,
     ion-back-button,
     .ion-no-print {
         display: none !important;
