@@ -92,7 +92,18 @@ import {
   closeCircle,
   ellipseOutline,
   moonOutline,
-  sunnyOutline
+  sunnyOutline,
+  arrowBackOutline,
+  bedOutline,
+  callOutline,
+  chevronForwardOutline,
+  flashOutline,
+  leafOutline,
+  mailUnreadOutline,
+  pieChartOutline,
+  searchOutline,
+  sendOutline,
+  trendingDownOutline
 } from 'ionicons/icons';
 
 // ==========================================
@@ -177,7 +188,20 @@ addIcons({
   closeCircle,
   ellipseOutline,
   moonOutline,
-  sunnyOutline
+  sunnyOutline,
+
+  // Íconos que las plantillas usaban sin estar registrados (no se mostraban)
+  arrowBackOutline,
+  bedOutline,
+  callOutline,
+  chevronForwardOutline,
+  flashOutline,
+  leafOutline,
+  mailUnreadOutline,
+  pieChartOutline,
+  searchOutline,
+  sendOutline,
+  trendingDownOutline
 });
 
 // ==========================================

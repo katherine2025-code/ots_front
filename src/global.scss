@@ -102,6 +102,12 @@ ion-split-pane {
     }
 }
 
+// Contenedor de cada página del sidebar: ancho máximo centrado
+.ots-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
 /* ============================================
    HEADER Y TITULOS RESPONSIVE
    ============================================ */
