@@ -1,28 +1,15 @@
 <ion-content class="ion-padding" scrollY="true">
   <div class="dashboard-page">
 
-    <!-- Mensaje de bienvenida personalizado -->
-    <div class="welcome-card" *ngIf="usuario">
-      <h1 *ngIf="isAdmin">Bienvenida, {{ usuario.nombres }}</h1>
-      <h1 *ngIf="!isAdmin">Bienvenido/a, {{ usuario.nombres }}</h1>
-      <p *ngIf="isAdmin">Panel de Administración - Observatorio Turístico Sostenible</p>
-      <p *ngIf="!isAdmin">Panel de Investigación - Acceso a Encuestas y Reportes</p>
-    </div>
-
-    <!-- Header Superior -->
-    <header class="page-header">
-      <div class="header-left">
-        <h1>Dashboard</h1>
-        <p class="subtitle">Observatorio Turístico Sostenible - UPSE</p>
+    <!-- Encabezado: saludo + panel + rol (un solo bloque en lugar de pancarta + título duplicado) -->
+    <header class="welcome-header">
+      <div>
+        <span class="ots-eyebrow">{{ isAdmin ? 'Panel de administración' : 'Panel de investigación' }}</span>
+        <h1 *ngIf="usuario">{{ isAdmin ? 'Bienvenida' : 'Bienvenido/a' }}, {{ usuario.nombres }}</h1>
+        <h1 *ngIf="!usuario">Dashboard</h1>
+        <p class="subtitle">Observatorio Turístico Sostenible · UPSE</p>
       </div>
-      <div class="header-right">
-        <div class="user-badge" *ngIf="usuario">
-          <span class="user-name">{{ usuario.nombres }} {{ usuario.apellidos }}</span>
-          <span class="user-role-badge" [ngClass]="isAdmin ? 'role-admin' : 'role-investigador'">
-            {{ rolNombre }}
-          </span>
-        </div>
-      </div>
+      <span class="badge primary rol" *ngIf="usuario">{{ rolNombre }}</span>
     </header>
 
     <!-- Estado de Carga -->
@@ -43,7 +30,7 @@
         </div>
       </div>
 
-      <div class="kpi-card kpi-success">
+      <div class="kpi-card kpi-teal">
         <div class="kpi-icon">
           <ion-icon name="people-outline"></ion-icon>
         </div>
@@ -72,7 +59,7 @@
         </div>
       </div>
 
-      <div class="kpi-card kpi-danger">
+      <div class="kpi-card kpi-success">
         <div class="kpi-icon">
           <ion-icon name="checkmark-circle-outline"></ion-icon>
         </div>
@@ -88,7 +75,7 @@
     <section class="jornada-card" *ngIf="!loading">
       <div class="jornada-cabecera">
         <div>
-          <span class="etiqueta">Recolección de datos en campo</span>
+          <span class="ots-eyebrow">Recolección de datos en campo</span>
           <h3 *ngIf="resumenJornada">
             {{ resumenJornada.jornada.feriado }}
             <span class="estado-jornada" [ngClass]="resumenJornada.estado">{{ estadoJornada }}</span>
@@ -140,7 +127,7 @@
     <section class="mapa-card" *ngIf="!loading">
       <div class="mapa-cabecera">
         <div>
-          <span class="etiqueta">Comportamiento turístico</span>
+          <span class="ots-eyebrow">Comportamiento turístico</span>
           <h3>¿Dónde visitan más los turistas?</h3>
         </div>
         <ion-select *ngIf="opcionesMapa.length > 0" [ngModel]="seleccionMapa" (ngModelChange)="cambiarSeleccionMapa($event)" interface="popover" class="selector-feriado"

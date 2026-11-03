@@ -47,8 +47,8 @@ export class ChartOcupacionComponent implements AfterViewInit {
         datasets: [{
           label: 'Ocupación %',
           data: this.datos.map((d: any) => d.ocupacion),
-          borderColor: '#667eea',
-          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderColor: '#2A6F97',
+          backgroundColor: 'rgba(42, 111, 151, 0.10)',
           borderWidth: 2,
           fill: true,
           tension: 0.4

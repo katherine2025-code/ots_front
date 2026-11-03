@@ -9,11 +9,11 @@ import { PrediccionService } from 'src/app/core/services/prediccion.service';
 
 Chart.register(...registerables);
 
-// Colores para que los gráficos se lean sobre el panel oscuro del dashboard.
-const EJE_TICK = '#8ea6c8';
-const EJE_GRID = 'rgba(255,255,255,0.06)';
-const LEYENDA = '#cbd5e1';
-const TITULO_CHART = '#e8eef7';
+// Colores de ejes y textos de los gráficos sobre fondo blanco.
+const EJE_TICK = '#64748b';
+const EJE_GRID = 'rgba(15, 23, 42, 0.06)';
+const LEYENDA = '#475569';
+const TITULO_CHART = '#0f172a';
 
 @Component({
   selector: 'app-predicciones',
@@ -225,8 +225,8 @@ export class PrediccionesPage implements OnInit {
       {
         label: 'Random Forest',
         data: [rf.precision, rf.r2 * 100, rf.mae],
-        backgroundColor: 'rgba(102, 126, 234, 0.8)',
-        borderColor: 'rgba(102, 126, 234, 1)',
+        backgroundColor: 'rgba(42, 111, 151, 0.85)',
+        borderColor: 'rgba(42, 111, 151, 1)',
         borderWidth: 2
       },
       {
@@ -424,8 +424,8 @@ export class PrediccionesPage implements OnInit {
         datasets: [{
           label: 'Ocupación Predicha (%)',
           data: predicciones.map((p: any) => p.ocupacion_predicha),
-          borderColor: 'rgba(142, 68, 173, 1)',
-          backgroundColor: 'rgba(142, 68, 173, 0.15)',
+          borderColor: 'rgba(42, 111, 151, 1)',
+          backgroundColor: 'rgba(42, 111, 151, 0.12)',
           tension: 0.35,
           fill: true,
           pointRadius: 4,

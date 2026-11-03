@@ -28,7 +28,7 @@
       [disabled]="entrenando">
       <ion-spinner name="crescent" *ngIf="entrenando" slot="start"></ion-spinner>
       <ion-icon name="play-circle-outline" slot="start" *ngIf="!entrenando"></ion-icon>
-      {{ entrenando ? 'ENTRENANDO MODELOS...' : 'ENTRENAR ALGORITMOS' }}
+      {{ entrenando ? 'Entrenando modelos…' : 'Entrenar algoritmos' }}
     </ion-button>
 
     <!-- Tarjetas Comparativas -->
@@ -172,7 +172,7 @@
       <ion-button expand="block" color="secondary" size="large" (click)="predecir()" [disabled]="prediciendo">
         <ion-spinner name="crescent" *ngIf="prediciendo" slot="start"></ion-spinner>
         <ion-icon name="analytics-outline" slot="start" *ngIf="!prediciendo"></ion-icon>
-        {{ prediciendo ? 'CALCULANDO...' : 'GENERAR PREDICCIÓN' }}
+        {{ prediciendo ? 'Calculando…' : 'Generar predicción' }}
       </ion-button>
 
       <!-- Resultado -->
@@ -250,7 +250,7 @@
       <ion-button expand="block" color="tertiary" size="large" (click)="predecirRango()" [disabled]="calculandoRango">
         <ion-spinner name="crescent" *ngIf="calculandoRango" slot="start"></ion-spinner>
         <ion-icon name="calendar-outline" slot="start" *ngIf="!calculandoRango"></ion-icon>
-        {{ calculandoRango ? 'PROYECTANDO...' : 'GENERAR PROYECCIÓN' }}
+        {{ calculandoRango ? 'Proyectando…' : 'Generar proyección' }}
       </ion-button>
 
       <!-- Resultado Rango -->
@@ -335,7 +335,7 @@
       [disabled]="cargandoHistoricas">
       <ion-spinner name="crescent" *ngIf="cargandoHistoricas" slot="start"></ion-spinner>
       <ion-icon name="refresh-outline" slot="start" *ngIf="!cargandoHistoricas"></ion-icon>
-      {{ cargandoHistoricas ? 'VALIDANDO...' : 'VALIDAR PREDICCIONES' }}
+      {{ cargandoHistoricas ? 'Validando…' : 'Validar predicciones' }}
     </ion-button>
 
     <div class="metrics-grid-small" *ngIf="prediccionesHistoricas.length > 0">
