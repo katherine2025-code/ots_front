@@ -213,17 +213,60 @@ ion-split-pane {
    mayúscula inicial, esquinas redondeadas y sin sombra, en toda la app.
    ============================================ */
 
+// Tamaños: small 32px (acciones de tabla/tarjeta), normal 40px, large 48px (acción principal)
 ion-button {
     --border-radius: 10px;
     --box-shadow: none;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    min-height: 40px;
     text-transform: none;
     letter-spacing: 0;
+    font-size: 14px;
     font-weight: 600;
+
+    // Separación entre ícono y texto (Ionic los deja pegados)
+    ion-icon[slot="start"] { margin-inline-end: 6px; font-size: 1.15em; }
+    ion-icon[slot="end"] { margin-inline-start: 6px; font-size: 1.15em; }
+}
+
+ion-button[size="small"] {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --border-radius: 8px;
+    min-height: 32px;
+    font-size: 13px;
 }
 
 ion-button[size="large"] {
-    font-size: 16px;
     min-height: 48px;
+    font-size: 15px;
+}
+
+// Contorneado: borde de 1px. En gris ("medium") es la acción secundaria neutra.
+ion-button[fill="outline"] {
+    --border-width: 1px;
+}
+
+ion-button[fill="outline"][color="medium"] {
+    --border-color: #cbd5e1;
+    --color: #334155;
+    --background-hover: var(--ots-surface-soft);
+}
+
+ion-button[fill="clear"] {
+    --background-hover: var(--ots-primary-soft);
+    --background-hover-opacity: 1;
+}
+
+// Chips (filtros rápidos): forma de píldora consistente
+ion-chip {
+    --background: var(--ots-surface-soft);
+    --color: #334155;
+    font-weight: 500;
+    border-radius: 999px;
+
+    ion-icon { margin-inline: -2px 6px; }
 }
 
 ion-segment-button {

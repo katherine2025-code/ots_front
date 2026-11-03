@@ -3,9 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ReporteService } from 'src/app/core/services/reporte.service';
-import { Chart, registerables } from 'chart.js';
+import { Chart } from 'chart.js';
 
-Chart.register(...registerables);
 
 const NOMBRES_FERIADOS = [
   'Carnaval', 'Semana Santa', 'Día del Trabajador', 'Primer Grito de la Independencia',
@@ -99,8 +98,6 @@ export class ReportesPage implements OnInit {
         this.crearGraficosTabulacion();
       }, 300);
 
-      console.log('✅ Estadísticas cargadas:', this.estadisticas);
-      console.log('✅ Tabulación cargada:', this.tabulacion);
     } catch (error) {
       console.error('❌ Error cargando estadísticas:', error);
     } finally {

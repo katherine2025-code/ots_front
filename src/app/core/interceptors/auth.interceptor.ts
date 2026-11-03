@@ -18,8 +18,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Intentar obtener de localStorage primero
   let token = localStorage.getItem('token');
   
-  console.log('[Interceptor] Token:', token ? 'SÍ existe' : 'NO existe');
-  console.log('[Interceptor] URL:', req.url);
   
   if (!token) {
     // Ionic Storage guarda en localStorage con prefijo
@@ -27,8 +25,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     token = ionicStorage?.token || null;
   }
   
-  console.log('[Interceptor] Token:', token ? 'SÍ existe' : 'NO existe');
-  console.log('[Interceptor] URL:', req.url);
   
   // Si hay token, agregarlo al header
   if (token) {
@@ -42,7 +38,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
     });
     
-    console.log('[Interceptor] Token agregado a la petición');
     return next(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
         // authMiddleware del backend responde 403 "Token inválido o expirado" cuando el token
@@ -59,6 +54,5 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     );
   }
   
-  console.log('[Interceptor] Sin token, petición sin autenticación');
   return next(req);
 };

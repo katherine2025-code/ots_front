@@ -14,6 +14,35 @@
   --sb-active-bg: rgba(42, 111, 151, 0.09);
 }
 
+// Barra superior solo en móvil (por debajo de "md", donde ion-split-pane oculta el menú)
+.barra-movil {
+  ion-toolbar {
+    --background: var(--sb-bg);
+    --border-color: var(--sb-border);
+    --border-width: 0 0 1px 0;
+    --min-height: 52px;
+  }
+
+  ion-menu-button {
+    --color: var(--sb-text);
+  }
+
+  .barra-logo {
+    height: 26px;
+    width: auto;
+    display: block;
+  }
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.contenido {
+  position: relative;
+  flex: 1;
+}
+
 ion-split-pane {
   --side-width: 264px;
   --side-max-width: 280px;
@@ -50,93 +79,83 @@ ion-menu {
     --padding-top: 0;
     --padding-bottom: 0;
 
-    ion-list {
-      padding: 12px 0;
-      background: transparent;
+    nav {
+      padding: 8px 0 16px;
+    }
 
-      ion-item {
-        position: relative;
-        margin: 2px 12px;
-        --min-height: 42px;
-        --padding-start: 12px;
-        --padding-end: 12px;
-        --inner-padding-end: 0;
-        --border-radius: 10px;
-        --background: transparent;
-        --background-hover: var(--sb-hover);
-        --background-hover-opacity: 1;
-        --background-activated: var(--sb-hover);
-        --background-focused: var(--sb-hover);
-        --border-color: transparent;
-        --color: var(--sb-text);
-        cursor: pointer;
+    .seccion + .seccion {
+      margin-top: 8px;
+    }
 
-        ion-icon {
-          font-size: 20px;
-          margin-inline-end: 12px;
-          color: var(--sb-text-muted);
-          transition: color 0.15s ease;
-        }
+    // Títulos de sección ("Análisis", "Administración"...)
+    .seccion-titulo {
+      margin: 16px 24px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--sb-section);
+    }
 
-        ion-label {
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--sb-text);
-          letter-spacing: 0.005em;
-        }
+    ion-item {
+      position: relative;
+      margin: 2px 12px;
+      --min-height: 40px;
+      --padding-start: 12px;
+      --padding-end: 12px;
+      --inner-padding-end: 0;
+      --border-radius: 10px;
+      --background: transparent;
+      --background-hover: var(--sb-hover);
+      --background-hover-opacity: 1;
+      --background-activated: var(--sb-hover);
+      --background-focused: var(--sb-hover);
+      --border-color: transparent;
+      --color: var(--sb-text);
+      cursor: pointer;
 
-        &:hover ion-icon {
-          color: var(--sb-text);
-        }
-
-        // Elemento activo: tinte suave + barrita indicadora a la izquierda
-        &.active {
-          --background: var(--sb-active-bg);
-          --background-hover: var(--sb-active-bg);
-
-          &::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 10px;
-            bottom: 10px;
-            width: 3px;
-            border-radius: 0 3px 3px 0;
-            background: var(--sb-primary);
-            z-index: 1;
-          }
-
-          ion-icon {
-            color: var(--sb-primary);
-          }
-
-          ion-label {
-            color: var(--sb-primary);
-            font-weight: 600;
-          }
-        }
+      ion-icon {
+        font-size: 20px;
+        margin-inline-end: 12px;
+        color: var(--sb-text-muted);
+        transition: color 0.15s ease;
       }
 
-      // Títulos de sección ("Administración", "Mi Cuenta")
-      ion-item-divider {
-        --background: transparent;
-        --color: var(--sb-section);
-        --inner-padding-end: 0;
-        min-height: 0;
-        margin-top: 16px;
-        padding-top: 12px;
-        padding-bottom: 6px;
-        border: none;
-        border-top: 1px solid var(--sb-border);
-        margin-inline: 12px;
-        --padding-start: 12px;
+      ion-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--sb-text);
+        letter-spacing: 0.005em;
+      }
+
+      &:hover ion-icon {
+        color: var(--sb-text);
+      }
+
+      // Elemento activo (routerLinkActive): tinte suave + barrita indicadora a la izquierda
+      &.active {
+        --background: var(--sb-active-bg);
+        --background-hover: var(--sb-active-bg);
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 9px;
+          bottom: 9px;
+          width: 3px;
+          border-radius: 0 3px 3px 0;
+          background: var(--sb-primary);
+          z-index: 1;
+        }
+
+        ion-icon {
+          color: var(--sb-primary);
+        }
 
         ion-label {
-          margin: 0;
-          font-size: 11px;
+          color: var(--sb-primary);
           font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
         }
       }
     }
@@ -152,13 +171,33 @@ ion-menu {
     .user-profile {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 8px;
-      border-radius: 12px;
-      transition: background 0.15s ease;
+      gap: 4px;
 
-      &:hover {
-        background: var(--sb-hover);
+      .perfil-toggle {
+        flex: 1;
+        min-width: 0;
+      }
+
+      // Toda la tarjeta (avatar + nombre) lleva a "Mi perfil"
+      .perfil-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        border-radius: 12px;
+        color: inherit;
+        text-decoration: none;
+        transition: background 0.15s ease;
+
+        &:hover,
+        &.active {
+          background: var(--sb-hover);
+        }
+
+        &:focus-visible {
+          outline: 2px solid rgba(42, 111, 151, 0.4);
+          outline-offset: 2px;
+        }
       }
 
       .avatar {

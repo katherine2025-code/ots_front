@@ -48,11 +48,9 @@ export class LoginPage {
       password: this.f['password'].value
     };
 
-    console.log('[LoginPage] Intentando login con:', credentials);
 
     this.authService.login(credentials).subscribe({
      next: (response) => {
-      console.log('[LoginPage] Login exitoso:', response);
       this.loading = false;
       // Encuestador no tiene Dashboard/Reportes - su pantalla de inicio es
       // "Mis Encuestas". El resto de roles sí van al Dashboard como antes.
