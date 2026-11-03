@@ -7,6 +7,7 @@ import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
 import { routes } from './app/app.routes';
 import { authInterceptor } from './app/core/interceptors/auth.interceptor';
+import { aplicarEstiloGraficos } from './app/shared/chart-defaults';
 
 // ==========================================
 // IMPORTAR TODOS LOS ICONOS NECESARIOS
@@ -92,7 +93,18 @@ import {
   closeCircle,
   ellipseOutline,
   moonOutline,
-  sunnyOutline
+  sunnyOutline,
+  arrowBackOutline,
+  bedOutline,
+  callOutline,
+  chevronForwardOutline,
+  flashOutline,
+  leafOutline,
+  mailUnreadOutline,
+  pieChartOutline,
+  searchOutline,
+  sendOutline,
+  trendingDownOutline
 } from 'ionicons/icons';
 
 // ==========================================
@@ -177,7 +189,20 @@ addIcons({
   closeCircle,
   ellipseOutline,
   moonOutline,
-  sunnyOutline
+  sunnyOutline,
+
+  // Íconos que las plantillas usaban sin estar registrados (no se mostraban)
+  arrowBackOutline,
+  bedOutline,
+  callOutline,
+  chevronForwardOutline,
+  flashOutline,
+  leafOutline,
+  mailUnreadOutline,
+  pieChartOutline,
+  searchOutline,
+  sendOutline,
+  trendingDownOutline
 });
 
 // ==========================================
@@ -189,6 +214,8 @@ if (environment.production) {
 
 // La sesión guardada se conserva entre recargas hasta cerrar sesión o hasta que el token
 // caduque (ver AuthService.isAuthenticated y el manejo de 401 en auth.interceptor).
+
+aplicarEstiloGraficos();
 
 bootstrapApplication(AppComponent, {
   providers: [

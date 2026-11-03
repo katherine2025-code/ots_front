@@ -269,7 +269,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         this.sinDatosTemporada = datos.length === 0;
         if (this.sinDatosTemporada || !this.chartTemporadaRef) return;
 
-        const colores: Record<string, string> = { Alta: '#667eea', Media: '#10b981', Baja: '#f59e0b' };
+        const colores: Record<string, string> = { Alta: '#2A6F97', Media: '#48A9A7', Baja: '#f59e0b' };
         const ctx = this.chartTemporadaRef.nativeElement.getContext('2d');
         this.chartTemporada?.destroy();
         this.chartTemporada = new Chart(ctx, {
@@ -310,8 +310,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           data: {
             labels: datos.map(d => d.mes),
             datasets: [
-              { label: 'Predicho', data: datos.map(d => d.predicho), backgroundColor: '#667eea' },
-              { label: 'Real', data: datos.map(d => d.real), backgroundColor: '#10b981' }
+              { label: 'Predicho', data: datos.map(d => d.predicho), backgroundColor: '#2A6F97' },
+              { label: 'Real', data: datos.map(d => d.real), backgroundColor: '#48A9A7' }
             ]
           },
           options: {
@@ -344,7 +344,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
             datasets: [{
               label: 'Ocupación % (promedio)',
               data: datos.map(d => parseFloat(d.promedio)),
-              backgroundColor: '#667eea'
+              backgroundColor: '#2A6F97'
             }]
           },
           options: {

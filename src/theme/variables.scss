@@ -3,13 +3,27 @@
 
 /** Ionic CSS Variables **/
 :root {
-    /** Superficies y textos compartidos (cambian con el tema claro/oscuro) **/
+    /** Superficies y textos compartidos (la app es siempre clara) **/
+    --ots-canvas: #f6f8fb;          // fondo de las páginas: las tarjetas blancas resaltan sobre él
     --ots-surface: #ffffff;
-    --ots-surface-alt: #f8f9fa;
-    --ots-surface-soft: #f3f4f6;
-    --ots-text: #1a1a1a;
-    --ots-text-muted: #6b7280;
+    --ots-surface-alt: #f8fafc;
+    --ots-surface-soft: #f1f5f9;
+    --ots-text: #0f172a;
+    --ots-text-muted: #64748b;
     --ots-border: #e5e7eb;
+
+    /** Colores semánticos: "-soft" es el fondo tenue, el otro es el texto/ícono **/
+    --ots-primary-soft: rgba(42, 111, 151, 0.10);
+    --ots-teal: #2f8f8d;
+    --ots-teal-soft: rgba(72, 169, 167, 0.14);
+    --ots-success: #059669;
+    --ots-success-soft: #d1fae5;
+    --ots-warning: #b45309;
+    --ots-warning-soft: #fef3c7;
+    --ots-danger: #dc2626;
+    --ots-danger-soft: #fee2e2;
+    --ots-info: #2563eb;
+    --ots-info-soft: #dbeafe;
 
     /** primary **/
     --ion-color-primary: #2A6F97;
@@ -89,9 +103,9 @@
     --ots-gradient-accent: linear-gradient(135deg, #6B4C9A 0%, #4a2d6b 100%);
 
     /** Sombras **/
-    --ots-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-    --ots-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --ots-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --ots-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --ots-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+    --ots-shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.10);
 
     /** Bordes **/
     --ots-radius-sm: 6px;

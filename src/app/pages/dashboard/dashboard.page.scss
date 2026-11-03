@@ -1,265 +1,156 @@
 // ==========================================
-// DASHBOARD CON FONDO DE IMAGEN Y SCROLL
+// DASHBOARD (claro: fondo --ots-canvas de la app, tarjetas blancas con borde fino)
 // ==========================================
 
-// Contenedor principal con fondo
 .dashboard-page {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
-  min-height: 100vh;
-
-  // ✅ FONDO DE IMAGEN
-  background-image: url('src/assets/icon/fondo.png');
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-
-  // Overlay para mejorar legibilidad
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.75) 0%,
-        rgba(245, 247, 250, 0.70) 100%);
-    z-index: 0;
-  }
-
-  // Todo el contenido debe estar por encima del overlay
-  >* {
-    position: relative;
-    z-index: 1;
-  }
-}
-
-// ✅ NUEVO: Tarjeta de Bienvenida
-.welcome-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
   padding: 24px;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-  h1 {
-    margin: 0 0 8px 0;
-    font-size: 1.6em;
-    font-weight: 700;
-  }
-
-  p {
-    margin: 0;
-    opacity: 0.9;
-    font-size: 1em;
-  }
 }
 
-// Header Styles
-.page-header {
+// Encabezado con saludo y rol
+.welcome-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ots-border);
 
-  .header-left {
-    h1 {
-      margin: 0;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--ots-text);
-    }
-
-    .subtitle {
-      margin: 4px 0 0 0;
-      font-size: 14px;
-      color: var(--ots-text-muted);
-    }
+  h1 {
+    margin: 4px 0 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ots-text);
   }
 
-  .header-right {
-    .user-badge {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+  .subtitle {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--ots-text-muted);
+  }
 
-      .user-name {
-        font-weight: 600;
-        color: var(--ots-text);
-      }
-
-      // ✅ ACTUALIZADO: Badges de rol con colores específicos
-      .user-role-badge {
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-        color: white;
-
-        &.role-admin {
-          background: #10b981; // Verde para Administrador
-        }
-
-        &.role-investigador {
-          background: #667eea; // Azul/Morado para Investigador
-        }
-      }
-    }
+  .rol {
+    padding: 6px 14px;
   }
 }
 
-// ✅ NUEVO: Estado de Carga
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px;
-  color: var(--ots-text-muted);
-
-  ion-spinner {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 16px;
-    color: #667eea;
-  }
+.loading-state ion-spinner {
+  color: var(--ion-color-primary);
 }
 
-// KPI Grid Styles
+// KPIs: tarjeta blanca, el color solo en el ícono
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .kpi-card {
+  --kpi-color: var(--ion-color-primary);
+  --kpi-soft: var(--ots-primary-soft);
+
   background: var(--ots-surface);
+  border: 1px solid var(--ots-border);
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   display: flex;
-  align-items: center;
-  gap: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease;
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: var(--ots-shadow-sm);
+  transition: box-shadow 0.2s ease;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--ots-shadow-md);
   }
 
+  &.kpi-teal { --kpi-color: var(--ots-teal); --kpi-soft: var(--ots-teal-soft); }
+  &.kpi-warning { --kpi-color: var(--ots-warning); --kpi-soft: var(--ots-warning-soft); }
+  &.kpi-success { --kpi-color: var(--ots-success); --kpi-soft: var(--ots-success-soft); }
+
   .kpi-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-  }
+    background: var(--kpi-soft);
 
-  ion-icon {
-    font-size: 30px;
-    color: white;
+    ion-icon {
+      font-size: 22px;
+      color: var(--kpi-color);
+    }
   }
 
   .kpi-content {
     flex: 1;
+    min-width: 0;
 
     h3 {
       margin: 0;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
       color: var(--ots-text);
+      font-variant-numeric: tabular-nums;
     }
 
     p {
-      margin: 4px 0 8px 0;
-      font-size: 14px;
+      margin: 4px 0 0;
+      font-size: 13px;
+      font-weight: 500;
       color: var(--ots-text-muted);
     }
 
     // Valor de texto (p. ej. el nombre del modelo) en vez de un número: más chico que los KPI
     // numéricos para que "Random Forest" quepa en una línea.
     h3.kpi-texto {
-      font-size: 22px;
+      font-size: 20px;
       line-height: 1.3;
     }
 
     .kpi-detalle {
       display: block;
+      margin-top: 6px;
       font-size: 12px;
       color: var(--ots-text-muted);
     }
   }
-
-  &.kpi-primary .kpi-icon {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
-
-  &.kpi-success .kpi-icon {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  }
-
-  &.kpi-warning .kpi-icon {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  }
-
-  &.kpi-danger .kpi-icon {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  }
 }
 
-// Charts Grid
+// Gráficos
 .charts-row {
   display: grid;
-  gap: 20px;
+  gap: 16px;
   margin-bottom: 24px;
   grid-template-columns: 2fr 1fr;
 }
 
 .chart-card {
   background: var(--ots-surface);
+  border: 1px solid var(--ots-border);
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 20px 24px;
+  box-shadow: var(--ots-shadow-sm);
 
   .chart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 
     h3 {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--ots-text);
-    }
-
-    .btn-filter {
-      background: var(--ots-surface-soft);
-      border: 1px solid var(--ots-border);
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.2s ease;
-
-      &:hover {
-        background: var(--ots-border);
-      }
     }
   }
 
@@ -281,7 +172,15 @@
   }
 }
 
-// Responsive Design
+// Sin padding propio: .dashboard-page ya lo pone
+ion-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+// Tablets
 @media (max-width: 1024px) {
   .charts-row {
     grid-template-columns: 1fr;
@@ -292,85 +191,14 @@
   }
 }
 
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .kpi-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-page {
-    padding: 10px;
-  }
-}
-
-// ✅ FORZAR SCROLL EN ION-CONTENT
-ion-content {
-  --background: transparent !important;
-  overflow-y: auto !important;
-}
-
-// ==========================================
-// MEJORAS RESPONSIVE PARA DASHBOARD
-// ==========================================
-
-// Tablets y pantallas medianas
-@media (min-width: 768px) and (max-width: 1024px) {
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .charts-row {
-    grid-template-columns: 1fr;
-  }
-
-  .welcome-card {
-    h1 {
-      font-size: 1.4em;
-    }
-  }
-}
-
 // Móviles
 @media (max-width: 767px) {
   .dashboard-page {
-    padding: 12px;
+    padding: 16px 12px;
   }
 
-  .welcome-card {
-    padding: 16px;
-
-    h1 {
-      font-size: 1.2em;
-    }
-
-    p {
-      font-size: 0.9em;
-    }
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-
-    .header-left {
-      h1 {
-        font-size: 22px;
-      }
-    }
-
-    .header-right {
-      width: 100%;
-
-      .user-badge {
-        justify-content: flex-start;
-      }
-    }
+  .welcome-header {
+    h1 { font-size: 22px; }
   }
 
   .kpi-grid {
@@ -381,113 +209,39 @@ ion-content {
   .kpi-card {
     padding: 16px;
 
-    .kpi-icon {
-      width: 48px;
-      height: 48px;
-
-      ion-icon {
-        font-size: 24px;
-      }
-    }
-
-    .kpi-content {
-      h3 {
-        font-size: 24px;
-      }
-    }
+    .kpi-content h3 { font-size: 24px; }
   }
 
   .charts-row {
-    grid-template-columns: 1fr;
     gap: 12px;
   }
 
   .chart-card {
     padding: 16px;
 
-    .chart-container {
-      height: 220px;
-    }
-
-    .chart-header {
-      h3 {
-        font-size: 14px;
-      }
-    }
+    .chart-container { height: 220px; }
+    .chart-header h3 { font-size: 14px; }
   }
-
 }
 
-// Móviles muy pequeños
 @media (max-width: 400px) {
-  .dashboard-page {
-    padding: 8px;
-  }
-
-  .welcome-card {
-    padding: 12px;
-
-    h1 {
-      font-size: 1em;
-    }
-  }
-
-  .kpi-card {
-    padding: 12px;
-    gap: 12px;
-
-    .kpi-icon {
-      width: 40px;
-      height: 40px;
-
-      ion-icon {
-        font-size: 20px;
-      }
-    }
-
-    .kpi-content {
-      h3 {
-        font-size: 20px;
-      }
-
-      p {
-        font-size: 12px;
-      }
-    }
-  }
-
-  .chart-card {
-    padding: 12px;
-
-    .chart-container {
-      height: 180px;
-    }
-  }
+  .chart-card .chart-container { height: 180px; }
 }
 
-// Mejora del scroll en móvil
-ion-content {
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
-}
 // ============================================
 // Jornada de recolección + mapa de lugares
 // ============================================
 .jornada-card,
 .mapa-card {
   background: var(--ots-surface);
+  border: 1px solid var(--ots-border);
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 20px 24px;
+  box-shadow: var(--ots-shadow-sm);
   margin-bottom: 24px;
 
-  .etiqueta {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--ots-text-muted);
+  @media (max-width: 767px) {
+    padding: 16px;
   }
 
   h3 {
@@ -507,7 +261,7 @@ ion-content {
   .barra {
     height: 8px;
     border-radius: 8px;
-    background: rgba(128, 128, 128, 0.25);
+    background: var(--ots-surface-soft);
     overflow: hidden;
 
     div {
@@ -536,11 +290,11 @@ ion-content {
   font-size: 12px;
   font-weight: 600;
   vertical-align: middle;
-  background: rgba(128, 128, 128, 0.2);
+  background: var(--ots-surface-soft);
   color: var(--ots-text-muted);
 
-  &.en_curso { background: rgba(45, 211, 111, 0.2); color: #1f9d54; }
-  &.programada { background: rgba(255, 196, 9, 0.2); color: #b58900; }
+  &.en_curso { background: var(--ots-success-soft); color: var(--ots-success); }
+  &.programada { background: var(--ots-warning-soft); color: var(--ots-warning); }
 }
 
 .ver-cronograma {
@@ -565,7 +319,8 @@ ion-content {
   .jkpi {
     border: 1px solid var(--ots-border);
     border-radius: 10px;
-    padding: 12px 14px;
+    padding: 14px 16px;
+    background: var(--ots-surface-alt);
 
     span { font-size: 12px; color: var(--ots-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
     strong { display: block; font-size: 26px; margin: 2px 0 8px; color: var(--ots-text); small { font-size: 14px; color: var(--ots-text-muted); font-weight: 500; } }

@@ -3,61 +3,61 @@
     <div class="register-container">
       <div class="header-section">
         <img src="assets/icon/logo-ots.png" alt="Logo OTS - UPSE" class="logo-image">
-        <h2>Crear Nueva Cuenta</h2>
-        <p>Registro en el Observatorio Turístico Sostenible</p>
+        <p class="subtitle">Sistema del Observatorio Turístico Sostenible</p>
       </div>
 
       <form [formGroup]="registroForm" (ngSubmit)="onSubmit()" class="register-form">
-        <div class="input-wrapper">
-          <label class="input-label">
-            <ion-icon name="person-outline"></ion-icon>
-            Nombres
-          </label>
-          <div class="input-field">
-            <ion-icon name="person-outline" class="field-icon"></ion-icon>
-            <input 
-              formControlName="nombres" 
-              type="text" 
-              placeholder="Ingrese sus nombres"
-              class="custom-input">
+        <h1 class="register-title">Crear cuenta</h1>
+
+        <div class="fila-doble">
+          <div class="input-wrapper">
+            <label class="input-label" for="reg-nombres">Nombres</label>
+            <div class="input-field">
+              <ion-icon name="person-outline" class="field-icon"></ion-icon>
+              <input
+                id="reg-nombres"
+                formControlName="nombres"
+                type="text"
+                placeholder="Sus nombres"
+                class="custom-input"
+                autocomplete="given-name">
+            </div>
+            <div *ngIf="f['nombres'].invalid && f['nombres'].touched" class="error-message-small">
+              <span *ngIf="f['nombres'].errors?.['required']">Los nombres son requeridos</span>
+              <span *ngIf="f['nombres'].errors?.['minlength']">Debe tener al menos 2 caracteres</span>
+            </div>
           </div>
-          <div *ngIf="f['nombres'].invalid && f['nombres'].touched" class="error-message-small">
-            <span *ngIf="f['nombres'].errors?.['required']">Los nombres son requeridos</span>
-            <span *ngIf="f['nombres'].errors?.['minlength']">Debe tener al menos 2 caracteres</span>
+
+          <div class="input-wrapper">
+            <label class="input-label" for="reg-apellidos">Apellidos</label>
+            <div class="input-field">
+              <ion-icon name="people-outline" class="field-icon"></ion-icon>
+              <input
+                id="reg-apellidos"
+                formControlName="apellidos"
+                type="text"
+                placeholder="Sus apellidos"
+                class="custom-input"
+                autocomplete="family-name">
+            </div>
+            <div *ngIf="f['apellidos'].invalid && f['apellidos'].touched" class="error-message-small">
+              <span *ngIf="f['apellidos'].errors?.['required']">Los apellidos son requeridos</span>
+              <span *ngIf="f['apellidos'].errors?.['minlength']">Debe tener al menos 2 caracteres</span>
+            </div>
           </div>
         </div>
 
         <div class="input-wrapper">
-          <label class="input-label">
-            <ion-icon name="people-outline"></ion-icon>
-            Apellidos
-          </label>
-          <div class="input-field">
-            <ion-icon name="people-outline" class="field-icon"></ion-icon>
-            <input 
-              formControlName="apellidos" 
-              type="text" 
-              placeholder="Ingrese sus apellidos"
-              class="custom-input">
-          </div>
-          <div *ngIf="f['apellidos'].invalid && f['apellidos'].touched" class="error-message-small">
-            <span *ngIf="f['apellidos'].errors?.['required']">Los apellidos son requeridos</span>
-            <span *ngIf="f['apellidos'].errors?.['minlength']">Debe tener al menos 2 caracteres</span>
-          </div>
-        </div>
-
-        <div class="input-wrapper">
-          <label class="input-label">
-            <ion-icon name="mail-outline"></ion-icon>
-            Correo Electrónico
-          </label>
+          <label class="input-label" for="reg-correo">Correo electrónico</label>
           <div class="input-field">
             <ion-icon name="mail-outline" class="field-icon"></ion-icon>
-            <input 
-              formControlName="correo" 
-              type="email" 
+            <input
+              id="reg-correo"
+              formControlName="correo"
+              type="email"
               placeholder="correo@ejemplo.com"
-              class="custom-input">
+              class="custom-input"
+              autocomplete="email">
           </div>
           <div *ngIf="f['correo'].invalid && f['correo'].touched" class="error-message-small">
             <span *ngIf="f['correo'].errors?.['required']">El correo es requerido</span>
@@ -65,26 +65,17 @@
           </div>
         </div>
 
-        <!-- El registro público solo crea cuentas de Encuestador (el backend lo fuerza). El acceso de
-             Investigador lo asigna un administrador desde Usuarios. -->
-        <p class="nota-rol">
-          <ion-icon name="people-circle-outline"></ion-icon>
-          Tu cuenta se creará como <strong>Encuestador</strong> (recolección de datos en campo).
-          Si necesitas acceso de Investigador, solicítalo a un administrador.
-        </p>
-
         <div class="input-wrapper">
-          <label class="input-label">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-            Contraseña
-          </label>
+          <label class="input-label" for="reg-password">Contraseña</label>
           <div class="input-field">
             <ion-icon name="lock-closed-outline" class="field-icon"></ion-icon>
-            <input 
-              formControlName="password" 
-              type="password" 
+            <input
+              id="reg-password"
+              formControlName="password"
+              type="password"
               placeholder="Mínimo 6 caracteres"
-              class="custom-input">
+              class="custom-input"
+              autocomplete="new-password">
           </div>
           <div *ngIf="f['password'].invalid && f['password'].touched" class="error-message-small">
             <span *ngIf="f['password'].errors?.['required']">La contraseña es requerida</span>
@@ -92,15 +83,20 @@
           </div>
         </div>
 
-        <button 
-          type="submit" 
+        <!-- El registro público solo crea cuentas de Encuestador (el backend lo fuerza). El acceso de
+             Investigador lo asigna un administrador desde Usuarios. -->
+        <p class="nota-rol">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <span>Tu cuenta se creará como <strong>Encuestador</strong> (recolección de datos en campo).
+          Si necesitas acceso de Investigador, solicítalo a un administrador.</span>
+        </p>
+
+        <button
+          type="submit"
           [disabled]="loading || registroForm.invalid"
           class="register-button">
           <span *ngIf="loading" class="spinner"></span>
-          <span *ngIf="!loading">
-            <ion-icon name="person-add-outline" class="btn-icon"></ion-icon>
-            Registrarse
-          </span>
+          <span *ngIf="!loading">Crear cuenta</span>
         </button>
 
         <div *ngIf="error" class="error-alert">
@@ -111,7 +107,7 @@
         <div class="login-section">
           <p>¿Ya tienes una cuenta?</p>
           <button type="button" class="login-link-button" (click)="irALogin()">
-            Iniciar Sesión
+            Iniciar sesión
           </button>
         </div>
       </form>

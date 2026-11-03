@@ -136,6 +136,13 @@ export class OcupacionPage implements OnInit {
     return 'low';
   }
 
+  // Clase de .badge (global.scss) para la columna Estado: alta = verde, media = ámbar, baja = azul
+  getEstadoBadge(item: any): string {
+    if (this.inconsistenteHab(item)) return 'warning';
+    if (!this.tieneCapacidad(item)) return '';
+    return { high: 'success', medium: 'warning', low: 'info' }[this.getOcupacionClass(item.ocupacion_porcentaje)] || '';
+  }
+
   getOcupacionLabel(valor: number): string {
     if (!valor) return 'Baja';
     if (valor >= 80) return 'Alta';
