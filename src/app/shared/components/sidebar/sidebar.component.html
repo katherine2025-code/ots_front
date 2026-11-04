@@ -1,140 +1,58 @@
 <ion-split-pane contentId="main-content" when="md">
   <!-- MENÚ LATERAL -->
   <ion-menu [contentId]="'main-content'" type="overlay" swipeGesture="true">
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>
-          <div class="menu-header">
-            <img src="assets/icon/logo-ots.png" alt="OTS Logo" class="logo-img" (error)="onLogoError($event)">
-            <span class="logo-text">OTS</span>
-          </div>
-        </ion-title>
-      </ion-toolbar>
+    <ion-header class="ion-no-border">
+      <div class="menu-header">
+        <img src="assets/icon/logo-ots.png" alt="OTS - Observatorio Turístico Sostenible" class="logo-img" (error)="onLogoError($event)">
+      </div>
     </ion-header>
 
     <ion-content>
-      <ion-list>
-        <!-- Dashboard - Admin e Investigador (Encuestador no lo ve) -->
-        <ion-menu-toggle auto-hide="false" *ngIf="!isEncuestador">
-          <ion-item [routerLink]="['/dashboard']" [class.active]="isActive('/dashboard')" detail="false" lines="none">
-            <ion-icon name="grid-outline" slot="start"></ion-icon>
-            <ion-label>Dashboard</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Mis Encuestas - SOLO ENCUESTADOR -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isEncuestador">
-          <ion-item [routerLink]="['/mis-encuestas']" [class.active]="isActive('/mis-encuestas')" detail="false" lines="none">
-            <ion-icon name="clipboard-outline" slot="start"></ion-icon>
-            <ion-label>Mis Encuestas</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Hoteles - SOLO ADMIN -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin">
-          <ion-item [routerLink]="['/hoteles']" [class.active]="isActive('/hoteles')" detail="false" lines="none">
-            <ion-icon name="business-outline" slot="start"></ion-icon>
-            <ion-label>Hoteles</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Ocupación - SOLO ADMIN -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin">
-          <ion-item [routerLink]="['/ocupacion']" [class.active]="isActive('/ocupacion')" detail="false" lines="none">
-            <ion-icon name="people-outline" slot="start"></ion-icon>
-            <ion-label>Ocupación</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Predicciones - ADMIN E INVESTIGADOR -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin || isInvestigador">
-          <ion-item [routerLink]="['/predicciones']" [class.active]="isActive('/predicciones')" detail="false"
-            lines="none">
-            <ion-icon name="analytics-outline" slot="start"></ion-icon>
-            <ion-label>Predicciones</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Reportes - Admin e Investigador (Encuestador no lo ve) -->
-        <ion-menu-toggle auto-hide="false" *ngIf="!isEncuestador">
-          <ion-item [routerLink]="['/reportes']" [class.active]="isActive('/reportes')" detail="false" lines="none">
-            <ion-icon name="document-text-outline" slot="start"></ion-icon>
-            <ion-label>Reportes</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Separador Admin -->
-        <ion-item-divider *ngIf="isAdmin">
-          <ion-label>Administración</ion-label>
-        </ion-item-divider>
-
-        <!-- Usuarios - SOLO ADMIN -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin">
-          <ion-item [routerLink]="['/usuarios']" [class.active]="isActive('/usuarios')" detail="false" lines="none">
-            <ion-icon name="people-circle-outline" slot="start"></ion-icon>
-            <ion-label>Usuarios</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Encuestas - Admin e Investigador -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin || isInvestigador">
-          <ion-item [routerLink]="['/encuestas']" [class.active]="isActive('/encuestas')" detail="false" lines="none">
-            <ion-icon name="clipboard-outline" slot="start"></ion-icon>
-            <ion-label>Encuestas</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Cronograma de recolección - Admin (control) e Investigador (solo lectura) -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isAdmin || isInvestigador">
-          <ion-item [routerLink]="['/cronograma']" [class.active]="isActive('/cronograma')" detail="false" lines="none">
-            <ion-icon name="calendar-outline" slot="start"></ion-icon>
-            <ion-label>Cronograma</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Carga ETL - SOLO SUPER ADMINISTRADOR -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isSuperAdmin">
-          <ion-item [routerLink]="['/etl']" [class.active]="isActive('/etl')" detail="false" lines="none">
-            <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-            <ion-label>Carga ETL</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-
-        <!-- Separador Investigador -->
-        <ion-item-divider *ngIf="isInvestigador && !isAdmin">
-          <ion-label>Mi Cuenta</ion-label>
-        </ion-item-divider>
-
-        <!-- Mi Perfil - Investigador -->
-        <ion-menu-toggle auto-hide="false" *ngIf="isInvestigador">
-          <ion-item [routerLink]="['/perfil']" [class.active]="isActive('/perfil')" detail="false" lines="none">
-            <ion-icon name="person-outline" slot="start"></ion-icon>
-            <ion-label>Mi Perfil</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-      </ion-list>
+      <nav aria-label="Menú principal">
+        <section class="seccion" *ngFor="let seccion of secciones">
+          <h2 class="seccion-titulo" *ngIf="seccion.titulo">{{ seccion.titulo }}</h2>
+          <ion-menu-toggle auto-hide="false" *ngFor="let item of seccion.items; trackBy: trackPorRuta">
+            <ion-item [routerLink]="item.ruta" routerLinkActive="active" detail="false" lines="none" [title]="item.ayuda">
+              <ion-icon [name]="item.icono" slot="start" aria-hidden="true"></ion-icon>
+              <ion-label>{{ item.etiqueta }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        </section>
+      </nav>
     </ion-content>
 
-    <!-- Footer con usuario -->
-    <ion-footer>
-      <ion-toolbar>
-        <div class="user-profile">
-          <ion-avatar slot="start">
-            <img *ngIf="fotoPerfil && fotoCargada" [src]="fotoPerfil" (error)="onImageError($event)">
-            <ion-icon *ngIf="!fotoPerfil || !fotoCargada" name="person-circle-outline"></ion-icon>
-          </ion-avatar>
-          <div class="user-info">
-            <span class="user-name">{{ usuario?.nombres }}</span>
-            <span class="user-role">{{ rolNombre }}</span>
-          </div>
-          <ion-button fill="clear" color="danger" (click)="logout()" slot="end">
-            <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-toolbar>
+    <!-- Usuario: la tarjeta lleva a "Mi perfil"; el botón de al lado cierra sesión -->
+    <ion-footer class="ion-no-border">
+      <div class="user-profile">
+        <ion-menu-toggle auto-hide="false" class="perfil-toggle">
+          <a class="perfil-link" routerLink="/perfil" routerLinkActive="active" title="Ver mi perfil">
+            <div class="avatar">
+              <img *ngIf="fotoPerfil" [src]="fotoPerfil" alt="" (error)="onImageError()">
+              <span *ngIf="!fotoPerfil">{{ iniciales }}</span>
+            </div>
+            <div class="user-info">
+              <span class="user-name">{{ usuario?.nombres }}</span>
+              <span class="user-role">{{ rolNombre }}</span>
+            </div>
+          </a>
+        </ion-menu-toggle>
+        <button type="button" class="logout-btn" (click)="logout()" aria-label="Cerrar sesión" title="Cerrar sesión">
+          <ion-icon name="log-out-outline"></ion-icon>
+        </button>
+      </div>
     </ion-footer>
   </ion-menu>
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <ion-router-outlet id="main-content"></ion-router-outlet>
+  <!-- CONTENIDO PRINCIPAL. En móvil el menú se oculta: la barra superior trae el botón para abrirlo -->
+  <div class="ion-page" id="main-content">
+    <ion-header class="barra-movil ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button aria-label="Abrir menú"></ion-menu-button>
+        </ion-buttons>
+        <img src="assets/icon/logo-ots.png" alt="OTS" class="barra-logo">
+      </ion-toolbar>
+    </ion-header>
+    <ion-router-outlet class="contenido"></ion-router-outlet>
+  </div>
 </ion-split-pane>

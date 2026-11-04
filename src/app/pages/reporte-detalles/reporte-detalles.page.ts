@@ -3,9 +3,8 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { EtlService } from 'src/app/core/services/etl.service';
-import { Chart, registerables } from 'chart.js';
+import { Chart } from 'chart.js';
 
-Chart.register(...registerables);
 
 @Component({
   selector: 'app-reporte-detalle',
@@ -42,9 +41,6 @@ export class ReporteDetallePage implements OnInit {
       this.datosGrafico = response.datos_grafico || [];
       this.tipoDatos = response.tipo_datos || 'encuestas';
       
-      console.log('📊 Tipo de datos:', this.tipoDatos);
-      console.log(' Estadísticas:', this.estadisticas);
-      console.log('📉 Datos gráfico:', this.datosGrafico);
       
       setTimeout(() => {
         if (this.tipoDatos === 'encuestas') {

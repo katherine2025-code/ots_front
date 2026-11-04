@@ -52,9 +52,7 @@ export class EtlPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    console.log('Inicializando página ETL');
     this.authService.currentUser$.subscribe(user => {
-      console.log(' Usuario actual:', user);
       this.usuario = user;
     });
     this.cargarDatosIniciales();
@@ -72,7 +70,6 @@ export class EtlPage implements OnInit, OnDestroy {
 
   onTipoCargaChange(event: any) {
     this.tipoCarga = event.target.value;
-    console.log('Tipo de carga cambiado a:', this.tipoCarga);
   }
 
   verReporteDetalle(id: number) {
@@ -90,7 +87,6 @@ export class EtlPage implements OnInit, OnDestroy {
   cargarTiposDatos() {
     this.etlService.getTiposDatos().subscribe({
       next: (data) => {
-        console.log('Tipos de datos cargados:', data);
         this.tiposDatos = data;
       },
       error: (err) => {
@@ -274,13 +270,11 @@ export class EtlPage implements OnInit, OnDestroy {
     let limite = modo === 'limite' ? 100 : undefined;
     let dias = modo === 'dias' ? 90 : undefined;
 
-    console.log(` Iniciando validación histórica. Modo: ${modo}`);
 
     this.etlService.getHistoricalPredictions(limite, dias).subscribe({
       next: (data) => {
         this.resultadoValidacion = data;
         this.cargandoValidacion = false;
-        console.log(' Validación histórica completada:', data);
       },
       error: (err) => {
         console.error(' Error en validación histórica:', err);
@@ -300,7 +294,6 @@ export class EtlPage implements OnInit, OnDestroy {
 
   async descargarReportePDF(idProceso: number) {
     try {
-      console.log('Generando reporte PDF para proceso:', idProceso);
       const response: any = await this.etlService.getProcesoDetalle(idProceso).toPromise();
 
       if (!response || !response.proceso) {
@@ -494,7 +487,6 @@ export class EtlPage implements OnInit, OnDestroy {
 
     const nombreArchivo = `reporte-${proceso.id_etl}-${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(nombreArchivo);
-    console.log('📄 Reporte PDF generado:', nombreArchivo);
   }
 
   // Carga el logo del OTS como data URL para incrustarlo en el PDF. Devuelve null si no se

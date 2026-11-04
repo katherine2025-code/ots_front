@@ -31,10 +31,6 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/* ============================================
-   DARK MODE
-   ============================================ */
-@import '@ionic/angular/css/palettes/dark.class.css';
 @import 'leaflet/dist/leaflet.css';
 
 /* ============================================
@@ -61,11 +57,14 @@ body {
 
 ion-app {
     height: 100%;
-    background: var(--ion-background-color, #f5f7fa);
+    background: var(--ots-canvas);
 }
 
-// Contenido principal con padding responsive
+// Contenido principal con padding responsive. Fondo gris muy claro para que las
+// tarjetas blancas (con borde fino) se distingan sin sombras pesadas.
 ion-content {
+    --background: var(--ots-canvas);
+    --color: var(--ots-text);
     --padding-start: 12px;
     --padding-end: 12px;
     --padding-top: 12px;
@@ -103,6 +102,12 @@ ion-split-pane {
     }
 }
 
+// Contenedor de cada página del sidebar: ancho máximo centrado
+.ots-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
 /* ============================================
    HEADER Y TITULOS RESPONSIVE
    ============================================ */
@@ -113,16 +118,17 @@ ion-split-pane {
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid var(--ots-border);
 
     .header-left {
         h1 {
             margin: 0;
             font-size: 24px;
             font-weight: 700;
-            color: var(--ion-color-dark);
+            letter-spacing: -0.01em;
+            color: var(--ots-text);
 
             @media (max-width: 576px) {
                 font-size: 20px;
@@ -132,7 +138,7 @@ ion-split-pane {
         .subtitle {
             margin: 4px 0 0 0;
             font-size: 14px;
-            color: var(--ion-color-medium);
+            color: var(--ots-text-muted);
 
             @media (max-width: 576px) {
                 font-size: 13px;
@@ -201,15 +207,139 @@ ion-split-pane {
    CARDS Y TARJETAS RESPONSIVE
    ============================================ */
 
+/* ============================================
+   BOTONES Y SEGMENTOS
+   Ionic (modo md) pone los botones en MAYÚSCULAS con sombra: aquí se dejan con
+   mayúscula inicial, esquinas redondeadas y sin sombra, en toda la app.
+   ============================================ */
+
+// Tamaños: small 32px (acciones de tabla/tarjeta), normal 40px, large 48px (acción principal)
+ion-button {
+    --border-radius: 10px;
+    --box-shadow: none;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    min-height: 40px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 14px;
+    font-weight: 600;
+
+    // Separación entre ícono y texto (Ionic los deja pegados)
+    ion-icon[slot="start"] { margin-inline-end: 6px; font-size: 1.15em; }
+    ion-icon[slot="end"] { margin-inline-start: 6px; font-size: 1.15em; }
+}
+
+ion-button[size="small"] {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --border-radius: 8px;
+    min-height: 32px;
+    font-size: 13px;
+}
+
+ion-button[size="large"] {
+    min-height: 48px;
+    font-size: 15px;
+}
+
+// Contorneado: borde de 1px. En gris ("medium") es la acción secundaria neutra.
+ion-button[fill="outline"] {
+    --border-width: 1px;
+}
+
+ion-button[fill="outline"][color="medium"] {
+    --border-color: #cbd5e1;
+    --color: #334155;
+    --background-hover: var(--ots-surface-soft);
+}
+
+ion-button[fill="clear"] {
+    --background-hover: var(--ots-primary-soft);
+    --background-hover-opacity: 1;
+}
+
+// Chips (filtros rápidos): forma de píldora consistente
+ion-chip {
+    --background: var(--ots-surface-soft);
+    --color: #334155;
+    font-weight: 500;
+    border-radius: 999px;
+
+    ion-icon { margin-inline: -2px 6px; }
+}
+
+ion-segment-button {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 600;
+}
+
+// Tarjeta base de la app: blanca, borde fino y sombra mínima.
+// .ots-card es lo mismo para un <div>/<section> cualquiera.
 ion-card {
+    --background: var(--ots-surface);
+    --color: var(--ots-text);
     margin: 0 0 16px 0;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--ots-border);
+    box-shadow: var(--ots-shadow-sm);
 
     @media (max-width: 576px) {
         margin: 0 0 12px 0;
         border-radius: 10px;
     }
+}
+
+.ots-card {
+    background: var(--ots-surface);
+    border: 1px solid var(--ots-border);
+    border-radius: 12px;
+    box-shadow: var(--ots-shadow-sm);
+    padding: 20px 24px;
+
+    @media (max-width: 576px) {
+        padding: 16px;
+        border-radius: 10px;
+    }
+}
+
+// Selector con ícono (ion-select dentro de una caja con borde), para filtros de página
+.ots-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 260px;
+    max-width: 100%;
+    height: 44px;
+    padding: 0 6px 0 14px;
+    background: var(--ots-surface);
+    border: 1px solid var(--ots-border);
+    border-radius: 10px;
+
+    > ion-icon {
+        font-size: 18px;
+        color: var(--ots-text-muted);
+        flex-shrink: 0;
+    }
+
+    ion-select {
+        flex: 1;
+        min-height: 42px;
+        --padding-start: 0;
+        font-size: 15px;
+        color: var(--ots-text);
+    }
+}
+
+// Etiqueta pequeña sobre un título de sección ("RECOLECCIÓN DE DATOS EN CAMPO")
+.ots-eyebrow {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ots-text-muted);
 }
 
 ion-card-header {
@@ -252,7 +382,7 @@ ion-card-content {
         td {
             padding: 10px 14px;
             text-align: left;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            border-bottom: 1px solid var(--ots-border);
 
             @media (max-width: 576px) {
                 padding: 8px 10px;
@@ -260,16 +390,16 @@ ion-card-content {
         }
 
         th {
-            background: var(--ion-color-light);
+            background: var(--ots-surface-alt);
             font-weight: 600;
-            color: var(--ion-color-dark);
+            color: #475569;
             font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
         }
 
-        tr:hover {
-            background: var(--ion-color-light);
+        tbody tr:hover {
+            background: var(--ots-surface-alt);
         }
     }
 }
@@ -286,33 +416,33 @@ ion-card-content {
     font-weight: 600;
 
     &.success {
-        background: #d1fae5;
-        color: #059669;
+        background: var(--ots-success-soft);
+        color: var(--ots-success);
     }
 
     &.warning {
-        background: #fef3c7;
-        color: #d97706;
+        background: var(--ots-warning-soft);
+        color: var(--ots-warning);
     }
 
     &.danger {
-        background: #fee2e2;
-        color: #dc2626;
+        background: var(--ots-danger-soft);
+        color: var(--ots-danger);
     }
 
     &.info {
-        background: #dbeafe;
-        color: #2563eb;
+        background: var(--ots-info-soft);
+        color: var(--ots-info);
     }
 
     &.primary {
-        background: #e0e7ff;
-        color: #4f46e5;
+        background: var(--ots-primary-soft);
+        color: var(--ion-color-primary);
     }
 
     &.secondary {
-        background: #f3e8ff;
-        color: #7c3aed;
+        background: var(--ots-teal-soft);
+        color: var(--ots-teal);
     }
 }
 
@@ -373,48 +503,55 @@ ion-card-content {
    METRICAS / KPIS
    ============================================ */
 
+// Tarjeta de métrica: blanca, con el color solo en el ícono (fondo tenue + ícono de color)
 .metric-card {
-    background: var(--ion-card-background, #ffffff);
+    background: var(--ots-surface);
+    border: 1px solid var(--ots-border);
     border-radius: 12px;
     padding: 16px 20px;
     display: flex;
     align-items: center;
     gap: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    transition: transform 0.2s ease;
+    box-shadow: var(--ots-shadow-sm);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 
     &:hover {
-        transform: translateY(-2px);
+        box-shadow: var(--ots-shadow-md);
     }
 
     .metric-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        background: var(--ots-primary-soft);
 
         ion-icon {
-            font-size: 24px;
-            color: white;
+            font-size: 22px;
+            color: var(--ion-color-primary);
         }
 
         &.primary {
-            background: var(--ots-gradient-primary);
+            background: var(--ots-primary-soft);
+            ion-icon { color: var(--ion-color-primary); }
         }
 
         &.success {
-            background: var(--ots-gradient-secondary);
+            background: var(--ots-teal-soft);
+            ion-icon { color: var(--ots-teal); }
         }
 
         &.warning {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: var(--ots-warning-soft);
+            ion-icon { color: var(--ots-warning); }
         }
 
         &.danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: var(--ots-danger-soft);
+            ion-icon { color: var(--ots-danger); }
         }
     }
 
@@ -544,69 +681,13 @@ ion-card-content {
 }
 
 /* ============================================
-   DARK MODE SOBRESCRITURAS OTS
-   ============================================ */
-
-.ion-palette-dark {
-    .page-header {
-        border-bottom-color: rgba(255, 255, 255, 0.06);
-    }
-
-    .metric-card {
-        background: var(--ion-card-background);
-    }
-
-    .badge {
-        &.success {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-        }
-
-        &.warning {
-            background: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
-        }
-
-        &.danger {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-        }
-
-        &.info {
-            background: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-        }
-
-        &.primary {
-            background: rgba(99, 102, 241, 0.2);
-            color: #818cf8;
-        }
-    }
-
-    .empty-state .empty-icon {
-        color: #4b5563;
-    }
-}
-/* ============================================
-   MAPAS (Leaflet) - tema oscuro
-   ============================================ */
-.ion-palette-dark .leaflet-tile-pane {
-    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
-}
-
-.ion-palette-dark .leaflet-container {
-    background: #1e2530;
-}
-
-/* ============================================
    IMPRESIÓN / GUARDAR COMO PDF
    Al imprimir una página (p. ej. "Ver Reporte Detallado") debe salir SOLO el contenido,
-   no el menú lateral ni el botón de tema. Además, ion-content por defecto solo imprime
+   no el menú lateral. Además, ion-content por defecto solo imprime
    lo visible en pantalla: se fuerza a mostrar todo su contenido.
    ============================================ */
 @media print {
     ion-menu,
-    .boton-tema,
     ion-back-button,
     .ion-no-print {
         display: none !important;

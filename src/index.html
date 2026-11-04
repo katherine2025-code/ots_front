@@ -6,16 +6,13 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="icon" type="image/png" href="assets/icon/favicon.png">
-  <!-- Aplica el tema guardado antes de que cargue Angular (evita el destello claro/oscuro) -->
-  <script>
-    (function () {
-      try {
-        var t = localStorage.getItem('ots_tema');
-        var oscuro = t ? t === 'oscuro' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (oscuro) { document.documentElement.classList.add('ion-palette-dark'); document.documentElement.style.colorScheme = 'dark'; }
-      } catch (e) { }
-    })();
-  </script>
+  <!-- La app es siempre clara (todos sus colores están fijados en claro). Aun así se declara
+       "light dark": Chrome NO aplica su modo oscuro forzado a páginas que dicen soportar oscuro,
+       y "light" u "only light" sí lo dejan invertir los colores (probado). Ningún estilo debe
+       poner color-scheme: light, porque reactiva ese oscurecimiento en ese bloque.
+       darkreader-lock hace lo mismo con la extensión Dark Reader. -->
+  <meta name="color-scheme" content="light dark">
+  <meta name="darkreader-lock">
 </head>
 <body>
   <app-root></app-root>

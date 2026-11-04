@@ -3,20 +3,20 @@
     <div class="login-container">
       <div class="logo-section">
         <img src="assets/icon/logo-ots.png" alt="Logo OTS - UPSE" class="logo-image">
-        <p class="subtitle">Sistema del Observatorio Turistico Sostenible </p>
+        <p class="subtitle">Sistema del Observatorio Turístico Sostenible</p>
       </div>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <h1 class="login-title">Iniciar sesión</h1>
+
         <div class="input-wrapper">
-          <label class="input-label">
-            <ion-icon name="mail-outline"></ion-icon>
-            Correo Electrónico
-          </label>
+          <label class="input-label" for="login-correo">Correo electrónico</label>
           <div class="input-field">
-            <ion-icon name="person-outline" class="field-icon"></ion-icon>
-            <input 
-              formControlName="correo" 
-              type="email" 
+            <ion-icon name="mail-outline" class="field-icon"></ion-icon>
+            <input
+              id="login-correo"
+              formControlName="correo"
+              type="email"
               placeholder="correo@ejemplo.com"
               class="custom-input"
               autocomplete="email">
@@ -28,16 +28,14 @@
         </div>
 
         <div class="input-wrapper">
-          <label class="input-label">
-            <ion-icon name="lock-closed-outline"></ion-icon>
-            Contraseña
-          </label>
+          <label class="input-label" for="login-password">Contraseña</label>
           <div class="input-field">
             <ion-icon name="lock-closed-outline" class="field-icon"></ion-icon>
-            <input 
-              formControlName="password" 
-              type="password" 
-              placeholder="password"
+            <input
+              id="login-password"
+              formControlName="password"
+              type="password"
+              placeholder="••••••••"
               class="custom-input"
               autocomplete="current-password">
           </div>
@@ -46,27 +44,24 @@
           </div>
         </div>
 
-        <button 
-          type="submit" 
-          [disabled]="loading || loginForm.invalid"
-          class="login-button">
-          <span *ngIf="loading" class="spinner"></span>
-          <span *ngIf="!loading">
-            <ion-icon name="log-in-outline" class="btn-icon"></ion-icon>
-            Iniciar Sesión
-          </span>
-        </button>
-
-        <div *ngIf="error" class="error-alert">
-          <ion-icon name="alert-circle-outline"></ion-icon>
-          {{ error }}
-        </div>
-
         <!-- Enlace de recuperación de contraseña -->
         <div class="forgot-section">
           <button type="button" class="forgot-link" (click)="irAOlvide()">
             ¿Olvidaste tu contraseña?
           </button>
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="loading || loginForm.invalid"
+          class="login-button">
+          <span *ngIf="loading" class="spinner"></span>
+          <span *ngIf="!loading">Iniciar sesión</span>
+        </button>
+
+        <div *ngIf="error" class="error-alert">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          {{ error }}
         </div>
 
         <!-- Botón para registrarse -->

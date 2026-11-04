@@ -1,5 +1,17 @@
+// El login es siempre blanco: usa su propia paleta clara en lugar de las variables --ots-*
+// para mantener su diseño independiente del resto de la app.
 .login-content {
-  --background: linear-gradient(135deg, #1a5276 0%, #2e86c1 50%, #764ba2 100%);
+  --login-bg: #ffffff;
+  --login-field-bg: #f8fafc;
+  --login-border: #e2e8f0;
+  --login-text: #0f172a;
+  --login-text-muted: #64748b;
+  --login-primary: #2A6F97;
+  --login-primary-hover: #256280;
+  --login-danger: #c53030;
+
+  --background: var(--login-bg);
+  --color: var(--login-text);
   --padding-top: 0;
   --padding-bottom: 0;
   --padding-start: 0;
@@ -8,6 +20,7 @@
 
 .login-wrapper {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,20 +28,27 @@
   box-sizing: border-box;
 }
 
+// En móvil el formulario ocupa la pantalla directamente (sin tarjeta);
+// en pantallas anchas se enmarca con un borde suave.
 .login-container {
   width: 100%;
-  max-width: 420px;
-  background: var(--ots-surface);
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
+  max-width: 400px;
+  background: var(--login-bg);
   animation: slideUp 0.4s ease-out;
+}
+
+@media (min-width: 600px) {
+  .login-container {
+    border: 1px solid var(--login-border);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  }
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -36,15 +56,19 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .login-container {
+    animation: none;
+  }
+}
+
 .logo-section {
-  background: var(--ots-surface);
-  padding: 24px 20px 16px 20px;
+  padding: 32px 24px 8px 24px;
   text-align: center;
-  border-bottom: 1px solid #f0f0f0;
 
   .logo-image {
-    max-width: 280px;
-    width: 90%;
+    max-width: 240px;
+    width: 80%;
     height: auto;
     margin: 0 auto 12px auto;
     display: block;
@@ -52,83 +76,110 @@
 
   .subtitle {
     font-size: 13px;
-    color: #1a5276;
+    color: var(--login-text-muted);
     margin: 0;
     font-weight: 500;
   }
 }
 
 .login-form {
-  padding: 24px 20px 20px 20px;
+  padding: 24px;
+}
+
+.login-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--login-text);
+  margin: 0 0 24px 0;
+  letter-spacing: -0.01em;
 }
 
 .input-wrapper {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .input-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  display: block;
+  margin-bottom: 6px;
   font-weight: 600;
-  color: #1a5276;
+  color: var(--login-text);
   font-size: 14px;
-
-  ion-icon {
-    color: #2e86c1;
-    font-size: 16px;
-  }
 }
 
 .input-field {
   display: flex;
   align-items: center;
-  background: var(--ots-surface-alt);
-  border: 2px solid #e2e8f0;
+  background: var(--login-field-bg);
+  border: 1px solid var(--login-border);
   border-radius: 10px;
-  padding: 12px 14px;
-  transition: all 0.2s ease;
+  padding: 0 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   min-height: 48px;
 
   &:focus-within {
-    border-color: #2e86c1;
-    background: var(--ots-surface);
-    box-shadow: 0 0 0 3px rgba(46, 134, 193, 0.1);
+    border-color: var(--login-primary);
+    background: var(--login-bg);
+    box-shadow: 0 0 0 3px rgba(42, 111, 151, 0.15);
+
+    .field-icon {
+      color: var(--login-primary);
+    }
   }
 
   .field-icon {
-    color: #2e86c1;
-    font-size: 20px;
+    color: var(--login-text-muted);
+    font-size: 18px;
     margin-right: 10px;
     flex-shrink: 0;
-    width: 20px;
-    height: 20px;
+    transition: color 0.15s ease;
   }
 
   .custom-input {
     flex: 1;
     border: none;
     background: transparent;
-    font-size: 15px;
-    padding: 0;
+    // 16px evita que Safari en iPhone haga zoom al enfocar el campo
+    font-size: 16px;
+    padding: 12px 0;
     outline: none;
     width: 100%;
-    color: var(--ots-text);
+    color: var(--login-text);
 
     &::placeholder {
-      color: #a0aec0;
+      color: #94a3b8;
     }
   }
 }
 
 .error-message-small {
-  color: #e53e3e;
+  color: var(--login-danger);
   font-size: 12px;
   margin-top: 6px;
-  margin-left: 4px;
   display: block;
   font-weight: 500;
+}
+
+.forgot-section {
+  text-align: right;
+  margin: -6px 0 20px 0;
+}
+
+.forgot-link {
+  background: none;
+  border: none;
+  color: var(--login-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
 }
 
 .login-button {
@@ -136,8 +187,8 @@
   height: 48px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #1a5276 0%, #2e86c1 100%);
-  color: white;
+  background: var(--login-primary);
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -145,28 +196,34 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 8px;
-  transition: all 0.2s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
   -webkit-tap-highlight-color: transparent;
 
   &:not(:disabled) {
+    &:hover {
+      background: var(--login-primary-hover);
+    }
+
     &:active {
       transform: scale(0.98);
-      opacity: 0.9;
     }
   }
 
+  &:focus-visible {
+    outline: 3px solid rgba(42, 111, 151, 0.35);
+    outline-offset: 2px;
+  }
+
   &:disabled {
-    background: #cbd5e0;
+    background: #cbd5e1;
     cursor: not-allowed;
-    opacity: 0.6;
   }
 
   .spinner {
     width: 20px;
     height: 20px;
     border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
+    border-top-color: #ffffff;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -176,19 +233,15 @@
       transform: rotate(360deg);
     }
   }
-
-  .btn-icon {
-    font-size: 18px;
-  }
 }
 
 .error-alert {
   margin-top: 16px;
   padding: 12px;
-  background: #fff5f5;
-  border-left: 4px solid #e53e3e;
-  border-radius: 8px;
-  color: #e53e3e;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: var(--login-danger);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -201,219 +254,97 @@
   }
 }
 
-.footer-text {
-  text-align: center;
-  padding: 16px;
-  background: #f7fafc;
-  border-top: 1px solid #e2e8f0;
-
-  p {
-    margin: 0;
-    color: #1a5276;
-    font-size: 11px;
-    font-weight: 500;
-  }
-}
-
-// Móvil pequeño (hasta 375px)
-@media (max-width: 375px) {
-  .login-wrapper {
-    padding: 12px;
-  }
-
-  .login-container {
-    border-radius: 12px;
-  }
-
-  .logo-section {
-    padding: 20px 16px 12px 16px;
-
-    .logo-image {
-      max-width: 240px;
-    }
-  }
-
-  .login-form {
-    padding: 20px 16px 16px 16px;
-  }
-
-  .input-field {
-    padding: 10px 12px;
-    min-height: 44px;
-  }
-
-  .login-button {
-    height: 44px;
-    font-size: 15px;
-  }
-}
-
-// Móvil mediano (376px - 480px)
-@media (min-width: 376px) and (max-width: 480px) {
-  .login-wrapper {
-    padding: 16px;
-  }
-
-  .logo-section {
-    .logo-image {
-      max-width: 260px;
-    }
-  }
-}
-
-// Tablet (768px - 1024px)
-@media (min-width: 768px) and (max-width: 1024px) {
-  .login-container {
-    max-width: 400px;
-  }
-
-  .logo-section {
-    .logo-image {
-      max-width: 300px;
-    }
-  }
-}
-
-// Desktop grande (1440px+)
-@media (min-width: 1440px) {
-  .login-container {
-    max-width: 450px;
-  }
-
-  .logo-section {
-    .logo-image {
-      max-width: 340px;
-    }
-  }
-
-  .login-form {
-    padding: 32px 28px 28px 28px;
-  }
-}
-
-// Pantallas muy pequeñas (menos de 320px)
-@media (max-width: 320px) {
-  .login-wrapper {
-    padding: 8px;
-  }
-
-  .logo-section {
-    padding: 16px 12px 10px 12px;
-
-    .logo-image {
-      max-width: 220px;
-    }
-
-    .subtitle {
-      font-size: 12px;
-    }
-  }
-
-  .login-form {
-    padding: 16px 12px 12px 12px;
-  }
-
-  .input-label {
-    font-size: 13px;
-  }
-
-  .custom-input {
-    font-size: 14px;
-  }
-
-  .login-button {
-    height: 42px;
-    font-size: 14px;
-  }
-}
-
-// Orientación landscape en móvil
-@media (max-height: 500px) and (orientation: landscape) {
-  .login-wrapper {
-    padding: 8px;
-  }
-
-  .logo-section {
-    padding: 12px 16px 8px 16px;
-
-    .logo-image {
-      max-width: 180px;
-      margin-bottom: 8px;
-    }
-  }
-
-  .login-form {
-    padding: 12px 16px 8px 16px;
-  }
-
-  .input-wrapper {
-    margin-bottom: 12px;
-  }
-
-  .footer-text {
-    padding: 8px;
-  }
-}
-
-// Asegurar que funcione en iOS
-@supports (-webkit-touch-callout: none) {
-  .login-wrapper {
-    min-height: -webkit-fill-available;
-  }
-}
-.forgot-section {
-  text-align: center;
-  margin-top: 14px;
-}
-
-.forgot-link {
-  background: none;
-  border: none;
-  color: #2e86c1;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px;
-  text-decoration: underline;
-
-  &:active {
-    opacity: 0.7;
-  }
-}
-
 .register-section {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--login-border);
 
   p {
     margin: 0 0 10px 0;
-    color: var(--ots-text-muted);
+    color: var(--login-text-muted);
     font-size: 14px;
   }
 }
 
 .register-button {
   width: 100%;
-  height: 44px;
-  border: 2px solid #667eea;
+  height: 46px;
+  border: 1px solid var(--login-border);
   border-radius: 10px;
-  background: var(--ots-surface);
-  color: #667eea;
+  background: var(--login-bg);
+  color: var(--login-primary);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 
   &:hover {
-    background: #667eea;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    border-color: var(--login-primary);
+    background: rgba(42, 111, 151, 0.04);
   }
 
-  &:active {
-    transform: translateY(0);
+  &:focus-visible {
+    outline: 3px solid rgba(42, 111, 151, 0.35);
+    outline-offset: 2px;
+  }
+}
+
+.footer-text {
+  text-align: center;
+  padding: 8px 24px 24px 24px;
+
+  p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 11px;
+  }
+}
+
+// Móvil pequeño (hasta 375px)
+@media (max-width: 375px) {
+  .login-wrapper {
+    padding: 8px;
+  }
+
+  .logo-section {
+    padding: 24px 16px 4px 16px;
+
+    .logo-image {
+      max-width: 200px;
+    }
+  }
+
+  .login-form {
+    padding: 20px 16px;
+  }
+
+  .login-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+}
+
+// Orientación landscape en móvil
+@media (max-height: 500px) and (orientation: landscape) {
+  .logo-section {
+    padding: 12px 16px 0 16px;
+
+    .logo-image {
+      max-width: 160px;
+      margin-bottom: 6px;
+    }
+  }
+
+  .login-form {
+    padding: 12px 16px;
+  }
+
+  .login-title {
+    margin-bottom: 12px;
+  }
+
+  .input-wrapper {
+    margin-bottom: 12px;
   }
 }

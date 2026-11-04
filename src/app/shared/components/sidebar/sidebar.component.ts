@@ -1,82 +1,131 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, MenuController } from '@ionic/angular';
-import { Router, RouterLink } from '@angular/router';
+import { AlertController, IonicModule, MenuController } from '@ionic/angular';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
+
+// Roles: 0 Super Administrador, 1 Administrador, 2 Investigador, 3 Encuestador
+interface ItemMenu {
+  etiqueta: string;
+  icono: string;
+  ruta: string;
+  ayuda: string;        // texto del tooltip: qué se hace en ese módulo
+  roles: number[];
+}
+
+interface SeccionMenu {
+  titulo?: string;
+  items: ItemMenu[];
+}
+
+// Única fuente del menú: para agregar/mover un módulo basta con editar esta lista.
+// Los roles replican los guards de app.routes.ts (el menú solo oculta; la seguridad está en los guards).
+const MENU: SeccionMenu[] = [
+  {
+    items: [
+      { etiqueta: 'Dashboard', icono: 'grid-outline', ruta: '/dashboard', ayuda: 'Resumen general del observatorio', roles: [0, 1, 2] },
+      { etiqueta: 'Mis encuestas', icono: 'clipboard-outline', ruta: '/mis-encuestas', ayuda: 'Encuestas asignadas y tu avance en la jornada', roles: [3] }
+    ]
+  },
+  {
+    titulo: 'Análisis',
+    items: [
+      { etiqueta: 'Ocupación', icono: 'people-outline', ruta: '/ocupacion', ayuda: 'Ocupación por hotel y fecha', roles: [0, 1] },
+      { etiqueta: 'Predicciones', icono: 'analytics-outline', ruta: '/predicciones', ayuda: 'Modelos de ML y proyecciones de ocupación', roles: [0, 1, 2] },
+      { etiqueta: 'Reportes', icono: 'document-text-outline', ruta: '/reportes', ayuda: 'Estadísticas y tabulación de encuestas', roles: [0, 1, 2] }
+    ]
+  },
+  {
+    titulo: 'Recolección',
+    items: [
+      { etiqueta: 'Encuestas', icono: 'clipboard-outline', ruta: '/encuestas', ayuda: 'Cuestionarios y respuestas recolectadas', roles: [0, 1, 2] },
+      { etiqueta: 'Cronograma', icono: 'calendar-outline', ruta: '/cronograma', ayuda: 'Jornadas de recolección y metas por encuestador', roles: [0, 1, 2] }
+    ]
+  },
+  {
+    titulo: 'Administración',
+    items: [
+      { etiqueta: 'Hoteles', icono: 'business-outline', ruta: '/hoteles', ayuda: 'Catastro de establecimientos de alojamiento', roles: [0, 1] },
+      { etiqueta: 'Usuarios', icono: 'people-circle-outline', ruta: '/usuarios', ayuda: 'Cuentas, roles y accesos', roles: [0, 1] },
+      { etiqueta: 'Carga ETL', icono: 'cloud-upload-outline', ruta: '/etl', ayuda: 'Importar archivos de datos (CSV / Excel / Kobo)', roles: [0] }
+    ]
+  }
+];
 
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterLink]
+  imports: [CommonModule, IonicModule, RouterLink, RouterLinkActive]
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnDestroy {
   usuario: any = null;
-  rolNombre: string = '';
-  isAdmin: boolean = false;
-  isSuperAdmin: boolean = false;
-  isInvestigador: boolean = false;
-  isEncuestador: boolean = false;
-  fotoPerfil: string = '';
-  fotoCargada: boolean = false;
+  rolNombre = '';
+  iniciales = '?';
+  fotoPerfil = '';
+  // Se calcula una vez por cambio de usuario (no en cada ciclo de detección de cambios)
+  secciones: SeccionMenu[] = [];
+
+  private sub?: Subscription;
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private menuCtrl: MenuController
+    private menuCtrl: MenuController,
+    private alertCtrl: AlertController
   ) { }
 
   ngOnInit() {
-    this.authService.currentUser$.subscribe(user => {
+    this.sub = this.authService.currentUser$.subscribe(user => {
       if (!user) return;
 
       this.usuario = user;
       this.rolNombre = this.authService.getRolNombre();
-      this.isAdmin = this.authService.isAdmin() || user.id_rol === 1;
-      this.isSuperAdmin = this.authService.isSuperAdmin?.() || user.id_rol === 0 || false;
-      this.isInvestigador = this.authService.isInvestigador?.() || user.id_rol === 2 || false;
-      this.isEncuestador = this.authService.isEncuestador?.() || user.id_rol === 3 || false;
+      const primera = (texto: unknown) => String(texto || '').trim().charAt(0).toUpperCase();
+      this.iniciales = (primera(user.nombres) + primera(user.apellidos)) || '?';
+      this.fotoPerfil = localStorage.getItem('foto_perfil') || '';
 
-      this.cargarFotoPerfil();
+      this.secciones = MENU
+        .map(s => ({ ...s, items: s.items.filter(i => i.roles.includes(user.id_rol)) }))
+        .filter(s => s.items.length > 0);
     });
   }
 
-  cargarFotoPerfil() {
-    const fotoGuardada = localStorage.getItem('foto_perfil');
-    if (fotoGuardada) {
-      this.fotoPerfil = fotoGuardada;
-      this.fotoCargada = true;
-    } else {
-      this.fotoPerfil = '';
-      this.fotoCargada = false;
-    }
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
   }
 
-  isActive(ruta: string): boolean {
-    return this.router.url === ruta || this.router.url.startsWith(ruta + '/');
+  trackPorRuta(_: number, item: ItemMenu): string {
+    return item.ruta;
   }
 
-  onImageError(event: any) {
-    if (!this.fotoCargada) {
-      return;
-    }
-    console.log('[Sidebar] Error al cargar imagen de perfil');
-    this.fotoCargada = false;
+  onImageError() {
     this.fotoPerfil = '';
-    event.target.style.display = 'none';
   }
 
-  onLogoError(event: any) {
-    console.warn('[Sidebar] No se pudo cargar el logo');
-    event.target.style.display = 'none';
+  onLogoError(event: Event) {
+    (event.target as HTMLElement).style.display = 'none';
   }
 
-  logout() {
-    this.menuCtrl.close();
-    if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
-      this.authService.logout();
-      this.router.navigate(['/login']);
-    }
+  async logout() {
+    await this.menuCtrl.close();
+    const alerta = await this.alertCtrl.create({
+      header: 'Cerrar sesión',
+      message: '¿Seguro que deseas salir? Tendrás que volver a iniciar sesión.',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Cerrar sesión',
+          role: 'destructive',
+          handler: () => {
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          }
+        }
+      ]
+    });
+    await alerta.present();
   }
 }

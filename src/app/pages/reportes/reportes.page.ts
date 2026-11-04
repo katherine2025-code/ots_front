@@ -3,21 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ReporteService } from 'src/app/core/services/reporte.service';
-import { Chart, registerables } from 'chart.js';
+import { Chart } from 'chart.js';
 
-Chart.register(...registerables);
 
 const NOMBRES_FERIADOS = [
   'Carnaval', 'Semana Santa', 'Día del Trabajador', 'Primer Grito de la Independencia',
   'Día de los Difuntos', 'Navidad', 'Fin de Año'
 ];
 
-// Colores consistentes con el resto de la app; se reciclan por índice de opción.
+// Paleta categórica de la marca (azul, teal, ámbar, pizarra...); se recicla por índice de opción.
 const PALETA = [
-  'rgba(52, 152, 219, 0.8)', 'rgba(241, 196, 15, 0.8)', 'rgba(44, 62, 80, 0.8)',
-  'rgba(230, 126, 34, 0.8)', 'rgba(52, 152, 219, 0.5)', 'rgba(149, 165, 166, 0.8)',
-  'rgba(155, 89, 182, 0.8)', 'rgba(26, 188, 156, 0.8)', 'rgba(231, 76, 60, 0.8)',
-  'rgba(52, 73, 94, 0.8)'
+  '#2A6F97', '#48A9A7', '#E9A23B', '#475569', '#7FB3D5',
+  '#10B981', '#E07A5F', '#94A3B8', '#1F4E6B', '#B7D7D6'
 ];
 
 @Component({
@@ -101,8 +98,6 @@ export class ReportesPage implements OnInit {
         this.crearGraficosTabulacion();
       }, 300);
 
-      console.log('✅ Estadísticas cargadas:', this.estadisticas);
-      console.log('✅ Tabulación cargada:', this.tabulacion);
     } catch (error) {
       console.error('❌ Error cargando estadísticas:', error);
     } finally {
@@ -191,8 +186,8 @@ export class ReportesPage implements OnInit {
         datasets: [{
           label: 'Gasto Promedio por Turista (USD)',
           data: datos.map(d => d.gasto_promedio !== null ? Number(d.gasto_promedio) : 0),
-          backgroundColor: 'rgba(52, 152, 219, 0.7)',
-          borderColor: 'rgba(52, 152, 219, 1)',
+          backgroundColor: 'rgba(42, 111, 151, 0.85)',
+          borderColor: 'rgba(42, 111, 151, 1)',
           borderWidth: 2
         }]
       },
@@ -201,7 +196,7 @@ export class ReportesPage implements OnInit {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          title: { display: true, text: 'Gasto Promedio por Feriado', font: { size: 13, weight: 'bold' } }
+          title: { display: false }
         },
         scales: {
           y: { beginAtZero: true, ticks: { callback: (value) => '$' + value } }
@@ -225,8 +220,8 @@ export class ReportesPage implements OnInit {
         datasets: [{
           label: 'Gasto Promedio por Rubro (USD/día)',
           data: datos.map(d => Number(d.promedio)),
-          backgroundColor: 'rgba(26, 188, 156, 0.75)',
-          borderColor: 'rgba(26, 188, 156, 1)',
+          backgroundColor: 'rgba(72, 169, 167, 0.85)',
+          borderColor: 'rgba(72, 169, 167, 1)',
           borderWidth: 2
         }]
       },
@@ -235,7 +230,7 @@ export class ReportesPage implements OnInit {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          title: { display: true, text: 'Gasto Promedio por Rubro (USD/día)', font: { size: 13, weight: 'bold' } }
+          title: { display: false }
         },
         scales: { y: { beginAtZero: true, ticks: { callback: (value) => '$' + value } } }
       }
@@ -257,7 +252,7 @@ export class ReportesPage implements OnInit {
         labels: ['Ocupación Promedio', 'Disponibilidad'],
         datasets: [{
           data: [ocupacion, 100 - ocupacion],
-          backgroundColor: ['rgba(46, 204, 113, 0.8)', 'rgba(231, 76, 60, 0.6)'],
+          backgroundColor: ['#2A6F97', '#E2E8F0'],
           borderWidth: 2
         }]
       },
@@ -266,7 +261,7 @@ export class ReportesPage implements OnInit {
         maintainAspectRatio: false,
         plugins: {
           legend: { position: 'bottom' },
-          title: { display: true, text: 'Tasa de Ocupación Hotelera (%)', font: { size: 13, weight: 'bold' } }
+          title: { display: false }
         }
       }
     });
@@ -279,11 +274,7 @@ export class ReportesPage implements OnInit {
     if (this.charts.paises) this.charts.paises.destroy();
 
     const datos: any[] = this.estadisticas?.paises || [];
-    const paleta = [
-      'rgba(52, 152, 219, 0.8)', 'rgba(155, 89, 182, 0.8)', 'rgba(230, 126, 34, 0.8)',
-      'rgba(231, 76, 60, 0.8)', 'rgba(26, 188, 156, 0.8)', 'rgba(149, 165, 166, 0.8)',
-      'rgba(241, 196, 15, 0.8)', 'rgba(52, 73, 94, 0.8)'
-    ];
+    const paleta = PALETA;
 
     this.charts.paises = new Chart(ctx, {
       type: 'pie',
@@ -300,7 +291,7 @@ export class ReportesPage implements OnInit {
         maintainAspectRatio: false,
         plugins: {
           legend: { position: 'right' },
-          title: { display: true, text: 'Distribución de Turistas por País de Residencia', font: { size: 13, weight: 'bold' } }
+          title: { display: false }
         }
       }
     });
@@ -322,8 +313,8 @@ export class ReportesPage implements OnInit {
         datasets: [{
           label: 'Puntuación (1-5)',
           data: [satisfaccion],
-          backgroundColor: 'rgba(155, 89, 182, 0.8)',
-          borderColor: 'rgba(155, 89, 182, 1)',
+          backgroundColor: 'rgba(233, 162, 59, 0.85)',
+          borderColor: 'rgba(233, 162, 59, 1)',
           borderWidth: 2
         }]
       },
@@ -332,7 +323,7 @@ export class ReportesPage implements OnInit {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          title: { display: true, text: 'Satisfacción del Turista (Escala 1-5)', font: { size: 13, weight: 'bold' } }
+          title: { display: false }
         },
         scales: { y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } } }
       }

@@ -50,6 +50,14 @@ export class AuthService {
     return this.api.post<{ mensaje: string }>('auth/reset-password', { token, password });
   }
 
+  // MÉTODO CAMBIAR CONTRASEÑA (usuario autenticado; el backend verifica la actual)
+  cambiarPassword(passwordActual: string, passwordNueva: string): Observable<{ mensaje: string }> {
+    return this.api.put<{ mensaje: string }>('auth/cambiar-password', {
+      password_actual: passwordActual,
+      password_nueva: passwordNueva
+    });
+  }
+
   // MÉTODO LOGOUT
   logout(): void {
     this.storage.remove('token');
@@ -68,8 +76,26 @@ export class AuthService {
   }
 
   // MÉTODO IS AUTHENTICATED
+  // La sesión sigue viva entre recargas mientras el token no haya caducado
+  // (el backend lo emite con JWT_EXPIRES_IN, 24h por defecto). Si caducó, se cierra aquí.
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+    if (this.tokenExpirado(token)) {
+      this.logout();
+      return false;
+    }
+    return true;
+  }
+
+  private tokenExpirado(token: string): boolean {
+    try {
+      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64));
+      return typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now();
+    } catch {
+      return true;  // token ilegible: se trata como no válido
+    }
   }
 
   // Verificar si es Super Administrador (id_rol = 0)

@@ -19,6 +19,13 @@ export class HotelesListaPage implements OnInit {
   hoteles: any[] = [];
   loading: boolean = true;
   filtro: FiltroCanton = 'todos';
+  busqueda = '';
+  readonly filtros: { valor: FiltroCanton; etiqueta: string }[] = [
+    { valor: 'todos', etiqueta: 'Todos' },
+    { valor: 'Santa Elena', etiqueta: 'Santa Elena' },
+    { valor: 'Salinas', etiqueta: 'Salinas' },
+    { valor: 'sin', etiqueta: 'Sin clasificar' }
+  ];
 
   constructor(private hotelService: HotelService) { }
 
@@ -51,8 +58,22 @@ export class HotelesListaPage implements OnInit {
     return this.hoteles.filter(h => this.coincide(h, filtro)).length;
   }
 
+  // Filtro por cantón + búsqueda por nombre, parroquia o dirección (sin distinguir tildes)
   get hotelesFiltrados(): any[] {
-    return this.hoteles.filter(h => this.coincide(h, this.filtro));
+    const texto = this.normalizar(this.busqueda);
+    return this.hoteles.filter(h =>
+      this.coincide(h, this.filtro) &&
+      (!texto || this.normalizar(`${h.nombre} ${h.parroquia || ''} ${h.direccion || ''}`).includes(texto))
+    );
+  }
+
+  estrellas(categoria: unknown): number[] {
+    const n = Math.min(5, Math.max(0, parseInt(String(categoria), 10) || 0));
+    return Array(n).fill(0);
+  }
+
+  private normalizar(texto: string): string {
+    return String(texto || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
   }
 
   private coincide(hotel: any, filtro: FiltroCanton): boolean {

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
 
 @Component({
@@ -11,62 +12,73 @@ import { AuthService } from 'src/app/core/services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, IonicModule]
 })
-export class PerfilPage implements OnInit {
+export class PerfilPage implements OnInit, OnDestroy {
   usuario: any = null;
-  perfilForm = {
-    nombres: '',
-    apellidos: '',
-    correo: '',
-    telefono: ''
-  };
+  rolNombre = '';
+  iniciales = '?';
+
+  // Cambio de contraseña (PUT /api/auth/cambiar-password)
+  passwordActual = '';
+  passwordNueva = '';
+  passwordConfirmar = '';
+  guardando = false;
+  errorPassword = '';
+
+  private sub?: Subscription;
 
   constructor(
     private authService: AuthService,
-    private alertController: AlertController
-  ) {}
+    private toastCtrl: ToastController
+  ) { }
 
   ngOnInit() {
-    this.authService.currentUser$.subscribe(user => {
+    this.sub = this.authService.currentUser$.subscribe(user => {
       this.usuario = user;
-      if (user) {
-        this.perfilForm = {
-          nombres: user.nombres || '',
-          apellidos: user.apellidos || '',
-          correo: user.correo || '',
-          telefono: user.telefono || ''
-        };
+      if (!user) return;
+      this.rolNombre = this.authService.getRolNombre();
+      const primera = (texto: unknown) => String(texto || '').trim().charAt(0).toUpperCase();
+      this.iniciales = (primera(user.nombres) + primera(user.apellidos)) || '?';
+    });
+  }
+
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
+  }
+
+  // Mismo mínimo que valida el backend (authValidator.validarCambioPassword)
+  get puedeGuardar(): boolean {
+    return !this.guardando && !!this.passwordActual && this.passwordNueva.length >= 6 &&
+      this.passwordNueva === this.passwordConfirmar;
+  }
+
+  cambiarPassword() {
+    this.errorPassword = '';
+    if (this.passwordNueva !== this.passwordConfirmar) {
+      this.errorPassword = 'La confirmación no coincide con la nueva contraseña.';
+      return;
+    }
+    if (this.passwordNueva === this.passwordActual) {
+      this.errorPassword = 'La nueva contraseña debe ser distinta de la actual.';
+      return;
+    }
+
+    this.guardando = true;
+    this.authService.cambiarPassword(this.passwordActual, this.passwordNueva).subscribe({
+      next: async () => {
+        this.guardando = false;
+        this.passwordActual = this.passwordNueva = this.passwordConfirmar = '';
+        const toast = await this.toastCtrl.create({
+          message: 'Contraseña actualizada correctamente.',
+          duration: 2500,
+          color: 'success',
+          position: 'top'
+        });
+        await toast.present();
+      },
+      error: (err: Error) => {
+        this.guardando = false;
+        this.errorPassword = err.message || 'No se pudo cambiar la contraseña.';
       }
     });
-  }
-
-  async guardarCambios() {
-    const alert = await this.alertController.create({
-      header: 'Perfil Actualizado',
-      message: 'Los cambios se han guardado correctamente.',
-      buttons: ['OK']
-    });
-    await alert.present();
-  }
-
-  async cambiarContrasena() {
-    const alert = await this.alertController.create({
-      header: 'Cambiar Contraseña',
-      inputs: [
-        { name: 'actual', type: 'password', placeholder: 'Contraseña actual' },
-        { name: 'nueva', type: 'password', placeholder: 'Nueva contraseña' },
-        { name: 'confirmar', type: 'password', placeholder: 'Confirmar contraseña' }
-      ],
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Cambiar',
-          handler: (data) => {
-            console.log('Cambiando contraseña:', data);
-            // Implementar lógica de cambio de contraseña
-          }
-        }
-      ]
-    });
-    await alert.present();
   }
 }

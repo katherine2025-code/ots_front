@@ -38,7 +38,6 @@ export class ApiService {
       });
     }
 
-    console.log(`[API] GET: ${this.baseUrl}/${endpoint}`);
 
     return this.http.get<T>(`${this.baseUrl}/${endpoint}`, {
       headers: this.getHeaders(),
@@ -62,7 +61,6 @@ export class ApiService {
       });
     }
 
-    console.log(`[API] GET Blob: ${this.baseUrl}/${endpoint}`);
 
     return this.http.get(`${this.baseUrl}/${endpoint}`, {
       headers: this.getHeaders(),
@@ -78,7 +76,6 @@ export class ApiService {
   // ==========================================
 
   post<T>(endpoint: string, body: any): Observable<T> {
-    console.log(`[API] POST: ${this.baseUrl}/${endpoint}`, body);
 
     return this.http.post<T>(`${this.baseUrl}/${endpoint}`, body, {
       headers: this.getHeaders()
@@ -92,7 +89,6 @@ export class ApiService {
   // ==========================================
 
   put<T>(endpoint: string, body: any): Observable<T> {
-    console.log(`[API] PUT: ${this.baseUrl}/${endpoint}`, body);
 
     return this.http.put<T>(`${this.baseUrl}/${endpoint}`, body, {
       headers: this.getHeaders()
@@ -106,7 +102,6 @@ export class ApiService {
   // ==========================================
 
   patch<T>(endpoint: string, body: any): Observable<T> {
-    console.log(`[API] PATCH: ${this.baseUrl}/${endpoint}`, body);
 
     return this.http.patch<T>(`${this.baseUrl}/${endpoint}`, body, {
       headers: this.getHeaders()
@@ -120,7 +115,6 @@ export class ApiService {
   // ==========================================
 
   delete<T>(endpoint: string): Observable<T> {
-    console.log(`[API] DELETE: ${this.baseUrl}/${endpoint}`);
 
     return this.http.delete<T>(`${this.baseUrl}/${endpoint}`, {
       headers: this.getHeaders()
@@ -171,6 +165,9 @@ export class ApiService {
         errorMessage = error.error?.message || 'Error de validación. Verifica los datos ingresados.';
       } else if (error.status === 500) {
         errorMessage = error.error?.error || 'Error interno del servidor.';
+      } else if (Array.isArray(error.error?.detalles) && error.error.detalles.length > 0) {
+        // Validadores del backend: { error: 'Errores de validación', detalles: [...] }
+        errorMessage = error.error.detalles.join('. ');
       } else {
         errorMessage = error.error?.message || error.error?.error || 'Error en la petición';
       }
