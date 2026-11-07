@@ -1,9 +1,14 @@
 <ion-header>
   <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <!-- Hamburguesa: abre el menú con todas las funcionalidades del rol.
+           autoHide oculta el botón en escritorio, donde el menú ya está fijo (split-pane). -->
+      <ion-menu-button menu="menu-principal" autoHide="true"></ion-menu-button>
+    </ion-buttons>
     <ion-title>{{ title }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="logout()">
-        <ion-icon name="log-out-outline"></ion-icon>
+      <ion-button (click)="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
+        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

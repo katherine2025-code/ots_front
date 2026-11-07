@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -17,7 +18,7 @@ const REFRESCO_MS = 20000;
   templateUrl: './mis-encuestas.page.html',
   styleUrls: ['./mis-encuestas.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, HeaderComponent]
 })
 export class MisEncuestasPage implements OnInit, OnDestroy {
   nombreUsuario = '';

@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import {
@@ -20,7 +21,7 @@ const FERIADOS_POR_DEFECTO = ['Año Nuevo', 'Carnaval', 'Semana Santa', 'Día de
   templateUrl: './cronograma.page.html',
   styleUrls: ['./cronograma.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, IonicModule, HeaderComponent]
 })
 export class CronogramaPage implements OnInit, OnDestroy {
   jornadas: JornadaResumen[] = [];
@@ -293,6 +294,20 @@ export class CronogramaPage implements OnInit, OnDestroy {
   }
 
   // ===== Presentación =====
+
+  // Encuestadores con meta asignada vs los que solo recolectaron (sin meta en la jornada).
+  // El backend ya los trae ordenados por total; aquí solo se separan en dos grupos.
+  get filasConMeta(): FilaEncuestador[] {
+    return this.avance?.encuestadores.filter(f => f.metaTotal > 0) ?? [];
+  }
+  get filasSinMeta(): FilaEncuestador[] {
+    return this.avance?.encuestadores.filter(f => f.metaTotal === 0) ?? [];
+  }
+  // Solo se dibujan los encabezados de sección cuando conviven los dos grupos; si todos
+  // están en el mismo grupo, la tabla se muestra como una sola lista (más limpia).
+  get mostrarSecciones(): boolean {
+    return this.filasConMeta.length > 0 && this.filasSinMeta.length > 0;
+  }
 
   porcentaje(hecho: number, meta: number): number {
     return meta > 0 ? Math.min(100, Math.round((hecho / meta) * 100)) : 0;

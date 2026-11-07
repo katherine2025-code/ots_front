@@ -1,3 +1,5 @@
+<app-header title="Cronograma"></app-header>
+
 <ion-content class="ion-padding">
   <div class="page-header">
     <div>
@@ -95,19 +97,29 @@
       <div class="kpis">
         <div class="kpi">
           <span>Hoy</span>
-          <strong>{{ avance.totales.hechoHoy }} <small>/ {{ avance.totales.metaHoy }}</small></strong>
-          <div class="barra"><div [style.width.%]="porcentaje(avance.totales.hechoHoy, avance.totales.metaHoy)"></div></div>
+          <strong>{{ avance.totales.hechoHoy }}<small *ngIf="avance.totales.metaHoy > 0"> / {{ avance.totales.metaHoy }}</small></strong>
+          <div class="barra" *ngIf="avance.totales.metaHoy > 0"><div [style.width.%]="porcentaje(avance.totales.hechoHoy, avance.totales.metaHoy)"></div></div>
+          <small class="pie" *ngIf="avance.totales.metaHoy === 0">encuestas de hoy</small>
         </div>
         <div class="kpi">
           <span>Toda la jornada</span>
-          <strong>{{ avance.totales.hecho }} <small>/ {{ avance.totales.meta }}</small></strong>
-          <div class="barra"><div [style.width.%]="porcentaje(avance.totales.hecho, avance.totales.meta)"></div></div>
+          <strong>{{ avance.totales.hecho }}<small *ngIf="avance.totales.meta > 0"> / {{ avance.totales.meta }}</small></strong>
+          <div class="barra" *ngIf="avance.totales.meta > 0"><div [style.width.%]="porcentaje(avance.totales.hecho, avance.totales.meta)"></div></div>
+          <small class="pie" *ngIf="avance.totales.meta === 0">encuestas recolectadas</small>
         </div>
         <div class="kpi">
           <span>Encuestadores</span>
           <strong>{{ avance.encuestadores.length }}</strong>
           <small class="pie">{{ avance.jornada.feriado }}</small>
         </div>
+      </div>
+
+      <!-- Aviso: jornada sin metas (todo el trabajo quedó "sin asignar") -->
+      <div class="aviso-sin-meta" *ngIf="avance.encuestadores.length > 0 && filasConMeta.length === 0">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>Esta jornada no tiene metas asignadas, por eso se muestran las encuestas <strong>realmente recolectadas</strong> por cada encuestador.
+          <ng-container *ngIf="puedeEditar">Puedes asignar metas con <em>“Agregar encuestador”</em> o tocando cada celda.</ng-container>
+        </span>
       </div>
 
       <!-- Matriz encuestador x día -->
@@ -124,39 +136,61 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let fila of avance.encuestadores">
-              <td class="col-nombre">
-                {{ fila.nombre }}
-                <span class="etiqueta-extra" *ngIf="fila.sinAsignar">sin asignar</span>
-              </td>
-              <td *ngFor="let fecha of avance.dias" class="celda" [ngClass]="estadoCelda(fila.dias[fecha], fecha)"
-                [class.hoy]="fecha === avance.hoy" [class.editable]="puedeEditar"
-                (click)="editarMeta(fila, fecha)" [title]="puedeEditar ? 'Clic para editar la meta' : ''">
-                <div class="linea" *ngIf="fila.dias[fecha].metaTurista > 0 || fila.dias[fecha].hechoTurista > 0">
-                  <ion-icon name="people-outline"></ion-icon> {{ fila.dias[fecha].hechoTurista }}/{{ fila.dias[fecha].metaTurista }}
-                </div>
-                <div class="linea" *ngIf="fila.dias[fecha].metaHotel > 0 || fila.dias[fecha].hechoHotel > 0">
-                  <ion-icon name="business-outline"></ion-icon> {{ fila.dias[fecha].hechoHotel }}/{{ fila.dias[fecha].metaHotel }}
-                </div>
-                <div class="linea libre-texto" *ngIf="fila.dias[fecha].metaTurista + fila.dias[fecha].metaHotel + fila.dias[fecha].hechoTurista + fila.dias[fecha].hechoHotel === 0">—</div>
-              </td>
-              <td class="col-total">
-                <strong>{{ fila.hechoTotal }}/{{ fila.metaTotal }}</strong>
-                <div class="barra"><div [style.width.%]="porcentaje(fila.hechoTotal, fila.metaTotal)"></div></div>
-              </td>
-            </tr>
+            <!-- Una sola lista cuando todos están en el mismo grupo -->
+            <ng-container *ngIf="!mostrarSecciones">
+              <ng-container *ngFor="let fila of avance.encuestadores"
+                [ngTemplateOutlet]="filaTpl" [ngTemplateOutletContext]="{ $implicit: fila }"></ng-container>
+            </ng-container>
+
+            <!-- Dos secciones cuando conviven asignados y no asignados -->
+            <ng-container *ngIf="mostrarSecciones">
+              <tr class="grupo con-meta">
+                <td [attr.colspan]="avance.dias.length + 2"><ion-icon name="flag-outline"></ion-icon> Con meta asignada</td>
+              </tr>
+              <ng-container *ngFor="let fila of filasConMeta"
+                [ngTemplateOutlet]="filaTpl" [ngTemplateOutletContext]="{ $implicit: fila }"></ng-container>
+              <tr class="grupo sin-meta">
+                <td [attr.colspan]="avance.dias.length + 2"><ion-icon name="walk-outline"></ion-icon> Recolección sin meta asignada</td>
+              </tr>
+              <ng-container *ngFor="let fila of filasSinMeta"
+                [ngTemplateOutlet]="filaTpl" [ngTemplateOutletContext]="{ $implicit: fila }"></ng-container>
+            </ng-container>
+
             <tr *ngIf="avance.encuestadores.length === 0">
-              <td [attr.colspan]="avance.dias.length + 2" class="ion-text-center">Esta jornada no tiene encuestadores asignados.</td>
+              <td [attr.colspan]="avance.dias.length + 2" class="ion-text-center">Esta jornada no tiene encuestadores asignados ni encuestas recolectadas.</td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <!-- Plantilla de fila reutilizada por ambas vistas -->
+      <ng-template #filaTpl let-fila>
+        <tr>
+          <td class="col-nombre">{{ fila.nombre }}</td>
+          <td *ngFor="let fecha of avance.dias" class="celda" [ngClass]="estadoCelda(fila.dias[fecha], fecha)"
+            [class.hoy]="fecha === avance.hoy" [class.editable]="puedeEditar"
+            (click)="editarMeta(fila, fecha)" [title]="puedeEditar ? 'Clic para editar la meta' : ''">
+            <div class="linea" *ngIf="fila.dias[fecha].metaTurista > 0 || fila.dias[fecha].hechoTurista > 0">
+              <ion-icon name="people-outline"></ion-icon> {{ fila.dias[fecha].hechoTurista }}<span class="meta" *ngIf="fila.dias[fecha].metaTurista > 0">/{{ fila.dias[fecha].metaTurista }}</span>
+            </div>
+            <div class="linea" *ngIf="fila.dias[fecha].metaHotel > 0 || fila.dias[fecha].hechoHotel > 0">
+              <ion-icon name="business-outline"></ion-icon> {{ fila.dias[fecha].hechoHotel }}<span class="meta" *ngIf="fila.dias[fecha].metaHotel > 0">/{{ fila.dias[fecha].metaHotel }}</span>
+            </div>
+            <div class="linea libre-texto" *ngIf="fila.dias[fecha].metaTurista + fila.dias[fecha].metaHotel + fila.dias[fecha].hechoTurista + fila.dias[fecha].hechoHotel === 0">—</div>
+          </td>
+          <td class="col-total">
+            <strong>{{ fila.hechoTotal }}<span class="meta" *ngIf="fila.metaTotal > 0">/{{ fila.metaTotal }}</span></strong>
+            <div class="barra" *ngIf="fila.metaTotal > 0"><div [style.width.%]="porcentaje(fila.hechoTotal, fila.metaTotal)"></div></div>
+          </td>
+        </tr>
+      </ng-template>
 
       <div class="leyenda">
         <span><i class="cumplida"></i> Meta cumplida</span>
         <span><i class="hoy"></i> Hoy, en progreso</span>
         <span><i class="incompleta"></i> Día pasado incompleto</span>
         <span><i class="pendiente"></i> Pendiente</span>
+        <span><i class="extra"></i> Recolección sin meta</span>
         <span class="icono-leyenda"><ion-icon name="people-outline"></ion-icon> Turísticas</span>
         <span class="icono-leyenda"><ion-icon name="business-outline"></ion-icon> Alojamiento</span>
       </div>

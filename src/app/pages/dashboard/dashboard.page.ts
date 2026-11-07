@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router, RouterLink } from '@angular/router';
@@ -30,7 +31,8 @@ Chart.register(...registerables);
     // ❌ ELIMINAR SidebarComponent - ya está en app.component.ts
     ChartOcupacionComponent,
     MapaLugaresComponent,
-    RouterLink
+    RouterLink,
+    HeaderComponent
   ]
 })
 export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {

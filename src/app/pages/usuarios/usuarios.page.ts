@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonicModule, ToastController, AlertController } from '@ionic/angular';
 import { UsuarioService } from 'src/app/core/services/usuario.service';
@@ -11,7 +12,7 @@ import { ROLES, NOMBRES_ROL } from 'src/app/core/models/usuario.model';
   templateUrl: './usuarios.page.html',
   styleUrls: ['./usuarios.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, HeaderComponent]
 })
 export class UsuariosPage implements OnInit {
   usuarios: any[] = [];

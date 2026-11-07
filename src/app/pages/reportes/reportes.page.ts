@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ReporteService } from 'src/app/core/services/reporte.service';
@@ -25,7 +26,7 @@ const PALETA = [
   templateUrl: './reportes.page.html',
   styleUrls: ['./reportes.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, IonicModule, HeaderComponent]
 })
 export class ReportesPage implements OnInit {
   estadisticas: any = null;

@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { Chart, registerables } from 'chart.js';
@@ -20,7 +21,7 @@ const TITULO_CHART = '#e8eef7';
   templateUrl: './predicciones.page.html',
   styleUrls: ['./predicciones.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, IonicModule, HeaderComponent]
 })
 export class PrediccionesPage implements OnInit, OnDestroy {
   // ==========================================

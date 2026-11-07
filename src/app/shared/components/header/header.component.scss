@@ -1,0 +1,6 @@
+// El wrapper <app-header> no debe ocupar lugar en el layout flex de la página: con
+// display:contents, el <ion-header> interno actúa como hijo directo de .ion-page, para
+// que Ionic calcule bien la altura del header y el contenido no quede por debajo.
+:host {
+  display: contents;
+}

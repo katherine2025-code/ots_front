@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { IonicModule, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -11,7 +12,7 @@ import { RespuestaService } from 'src/app/core/services/respuesta.service';
   templateUrl: './encuestas.page.html',
   styleUrls: ['./encuestas.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, HeaderComponent]
 })
 export class EncuestasPage implements OnInit {
   encuestas: Encuesta[] = [];

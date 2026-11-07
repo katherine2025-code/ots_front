@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
@@ -10,7 +11,7 @@ import { FeriadoOcupacion, OcupacionService, SIN_FERIADO } from 'src/app/core/se
   templateUrl: './ocupacion.page.html',
   styleUrls: ['./ocupacion.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, RouterLink]
+  imports: [CommonModule, FormsModule, IonicModule, RouterLink, HeaderComponent]
 })
 export class OcupacionPage implements OnInit {
   readonly SIN_FERIADO = SIN_FERIADO;

@@ -159,6 +159,25 @@ $amarillo: #ffc409;
     strong { display: block; margin-bottom: 4px; }
   }
 
+  // El "/meta" se atenúa; cuando la meta es 0 ni siquiera aparece (solo el conteo real)
+  .meta { color: var(--ion-color-medium); font-weight: 400; }
+
+  // Encabezados de sección: "Con meta asignada" / "Recolección sin meta asignada"
+  tr.grupo td {
+    text-align: left;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--ion-color-medium);
+    background: rgba(128, 128, 128, 0.07);
+    padding: 7px 12px;
+
+    ion-icon { vertical-align: -2px; margin-right: 5px; font-size: 0.95rem; }
+  }
+
+  tr.grupo.sin-meta td { color: #a97a00; background: rgba(255, 196, 9, 0.12); }
+
   .celda {
     cursor: default;
 
@@ -177,6 +196,22 @@ $amarillo: #ffc409;
     &.extra { background: rgba(255, 196, 9, 0.16); }
     &.libre { opacity: 0.55; }
   }
+}
+
+.aviso-sin-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(255, 196, 9, 0.12);
+  border: 1px solid rgba(255, 196, 9, 0.4);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+  color: var(--ion-color-dark);
+
+  ion-icon { font-size: 1.25rem; color: #a97a00; flex-shrink: 0; margin-top: 1px; }
+  em { font-style: normal; font-weight: 600; }
 }
 
 .leyenda {
@@ -200,6 +235,7 @@ $amarillo: #ffc409;
     &.hoy { background: rgba(var(--ion-color-primary-rgb), 0.5); }
     &.incompleta { background: rgba(235, 68, 90, 0.5); }
     &.pendiente { background: transparent; }
+    &.extra { background: rgba(255, 196, 9, 0.5); }
   }
 }
 

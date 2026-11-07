@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController } from '@ionic/angular';
 import { EtlService } from 'src/app/core/services/etl.service';
@@ -14,7 +15,7 @@ import autoTable from 'jspdf-autotable';
   templateUrl: './etl.page.html',
   styleUrls: ['./etl.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, IonicModule, HeaderComponent]
 })
 export class EtlPage implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef;
