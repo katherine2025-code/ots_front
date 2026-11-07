@@ -75,6 +75,49 @@ El mensaje "A listener indicated an asynchronous response..." es ruido de una ex
 
 ---
 
+## 5. Live Updates — auto-actualización OTA del contenido web
+
+**Objetivo:** que los cambios **web** (páginas, menú, cronograma, lógica) lleguen solos a los
+teléfonos **sin reinstalar el APK**, manteniendo el modo offline. Los cambios **nativos** (ícono,
+plugins, textZoom) siguen requiriendo recompilar el APK. Auto-hospedado en el propio backend (sin
+servicios externos). Rama: `feat/live-updates` (en `ots_front` y en `backend_ots`).
+
+**App (`ots_front`):**
+| Archivo | Cambio | Motivo |
+|---|---|---|
+| `package.json` | Plugin `@capgo/capacitor-updater@8.54.2`, `archiver` (dev), script `publicar` | OTA + empaquetado |
+| `capacitor.config.ts` | Config `CapacitorUpdater: { autoUpdate:false, resetWhenUpdate:true }` | Modo auto-hospedado (no usa la nube de Capgo) |
+| `src/app/core/services/update.service.ts` | `notificarListo()` + `buscarActualizacion()` | Al abrir, consulta el backend y descarga la versión nueva; la aplica en el siguiente arranque; sin internet no hace nada (offline OK) |
+| `src/app/app.component.ts` | Llama a ambos en `ngOnInit` | Disparar el chequeo al arrancar |
+| `scripts/publicar-bundle.mjs` | Script: compila, empaqueta `www/` y lo sube al backend | Publicar una actualización en un comando |
+
+**Backend (`backend_ots`):**
+| Archivo | Cambio | Motivo |
+|---|---|---|
+| `src/controller/appUpdateController.js` | `GET latest` (versión+URL) y `POST publicar` (guarda zip + version.json) | API del Live Update |
+| `src/routes/appRoutes.js` | `/api/app/latest` (público) y `/api/app/publicar` (solo Super Admin, multer .zip) | Rutas |
+| `src/routes/index.js` | Registra `/app` | — |
+| `src/server.js` | Sirve `/app-bundles` estático + import de `path` | Entregar los zips a la app |
+
+**Cómo publicar una actualización web (sin recompilar APK):**
+```powershell
+cd D:\tesis_OTS\ots_front
+$env:OTS_EMAIL="correo_superadmin"; $env:OTS_PASS="clave"
+npm run publicar            # versión automática por fecha; o: npm run publicar v1.2.0
+```
+Los teléfonos la descargan al abrir la app y la aplican en el siguiente arranque.
+
+**Requisitos de despliegue:**
+- Desplegar el **backend** con estos cambios (rama `feat/live-updates`) y **el APK nuevo** (que ya
+  incluye el plugin) debe instalarse **una vez** para activar el OTA.
+- **Dokploy:** que `backend_ots/uploads` sea un **volumen persistente**, si no los bundles se pierden
+  al redesplegar (habría que republicar).
+
+**Estado:** ✅ front y backend compilan; APK reconstruido con el plugin. Falta desplegar backend +
+instalar el APK una vez + publicar el primer bundle para probar el OTA punta a punta.
+
+---
+
 ## Cómo construir / desplegar
 
 - **Web (localhost):** `npm start` → `http://localhost:8100`.
