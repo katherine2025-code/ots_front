@@ -79,9 +79,14 @@ El mensaje "A listener indicated an asynchronous response..." es ruido de una ex
 
 - **Web (localhost):** `npm start` → `http://localhost:8100`.
 - **Build web:** `ng build --configuration production` (salida en `www/`, gitignored).
-- **APK:** `npx cap sync android` → luego `cd android && ./gradlew assembleDebug`
-  (APK en `android/app/build/outputs/apk/debug/app-debug.apk`). Desinstalar el OTS viejo del teléfono o
-  instalar encima. El `cap sync` **no** construye ni instala el APK.
+- **APK (3 pasos, TODOS obligatorios para ver cambios):**
+  1. `ng build --configuration production`  (genera `www/`)
+  2. `npx cap sync android`  (copia `www/` → `android/.../assets/public`)
+  3. `cd android && ./gradlew assembleDebug`  (construye el APK)
+  → APK en `android/app/build/outputs/apk/debug/app-debug.apk`. **Desinstalar el OTS viejo del teléfono** e
+  instalar el nuevo. `cap sync` **NO** construye ni instala; sin el paso 3 el APK queda igual.
+  - **Gradle:** fijado en **8.14.3** (compatible con AGP 8.13.0). Si `cap sync` vuelve a subirlo (ej. a 9.7.x),
+    el build falla; restaurar con `git checkout -- android/gradle/wrapper/gradle-wrapper.properties`.
 - **Producción web (Dokploy):** commit/push + redeploy del front. Backend es app separada.
 
 ## Pendientes
