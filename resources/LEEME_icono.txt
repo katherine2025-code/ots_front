@@ -1,0 +1,11 @@
+ICONO DE LA APP (Android)
+=========================
+
+Coloca aquí tu logo CUADRADO en alta resolución con el nombre exacto:
+
+    icon.png        (1024 x 1024 px, PNG)
+
+Recomendado: la marca "OTS" centrada. El fondo del ícono adaptativo es BLANCO,
+así que un logo sobre blanco (o con transparencia) queda perfecto.
+
+Luego Claude ejecuta el generador y recompila el APK una vez.
