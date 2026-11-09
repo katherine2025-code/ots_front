@@ -263,6 +263,41 @@ ion-card-content {
       background: var(--ots-warning-soft);
       color: #78350f;
     }
+
+    .aviso-ok {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.12);
+      color: #065f46;
+    }
+
+    // Selector de fuente de datos (ETL/Kobo vs app)
+    .fuente-tab {
+      display: inline-flex;
+      gap: 4px;
+      margin: 8px 0 4px;
+      padding: 4px;
+      border-radius: 12px;
+      background: var(--ots-border);
+
+      button {
+        border: none;
+        background: transparent;
+        color: var(--ots-text-muted);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 7px 14px;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+
+        &.activo {
+          background: var(--ots-surface, #fff);
+          color: var(--ion-color-primary);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        }
+      }
+    }
   }
 
   .seccion-titulo {

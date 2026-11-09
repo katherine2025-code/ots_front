@@ -27,6 +27,9 @@ const PALETA = [
 export class ReportesPage implements OnInit {
   estadisticas: any = null;
   tabulacion: any = null;
+  // Fuente de la tabulación: 'etl' = datos cargados por el ETL (formato Kobo, 25/37 preguntas);
+  // 'app' = datos recogidos por nuestra propia app (todas las preguntas, sin ambigüedad de Kobo).
+  fuenteTab: 'etl' | 'app' = 'etl';
   cargando: boolean = false;
   fechaGeneracion: Date = new Date();
   charts: any = {};
@@ -84,7 +87,7 @@ export class ReportesPage implements OnInit {
     try {
       const [estadisticas, tabulacion]: any = await Promise.all([
         this.reporteService.getEstadisticas(filtros).toPromise(),
-        this.reporteService.getTabulacion(filtros).toPromise()
+        this.cargarTabulacion(filtros)
       ]);
       this.estadisticas = estadisticas;
       this.tabulacion = tabulacion;
@@ -100,6 +103,59 @@ export class ReportesPage implements OnInit {
 
     } catch (error) {
       console.error('❌ Error cargando estadísticas:', error);
+    } finally {
+      this.cargando = false;
+    }
+  }
+
+  // Carga la tabulación según la fuente elegida (ETL/Kobo o app propia).
+  private async cargarTabulacion(filtros: any): Promise<any> {
+    if (this.fuenteTab === 'app') {
+      const data: any = await this.reporteService.getTabulacionApp({
+        tipo: 'turista', fechaInicio: filtros.fechaInicio, fechaFin: filtros.fechaFin
+      }).toPromise();
+      return this.aplanarTabulacionApp(data);
+    }
+    return this.reporteService.getTabulacion(filtros).toPromise();
+  }
+
+  // Convierte la respuesta de tabulacion-app (secciones -> preguntas) al formato plano que ya
+  // usa la vista. Solo preguntas con opciones (categóricas); las abiertas/numéricas se resumen
+  // en Estadísticas.
+  private aplanarTabulacionApp(data: any): any {
+    const preguntas: any[] = [];
+    for (const s of (data?.secciones || [])) {
+      for (const p of (s.preguntas || [])) {
+        if (!p.opciones || p.opciones.length === 0) continue;
+        preguntas.push({
+          seccion: s.seccion,
+          titulo: p.titulo,
+          totalReal: p.respondidas,
+          sinDato: p.sinDato,
+          opciones: p.opciones,
+          multiple: p.tipo === 'multiselect'
+        });
+      }
+    }
+    return { preguntas, total: data?.total || 0, encuesta: data?.encuesta, fuente: 'app' };
+  }
+
+  // Cambia entre tabulación del ETL (Kobo) y la de la app, y recarga solo la tabulación.
+  async cambiarFuenteTab(fuente: 'etl' | 'app') {
+    if (this.fuenteTab === fuente) return;
+    this.fuenteTab = fuente;
+    const filtros = {
+      feriado: this.filtroFeriado || undefined,
+      fechaInicio: this.filtroFechaInicio || undefined,
+      fechaFin: this.filtroFechaFin || undefined,
+      anio: this.filtroAnio || undefined
+    };
+    this.cargando = true;
+    try {
+      this.tabulacion = await this.cargarTabulacion(filtros);
+      setTimeout(() => this.crearGraficosTabulacion(), 300);
+    } catch (error) {
+      console.error('Error al cambiar la fuente de tabulación:', error);
     } finally {
       this.cargando = false;
     }
