@@ -1,6 +1,13 @@
 <ion-content>
 <div class="ots-page">
 
+  <!-- Encabezado institucional: SOLO aparece en la impresión/PDF -->
+  <div class="print-header">
+    <h1>OBSERVATORIO TURÍSTICO SOSTENIBLE</h1>
+    <h2>Universidad Estatal Península de Santa Elena – UPSE</h2>
+    <p>Reporte de análisis turístico · {{ fechaGeneracion | date:'longDate' }}</p>
+  </div>
+
   <!-- HEADER -->
   <div class="page-header">
     <div class="header-left">
@@ -12,6 +19,10 @@
       <ion-button fill="outline" size="small" (click)="cargarEstadisticas()" [disabled]="cargando">
         <ion-icon name="refresh-outline" slot="start"></ion-icon>
         Actualizar
+      </ion-button>
+      <ion-button size="small" (click)="imprimirPDF()" [disabled]="cargando">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
+        Descargar PDF
       </ion-button>
     </div>
   </div>

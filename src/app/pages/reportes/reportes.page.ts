@@ -65,6 +65,13 @@ export class ReportesPage implements OnInit {
     this.cargarEstadisticas();
   }
 
+  // Genera el PDF usando la impresión del navegador: imprime la pantalla completa de Reportes
+  // (estadísticas + gráficos + tabulación) con el encabezado institucional y sin los controles.
+  // El usuario elige "Guardar como PDF" en el diálogo de impresión.
+  imprimirPDF() {
+    window.print();
+  }
+
   limpiarFiltros() {
     this.filtroFeriado = '';
     this.filtroFechaInicio = '';
