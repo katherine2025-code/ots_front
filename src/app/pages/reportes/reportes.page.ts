@@ -119,7 +119,8 @@ export class ReportesPage implements OnInit {
   private async cargarTabulacion(filtros: any): Promise<any> {
     if (this.fuenteTab === 'app') {
       const data: any = await this.reporteService.getTabulacionApp({
-        tipo: 'turista', fechaInicio: filtros.fechaInicio, fechaFin: filtros.fechaFin
+        tipo: 'turista', feriado: filtros.feriado,
+        fechaInicio: filtros.fechaInicio, fechaFin: filtros.fechaFin
       }).toPromise();
       return this.aplanarTabulacionApp(data);
     }

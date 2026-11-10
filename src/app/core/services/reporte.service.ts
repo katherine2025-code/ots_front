@@ -26,7 +26,7 @@ export class ReporteService {
 
   // Tabulación directa desde los datos de la app propia (respuestas_encuestas), con todas las
   // preguntas del cuestionario (sin la limitación del formato de Kobo).
-  getTabulacionApp(filtros?: { tipo?: string; fechaInicio?: string; fechaFin?: string }): Observable<any> {
+  getTabulacionApp(filtros?: { tipo?: string; feriado?: string; fechaInicio?: string; fechaFin?: string }): Observable<any> {
     return this.api.get<any>('reportes/tabulacion-app', filtros);
   }
 
