@@ -38,6 +38,16 @@ export class EtlPage implements OnInit, OnDestroy {
   isDragging: boolean = false;
   tabActiva: string = 'cargar';
 
+  // ===== Descarga de datos limpios (auditoría de calidad) =====
+  // Los mismos feriados que usa todo el sistema (ver backend utils/feriados.js).
+  feriadosLista: string[] = [
+    'Carnaval', 'Semana Santa', 'Día del Trabajador', 'Primer Grito de la Independencia',
+    'Día de los Difuntos', 'Navidad', 'Fin de Año'
+  ];
+  expTipo: 'turista' | 'hotel' = 'turista';
+  expFeriado: string = '';
+  descargandoCsv: boolean = false;
+
   //  NUEVAS VARIABLES PARA VALIDACIÓN ML
   resultadoValidacion: any = null;
   cargandoValidacion: boolean = false;
@@ -554,6 +564,36 @@ export class EtlPage implements OnInit, OnDestroy {
       ]
     });
     await alerta.present();
+  }
+
+  // Descarga el CSV de datos ya limpios (sin vacíos) del tipo y feriado elegidos. El archivo
+  // sale directo de la base, que es donde el ETL ya dejó limpios los datos ('Prefiero no
+  // responder'/0 en lugar de vacíos), por eso sirve para verificar la calidad.
+  descargarCsvLimpio() {
+    this.descargandoCsv = true;
+    this.etlService.descargarDatosLimpios(this.expTipo, this.expFeriado || undefined).subscribe({
+      next: (blob: Blob) => {
+        const etiqueta = (this.expFeriado || 'todos')
+          .normalize('NFD').replace(/[̀-ͯ]/g, '')
+          .replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '').toLowerCase();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `datos_limpios_${this.expTipo}_${etiqueta}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.descargandoCsv = false;
+      },
+      error: (err) => {
+        console.error('Error al descargar CSV limpio:', err);
+        this.descargandoCsv = false;
+        this.alertController.create({
+          header: 'Error',
+          message: 'No se pudo descargar el CSV. Intenta de nuevo.',
+          buttons: ['OK']
+        }).then(a => a.present());
+      }
+    });
   }
 
   getEstadoClass(estado: string): string {
