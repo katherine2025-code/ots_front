@@ -255,6 +255,41 @@
       </div>
     </div>
 
+    <!-- SECCIÓN: DESCARGA DE DATOS LIMPIOS (auditoría de calidad) -->
+    <div class="table-card" style="margin-bottom: 20px;">
+      <div class="table-header">
+        <h3>Descargar datos limpios (CSV)</h3>
+        <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
+          Descarga los datos ya procesados por el ETL (sin vacíos: los no respondidos quedan como
+          "Prefiero no responder" o 0). Útil para verificar la calidad de cada feriado.
+        </p>
+      </div>
+
+      <div style="padding: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+        <div style="flex: 1; min-width: 180px;">
+          <label style="display:block; font-size:0.85em; color:#555; margin-bottom:4px;">Tipo de encuesta</label>
+          <select [(ngModel)]="expTipo" class="filter-select" style="width:100%;">
+            <option value="turista">Encuestas Turísticas</option>
+            <option value="hotel">Ocupación Hotelera</option>
+          </select>
+        </div>
+
+        <div style="flex: 1; min-width: 180px;">
+          <label style="display:block; font-size:0.85em; color:#555; margin-bottom:4px;">Feriado</label>
+          <select [(ngModel)]="expFeriado" class="filter-select" style="width:100%;">
+            <option value="">Todos los feriados</option>
+            <option *ngFor="let f of feriadosLista" [value]="f">{{ f }}</option>
+          </select>
+        </div>
+
+        <button class="btn-upload" [disabled]="descargandoCsv" (click)="descargarCsvLimpio()"
+          style="min-width: 180px;">
+          <ion-icon name="download-outline"></ion-icon>
+          {{ descargandoCsv ? 'Descargando...' : 'Descargar CSV limpio' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Tabla de Historial ETL -->
     <div class="table-card">
       <div class="table-header">

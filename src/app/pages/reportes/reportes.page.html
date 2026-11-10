@@ -1,6 +1,13 @@
 <ion-content>
 <div class="ots-page">
 
+  <!-- Encabezado institucional: SOLO aparece en la impresión/PDF -->
+  <div class="print-header">
+    <h1>OBSERVATORIO TURÍSTICO SOSTENIBLE</h1>
+    <h2>Universidad Estatal Península de Santa Elena – UPSE</h2>
+    <p>Reporte de análisis turístico · {{ fechaGeneracion | date:'longDate' }}</p>
+  </div>
+
   <!-- HEADER -->
   <div class="page-header">
     <div class="header-left">
@@ -12,6 +19,10 @@
       <ion-button fill="outline" size="small" (click)="cargarEstadisticas()" [disabled]="cargando">
         <ion-icon name="refresh-outline" slot="start"></ion-icon>
         Actualizar
+      </ion-button>
+      <ion-button size="small" (click)="imprimirPDF()" [disabled]="cargando">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
+        Descargar PDF
       </ion-button>
     </div>
   </div>
@@ -251,16 +262,33 @@
       <div class="tabulacion-intro">
         <span class="ots-eyebrow">Encuesta turística</span>
         <h2>Tabulación por pregunta</h2>
+
+        <!-- Fuente de los datos: ETL/Kobo (histórico) o la app propia (todas las preguntas) -->
+        <div class="fuente-tab" role="group" aria-label="Fuente de la tabulación">
+          <button type="button" [class.activo]="fuenteTab === 'etl'" (click)="cambiarFuenteTab('etl')">
+            Datos del ETL (Kobo)
+          </button>
+          <button type="button" [class.activo]="fuenteTab === 'app'" (click)="cambiarFuenteTab('app')">
+            Datos de la app (todas)
+          </button>
+        </div>
+
         <p>
-          Sobre {{ tabulacion.totalEncuestas }} encuestas cargadas. Cada pregunta muestra el
-          porcentaje solo entre las respuestas donde el dato se pudo leer del archivo original
-          (el detalle de cuántas quedaron sin dato está debajo del título).
+          Sobre {{ tabulacion.totalEncuestas || tabulacion.total }} encuestas
+          {{ fuenteTab === 'app' ? 'recogidas por la app' : 'cargadas' }}. Cada pregunta muestra el
+          porcentaje solo entre las respuestas con dato (las que quedaron sin dato se indican debajo del título).
         </p>
-        <p class="aviso-pendiente">
+
+        <p class="aviso-pendiente" *ngIf="fuenteTab === 'etl'">
           Estas son las 25 de 37 preguntas del cuestionario que hoy se tabulan (las que se pueden
           identificar con certeza en el archivo de Kobo). Las restantes (los 5 gastos por rubro y
           las escalas de "acuerdo" de satisfacción) quedan pendientes porque el export de Kobo no
           las trae con una etiqueta que permita distinguirlas sin riesgo de confundirlas.
+        </p>
+        <p class="aviso-ok" *ngIf="fuenteTab === 'app'">
+          Datos recogidos por nuestra propia app: se tabulan todas las preguntas con opciones del
+          cuestionario, sin la ambigüedad del formato de Kobo. (Las preguntas abiertas y numéricas
+          se resumen en la sección de Estadísticas.)
         </p>
       </div>
 

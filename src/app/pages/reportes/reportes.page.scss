@@ -263,6 +263,41 @@ ion-card-content {
       background: var(--ots-warning-soft);
       color: #78350f;
     }
+
+    .aviso-ok {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.12);
+      color: #065f46;
+    }
+
+    // Selector de fuente de datos (ETL/Kobo vs app)
+    .fuente-tab {
+      display: inline-flex;
+      gap: 4px;
+      margin: 8px 0 4px;
+      padding: 4px;
+      border-radius: 12px;
+      background: var(--ots-border);
+
+      button {
+        border: none;
+        background: transparent;
+        color: var(--ots-text-muted);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 7px 14px;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+
+        &.activo {
+          background: var(--ots-surface, #fff);
+          color: var(--ion-color-primary);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        }
+      }
+    }
   }
 
   .seccion-titulo {
@@ -383,4 +418,39 @@ ion-card-content {
     .main-value { font-size: 32px; }
     .big-number { font-size: 44px; }
   }
+}
+
+/* ============================================
+   IMPRESIÓN / PDF (botón "Descargar PDF")
+   ============================================ */
+// Encabezado institucional: oculto en pantalla, visible solo al imprimir.
+.print-header { display: none; }
+
+@media print {
+  .print-header {
+    display: block;
+    text-align: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #2A6F97;
+
+    h1 { font-size: 16px; margin: 0; color: #1F4E6B; letter-spacing: 0.5px; }
+    h2 { font-size: 12px; margin: 3px 0; font-weight: 600; color: #475569; }
+    p  { font-size: 11px; margin: 2px 0 0; color: #64748b; }
+  }
+
+  // Ocultar controles interactivos en el PDF.
+  .page-header .header-right,
+  .filtros-card,
+  .fuente-tab { display: none !important; }
+
+  .page-header { border: none; }
+
+  // Evitar que una pregunta/tarjeta se parta entre dos páginas.
+  .pregunta-card,
+  .ots-card,
+  .seccion-titulo { break-inside: avoid; page-break-inside: avoid; }
+
+  // Los gráficos impresos en tamaño razonable.
+  canvas { max-height: 260px !important; }
 }

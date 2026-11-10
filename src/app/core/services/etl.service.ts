@@ -74,6 +74,14 @@ export class EtlService {
     return this.http.delete(`${this.apiUrl}/registro/${id}`);
   }
 
+  // Descarga el CSV de datos YA LIMPIOS (sin vacíos) por tipo (turista/hotel) y feriado opcional.
+  // Responde como blob para forzar la descarga del archivo.
+  descargarDatosLimpios(tipo: 'turista' | 'hotel', feriado?: string): Observable<Blob> {
+    let params = new HttpParams().set('tipo', tipo);
+    if (feriado) params = params.set('feriado', feriado);
+    return this.http.get(`${this.apiUrl}/exportar-limpio`, { params, responseType: 'blob' });
+  }
+
   // MÉTODOS ML (vía proxy del backend; entrenar y predecir están en prediccion.service.ts)
 
   getMetricas(): Observable<any> {
