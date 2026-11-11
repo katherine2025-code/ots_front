@@ -19,7 +19,7 @@ export class OcupacionPage implements OnInit {
   ocupacion: any[] = [];
   loading: boolean = true;
 
-  // Filtro por feriado: '' = todos los feriados, SIN_FERIADO = sin feriado asignado (Kobo)
+  // Filtro por feriado: '' = todos los feriados, SIN_FERIADO = sin feriado asignado
   feriadoSeleccionado: string = this.TODOS;
   feriadosDisponibles: FeriadoOcupacion[] = [];
   totalSinFeriado: number = 0;
@@ -121,7 +121,7 @@ export class OcupacionPage implements OnInit {
       (item.habitaciones_ocupadas || 0) > item.habitaciones_totales * (item.dias_reportados || 1);
   }
 
-  // Las cargas de Kobo guardan una fila por envío con los TOTALES de los días del feriado
+  // Algunas importaciones guardan una fila por envío con los TOTALES de los días del feriado
   // (dias_reportados); se muestra el promedio por día, que es lo comparable con la capacidad.
   // Las filas sin dias_reportados (app y CSV) ya son de un solo día.
   porDia(total: number | null, item: any): number {

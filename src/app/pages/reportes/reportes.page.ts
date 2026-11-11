@@ -27,9 +27,12 @@ const PALETA = [
 export class ReportesPage implements OnInit {
   estadisticas: any = null;
   tabulacion: any = null;
-  // Fuente de la tabulación: 'etl' = datos cargados por el ETL (formato Kobo, 25/37 preguntas);
-  // 'app' = datos recogidos por nuestra propia app (todas las preguntas, sin ambigüedad de Kobo).
+  // Fuente de la tabulación turística: siempre los datos cargados por importación (tabla
+  // encuestas_turisticas). Se conserva la propiedad por compatibilidad interna.
   fuenteTab: 'etl' | 'app' = 'etl';
+  // Encuesta que se tabula: 'turista' o 'hotel'. La hotelera sale de las encuestas de la app
+  // (respuestas_encuestas); la importación de hoteles guarda ocupación, no respuestas de opción.
+  encuestaTab: 'turista' | 'hotel' = 'turista';
   cargando: boolean = false;
   fechaGeneracion: Date = new Date();
   charts: any = {};
@@ -115,8 +118,16 @@ export class ReportesPage implements OnInit {
     }
   }
 
-  // Carga la tabulación según la fuente elegida (ETL/Kobo o app propia).
+  // Carga la tabulación de la encuesta elegida. La turística sale de los datos importados
+  // (encuestas_turisticas); la hotelera sale de las encuestas de la app (todas sus preguntas).
   private async cargarTabulacion(filtros: any): Promise<any> {
+    if (this.encuestaTab === 'hotel') {
+      const data: any = await this.reporteService.getTabulacionApp({
+        tipo: 'hotel', feriado: filtros.feriado,
+        fechaInicio: filtros.fechaInicio, fechaFin: filtros.fechaFin
+      }).toPromise();
+      return this.aplanarTabulacionApp(data);
+    }
     if (this.fuenteTab === 'app') {
       const data: any = await this.reporteService.getTabulacionApp({
         tipo: 'turista', feriado: filtros.feriado,
@@ -125,6 +136,27 @@ export class ReportesPage implements OnInit {
       return this.aplanarTabulacionApp(data);
     }
     return this.reporteService.getTabulacion(filtros).toPromise();
+  }
+
+  // Cambia entre la encuesta turística y la hotelera, y recarga solo la tabulación.
+  async cambiarEncuestaTab(tipo: 'turista' | 'hotel') {
+    if (this.encuestaTab === tipo) return;
+    this.encuestaTab = tipo;
+    const filtros = {
+      feriado: this.filtroFeriado || undefined,
+      fechaInicio: this.filtroFechaInicio || undefined,
+      fechaFin: this.filtroFechaFin || undefined,
+      anio: this.filtroAnio || undefined
+    };
+    this.cargando = true;
+    try {
+      this.tabulacion = await this.cargarTabulacion(filtros);
+      setTimeout(() => this.crearGraficosTabulacion(), 300);
+    } catch (error) {
+      console.error('Error al cambiar la encuesta de tabulación:', error);
+    } finally {
+      this.cargando = false;
+    }
   }
 
   // Convierte la respuesta de tabulacion-app (secciones -> preguntas) al formato plano que ya
@@ -148,7 +180,8 @@ export class ReportesPage implements OnInit {
     return { preguntas, total: data?.total || 0, encuesta: data?.encuesta, fuente: 'app' };
   }
 
-  // Cambia entre tabulación del ETL (Kobo) y la de la app, y recarga solo la tabulación.
+  // (Reservado) Cambia la fuente de la tabulación turística y recarga. Hoy el selector de fuente
+  // no se muestra; la turística usa siempre los datos importados.
   async cambiarFuenteTab(fuente: 'etl' | 'app') {
     if (this.fuenteTab === fuente) return;
     this.fuenteTab = fuente;

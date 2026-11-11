@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
 // Se manda como valor de `feriado` para pedir los registros sin feriado asignado
-// (cargados desde Kobo, cuyo formulario original no preguntaba esto).
+// (importaciones antiguas cuyo formulario original no preguntaba el feriado).
 export const SIN_FERIADO = '__sin_feriado__';
 
 export interface FeriadoOcupacion {

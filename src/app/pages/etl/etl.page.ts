@@ -243,7 +243,7 @@ export class EtlPage implements OnInit, OnDestroy {
       const total = this.resultadoCarga.total || 0;
 
       if (exitosos === 0 && errores === 0 && total > 0) {
-        // Nada falló: todas las filas ya estaban cargadas (el ETL las reconoce por su _uuid de Kobo)
+        // Nada falló: todas las filas ya estaban cargadas (el ETL las reconoce por su identificador único)
         alert(` Sin cambios: este archivo ya estaba cargado\n\n Filas en el archivo: ${total}\n Insertadas: 0 (ninguna duplicada)${notaAdvertencias}`);
       } else if (exitosos > 0 && errores === 0) {
         alert(` Proceso completado exitosamente\n\n Registros insertados: ${exitosos}\n Errores: ${errores}${notaAdvertencias}`);

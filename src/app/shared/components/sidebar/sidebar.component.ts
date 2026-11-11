@@ -48,7 +48,7 @@ const MENU: SeccionMenu[] = [
     items: [
       { etiqueta: 'Hoteles', icono: 'business-outline', ruta: '/hoteles', ayuda: 'Catastro de establecimientos de alojamiento', roles: [0, 1] },
       { etiqueta: 'Usuarios', icono: 'people-circle-outline', ruta: '/usuarios', ayuda: 'Cuentas, roles y accesos', roles: [0, 1] },
-      { etiqueta: 'Carga ETL', icono: 'cloud-upload-outline', ruta: '/etl', ayuda: 'Importar archivos de datos (CSV / Excel / Kobo)', roles: [0] }
+      { etiqueta: 'Carga ETL', icono: 'cloud-upload-outline', ruta: '/etl', ayuda: 'Importar archivos de datos (CSV / Excel)', roles: [0] }
     ]
   }
 ];
