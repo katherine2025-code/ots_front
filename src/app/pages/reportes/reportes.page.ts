@@ -73,6 +73,11 @@ export class ReportesPage implements OnInit {
   // establecimiento). Respeta el filtro actual, así el PDF corresponde SOLO a ese feriado.
   async descargarPDF() {
     if (!this.estadisticas) { return; }
+    // Asegura que las gráficas por pregunta estén dibujadas en pantalla, para incrustarlas al PDF.
+    if ((this.chartsPreguntas?.length || 0) < (this.tabulacion?.preguntas?.length || 0)) {
+      this.crearGraficosTabulacion();
+      await new Promise(r => setTimeout(r, 450));
+    }
     const { default: jsPDF } = await import('jspdf');
     const { default: autoTable } = await import('jspdf-autotable');
 
@@ -123,7 +128,8 @@ export class ReportesPage implements OnInit {
 
     const preguntas = this.tabulacion?.preguntas || [];
     let seccionActual = '';
-    for (const p of preguntas) {
+    for (let i = 0; i < preguntas.length; i++) {
+      const p = preguntas[i];
       if (y > pageH - 45) { doc.addPage(); y = 15; }
       if (p.seccion && p.seccion !== seccionActual) {
         seccionActual = p.seccion;
@@ -146,7 +152,24 @@ export class ReportesPage implements OnInit {
       y = (doc as any).lastAutoTable.finalY + 3;
       doc.setFontSize(7.5); doc.setTextColor(140, 140, 140);
       doc.text(`${p.totalReal} respuestas con dato · ${p.sinDato} sin dato`, mX, y);
-      y += 6;
+      y += 4;
+
+      // Gráfica de la pregunta: se toma la que ya se dibujó en pantalla (canvas chart-pregunta-i).
+      const canvasP = document.getElementById('chart-pregunta-' + i) as HTMLCanvasElement | null;
+      if (canvasP && canvasP.width > 0) {
+        try {
+          const img = canvasP.toDataURL('image/png');
+          const ar = (canvasP.width / canvasP.height) || 1.6;
+          const esBar = p.multiple || (p.opciones?.length || 0) > 4;
+          const imgW = esBar ? 95 : 55;
+          const imgH = Math.min(70, imgW / ar);
+          if (y + imgH > pageH - 18) { doc.addPage(); y = 15; }
+          doc.addImage(img, 'PNG', mX, y, imgW, imgH);
+          y += imgH + 6;
+        } catch { y += 2; }
+      } else {
+        y += 2;
+      }
     }
 
     // --- Pie de página numerado ---
