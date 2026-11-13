@@ -271,7 +271,7 @@ ion-card-content {
       color: #065f46;
     }
 
-    // Selector de fuente de datos (ETL/Kobo vs app)
+    // Selector de encuesta a tabular (turística / establecimiento)
     .fuente-tab {
       display: inline-flex;
       gap: 4px;
@@ -427,6 +427,17 @@ ion-card-content {
 .print-header { display: none; }
 
 @media print {
+  // Ionic encierra TODO en <ion-content>, que tiene su propio scroll interno. Sin esto, la
+  // impresión solo captura lo visible y el resto sale en blanco. Se libera el contenedor de
+  // scroll (::part(scroll)) para que el contenido completo fluya a varias páginas al imprimir.
+  ion-content { --background: #ffffff; --offset-top: 0; --offset-bottom: 0; }
+  ion-content::part(scroll) {
+    overflow: visible !important;
+    position: static !important;
+    height: auto !important;
+    contain: none !important;
+  }
+
   .print-header {
     display: block;
     text-align: center;
