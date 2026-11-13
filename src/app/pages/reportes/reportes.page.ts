@@ -68,11 +68,111 @@ export class ReportesPage implements OnInit {
     this.cargarEstadisticas();
   }
 
-  // Genera el PDF usando la impresión del navegador: imprime la pantalla completa de Reportes
-  // (estadísticas + gráficos + tabulación) con el encabezado institucional y sin los controles.
-  // El usuario elige "Guardar como PDF" en el diálogo de impresión.
-  imprimirPDF() {
-    window.print();
+  // Genera un PDF real (jsPDF) del reporte del feriado seleccionado: indicadores clave + la
+  // tabulación completa, pregunta por pregunta, de la encuesta activa (turística o de
+  // establecimiento). Respeta el filtro actual, así el PDF corresponde SOLO a ese feriado.
+  async descargarPDF() {
+    if (!this.estadisticas) { return; }
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const mX = 14;
+    const feriadoTxt = this.filtroFeriado || 'Todos los feriados';
+
+    // --- Encabezado institucional ---
+    const logo = await this.cargarLogoPDF();
+    if (logo) { try { doc.addImage(logo, 'PNG', mX, 9, 34, 5); } catch { /* sin logo */ } }
+    doc.setFontSize(14); doc.setTextColor(41, 128, 185);
+    doc.text('OBSERVATORIO TURÍSTICO SOSTENIBLE - UPSE', pageW / 2, 15, { align: 'center' });
+    doc.setFontSize(11); doc.setTextColor(90, 90, 90);
+    const titulo = this.encuestaTab === 'hotel'
+      ? 'Reporte de Establecimientos de Alojamiento'
+      : 'Reporte de Encuestas Turísticas';
+    doc.text(titulo, pageW / 2, 21, { align: 'center' });
+    doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+    doc.text(`Feriado: ${feriadoTxt}     |     Generado: ${new Date().toLocaleString()}`, pageW / 2, 26, { align: 'center' });
+    doc.setDrawColor(41, 128, 185); doc.setLineWidth(0.4); doc.line(mX, 29, pageW - mX, 29);
+
+    // --- Indicadores clave ---
+    const e = this.estadisticas.encuestas || {};
+    const o = this.estadisticas.ocupacion || {};
+    const totalEnc = this.tabulacion?.totalEncuestas ?? this.tabulacion?.total ?? e.total ?? 0;
+    const kpis: any[] = [['Total de encuestas', String(totalEnc)]];
+    if (e.paises != null) kpis.push(['Países de origen', String(e.paises)]);
+    if (e.satisfaccion_promedio != null) kpis.push(['Satisfacción promedio', `${Number(e.satisfaccion_promedio).toFixed(1)} / 5`]);
+    if (e.gasto_promedio != null) kpis.push(['Gasto promedio por turista', `$${Number(e.gasto_promedio).toFixed(2)}`]);
+    if (e.noches_promedio != null) kpis.push(['Noches promedio', Number(e.noches_promedio).toFixed(1)]);
+    if (o.ocupacion_promedio != null) kpis.push(['Ocupación hotelera promedio', `${Number(o.ocupacion_promedio).toFixed(1)}%`]);
+
+    doc.setFontSize(11); doc.setTextColor(41, 128, 185);
+    doc.text('INDICADORES CLAVE', mX, 36);
+    autoTable(doc, {
+      startY: 39, head: [['Indicador', 'Valor']], body: kpis, theme: 'striped',
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 }, styles: { fontSize: 9 },
+      columnStyles: { 0: { cellWidth: 110 }, 1: { cellWidth: 'auto' } }, margin: { left: mX, right: mX }
+    });
+
+    // --- Tabulación pregunta por pregunta ---
+    let y = (doc as any).lastAutoTable.finalY + 9;
+    doc.setFontSize(11); doc.setTextColor(41, 128, 185);
+    doc.text('TABULACIÓN POR PREGUNTA', mX, y);
+    y += 2;
+
+    const preguntas = this.tabulacion?.preguntas || [];
+    let seccionActual = '';
+    for (const p of preguntas) {
+      if (y > pageH - 45) { doc.addPage(); y = 15; }
+      if (p.seccion && p.seccion !== seccionActual) {
+        seccionActual = p.seccion;
+        y += 5; doc.setFontSize(10); doc.setTextColor(70, 70, 70);
+        doc.text(`Sección: ${p.seccion}`, mX, y); y += 1;
+      }
+      doc.setFontSize(9.5); doc.setTextColor(30, 30, 30);
+      const tituloP = p.titulo + (p.multiple ? ' (opción múltiple)' : '');
+      const lineas = doc.splitTextToSize(tituloP, pageW - mX * 2);
+      if (y + lineas.length * 4 > pageH - 40) { doc.addPage(); y = 15; }
+      doc.text(lineas, mX, y + 4); y += lineas.length * 4 + 4;
+
+      const filas = (p.opciones || []).map((op: any) => [op.etiqueta, String(op.total ?? ''), `${op.porcentaje}%`]);
+      autoTable(doc, {
+        startY: y, head: [['Respuesta', 'Conteo', '%']], body: filas, theme: 'grid',
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontSize: 8 }, styles: { fontSize: 8 },
+        columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 25, halign: 'right' }, 2: { cellWidth: 22, halign: 'right' } },
+        margin: { left: mX, right: mX }
+      });
+      y = (doc as any).lastAutoTable.finalY + 3;
+      doc.setFontSize(7.5); doc.setTextColor(140, 140, 140);
+      doc.text(`${p.totalReal} respuestas con dato · ${p.sinDato} sin dato`, mX, y);
+      y += 6;
+    }
+
+    // --- Pie de página numerado ---
+    const nPaginas = doc.getNumberOfPages();
+    for (let i = 1; i <= nPaginas; i++) {
+      doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+      doc.text(`OTS - UPSE   |   ${feriadoTxt}   |   Página ${i} de ${nPaginas}`, pageW / 2, pageH - 8, { align: 'center' });
+    }
+
+    const slug = (this.filtroFeriado || 'todos').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
+    doc.save(`reporte-${this.encuestaTab}-${slug}-${new Date().toISOString().split('T')[0]}.pdf`);
+  }
+
+  // Carga el logo del OTS como data URL para el PDF; null si no se puede (el PDF se genera igual).
+  private async cargarLogoPDF(): Promise<string | null> {
+    try {
+      const resp = await fetch('assets/icon/logo-ots.png');
+      if (!resp.ok) return null;
+      const blob = await resp.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const lector = new FileReader();
+        lector.onloadend = () => resolve(lector.result as string);
+        lector.onerror = reject;
+        lector.readAsDataURL(blob);
+      });
+    } catch { return null; }
   }
 
   limpiarFiltros() {

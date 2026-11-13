@@ -20,7 +20,7 @@
         <ion-icon name="refresh-outline" slot="start"></ion-icon>
         Actualizar
       </ion-button>
-      <ion-button size="small" (click)="imprimirPDF()" [disabled]="cargando">
+      <ion-button size="small" (click)="descargarPDF()" [disabled]="cargando || !estadisticas">
         <ion-icon name="download-outline" slot="start"></ion-icon>
         Descargar PDF
       </ion-button>
