@@ -68,92 +68,172 @@ export class ReportesPage implements OnInit {
     this.cargarEstadisticas();
   }
 
-  // Genera un PDF real (jsPDF) del reporte del feriado seleccionado: indicadores clave + la
-  // tabulación completa, pregunta por pregunta, de la encuesta activa (turística o de
-  // establecimiento). Respeta el filtro actual, así el PDF corresponde SOLO a ese feriado.
+  // Genera el PDF del feriado seleccionado con estilo infográfico institucional: portada,
+  // encabezados de sección y, por cada pregunta, su leyenda (color + opción + %) junto a su
+  // gráfica. Respeta el filtro actual: el PDF corresponde SOLO a ese feriado. Solo logo OTS-UPSE.
   async descargarPDF() {
     if (!this.estadisticas) { return; }
+    // Asegura que las gráficas por pregunta estén dibujadas en pantalla, para incrustarlas al PDF.
+    if ((this.chartsPreguntas?.length || 0) < (this.tabulacion?.preguntas?.length || 0)) {
+      this.crearGraficosTabulacion();
+      await new Promise(r => setTimeout(r, 450));
+    }
     const { default: jsPDF } = await import('jspdf');
-    const { default: autoTable } = await import('jspdf-autotable');
 
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
     const mX = 14;
+    const contentW = pageW - mX * 2;
+    const footerH = 13;
+    const NAVY: [number, number, number] = [26, 42, 68];
+    const AMBER: [number, number, number] = [233, 162, 59];
+    const GRIS: [number, number, number] = [90, 100, 110];
+
     const feriadoTxt = this.filtroFeriado || 'Todos los feriados';
-
-    // --- Encabezado institucional ---
+    const anio = this.filtroAnio || new Date().getFullYear();
+    const tipoTxt = this.encuestaTab === 'hotel'
+      ? 'Encuesta de Establecimientos de Alojamiento'
+      : 'Encuesta Turística';
     const logo = await this.cargarLogoPDF();
-    if (logo) { try { doc.addImage(logo, 'PNG', mX, 9, 34, 5); } catch { /* sin logo */ } }
-    doc.setFontSize(14); doc.setTextColor(41, 128, 185);
-    doc.text('OBSERVATORIO TURÍSTICO SOSTENIBLE - UPSE', pageW / 2, 15, { align: 'center' });
-    doc.setFontSize(11); doc.setTextColor(90, 90, 90);
-    const titulo = this.encuestaTab === 'hotel'
-      ? 'Reporte de Establecimientos de Alojamiento'
-      : 'Reporte de Encuestas Turísticas';
-    doc.text(titulo, pageW / 2, 21, { align: 'center' });
-    doc.setFontSize(9); doc.setTextColor(120, 120, 120);
-    doc.text(`Feriado: ${feriadoTxt}     |     Generado: ${new Date().toLocaleString()}`, pageW / 2, 26, { align: 'center' });
-    doc.setDrawColor(41, 128, 185); doc.setLineWidth(0.4); doc.line(mX, 29, pageW - mX, 29);
 
-    // --- Indicadores clave ---
+    // ===================== PORTADA =====================
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, 0, pageW, 10, 'F');
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, 10, pageW, 2, 'F');
+    if (logo) { try { doc.addImage(logo, 'PNG', pageW / 2 - 45, 46, 90, 14); } catch { /* sin logo */ } }
+
+    const cajaW = 150, cajaH = 30, cajaX = (pageW - cajaW) / 2, cajaY = 92;
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.roundedRect(cajaX, cajaY, cajaW - 24, cajaH, 2, 2, 'F');
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(cajaX + cajaW - 22, cajaY, 22, cajaH, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(17);
+    doc.text('REPORTE TÉCNICO', cajaX + 7, cajaY + 13);
+    doc.text('Y ESTADÍSTICO', cajaX + 7, cajaY + 23);
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(19);
+    doc.text('01', cajaX + cajaW - 11, cajaY + 19, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(23); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    const ferLineas = doc.splitTextToSize(`FERIADO ${feriadoTxt}`.toUpperCase(), contentW);
+    doc.text(ferLineas, pageW / 2, cajaY + 48, { align: 'center' });
+    doc.setFontSize(18);
+    doc.text(String(anio), pageW / 2, cajaY + 48 + ferLineas.length * 9, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(12); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
+    doc.text(tipoTxt, pageW / 2, cajaY + 72, { align: 'center' });
+    doc.setFontSize(9);
+    doc.text(`Observatorio Turístico Sostenible · UPSE · ${new Date().toLocaleDateString()}`, pageW / 2, cajaY + 80, { align: 'center' });
+
+    // ===================== CONTENIDO =====================
+    doc.addPage();
+    const topContent = 16;
+    const bottomLimit = pageH - footerH - 5;
+    let y = topContent;
+
+    // Indicadores clave (tarjetas)
     const e = this.estadisticas.encuestas || {};
     const o = this.estadisticas.ocupacion || {};
     const totalEnc = this.tabulacion?.totalEncuestas ?? this.tabulacion?.total ?? e.total ?? 0;
-    const kpis: any[] = [['Total de encuestas', String(totalEnc)]];
-    if (e.paises != null) kpis.push(['Países de origen', String(e.paises)]);
-    if (e.satisfaccion_promedio != null) kpis.push(['Satisfacción promedio', `${Number(e.satisfaccion_promedio).toFixed(1)} / 5`]);
-    if (e.gasto_promedio != null) kpis.push(['Gasto promedio por turista', `$${Number(e.gasto_promedio).toFixed(2)}`]);
-    if (e.noches_promedio != null) kpis.push(['Noches promedio', Number(e.noches_promedio).toFixed(1)]);
-    if (o.ocupacion_promedio != null) kpis.push(['Ocupación hotelera promedio', `${Number(o.ocupacion_promedio).toFixed(1)}%`]);
-
-    doc.setFontSize(11); doc.setTextColor(41, 128, 185);
-    doc.text('INDICADORES CLAVE', mX, 36);
-    autoTable(doc, {
-      startY: 39, head: [['Indicador', 'Valor']], body: kpis, theme: 'striped',
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }, styles: { fontSize: 9 },
-      columnStyles: { 0: { cellWidth: 110 }, 1: { cellWidth: 'auto' } }, margin: { left: mX, right: mX }
+    const kpis: string[][] = [['Total de encuestas', String(totalEnc)]];
+    if (this.encuestaTab === 'hotel') {
+      if (o.ocupacion_promedio != null) kpis.push(['Ocupación promedio', `${Number(o.ocupacion_promedio).toFixed(1)}%`]);
+    } else {
+      if (e.paises != null) kpis.push(['Países de origen', String(e.paises)]);
+      if (e.satisfaccion_promedio != null) kpis.push(['Satisfacción', `${Number(e.satisfaccion_promedio).toFixed(1)} / 5`]);
+      if (e.gasto_promedio != null) kpis.push(['Gasto prom./turista', `$${Number(e.gasto_promedio).toFixed(2)}`]);
+      if (o.ocupacion_promedio != null) kpis.push(['Ocupación prom.', `${Number(o.ocupacion_promedio).toFixed(1)}%`]);
+    }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.text('INDICADORES CLAVE', mX, y); y += 3;
+    const kpW = contentW / kpis.length, kpH = 16;
+    kpis.forEach((k, idx) => {
+      const x = mX + idx * kpW;
+      doc.setFillColor(244, 246, 249); doc.roundedRect(x + 1, y, kpW - 2, kpH, 1.5, 1.5, 'F');
+      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+      doc.text(k[1], x + kpW / 2, y + 7, { align: 'center' });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
+      doc.text(doc.splitTextToSize(k[0], kpW - 4), x + kpW / 2, y + 11, { align: 'center' });
     });
+    y += kpH + 10;
 
-    // --- Tabulación pregunta por pregunta ---
-    let y = (doc as any).lastAutoTable.finalY + 9;
-    doc.setFontSize(11); doc.setTextColor(41, 128, 185);
-    doc.text('TABULACIÓN POR PREGUNTA', mX, y);
-    y += 2;
-
+    // Tabulación por sección
     const preguntas = this.tabulacion?.preguntas || [];
+    const ordenSecciones: string[] = [];
+    for (const pp of preguntas) if (pp.seccion && !ordenSecciones.includes(pp.seccion)) ordenSecciones.push(pp.seccion);
     let seccionActual = '';
-    for (const p of preguntas) {
-      if (y > pageH - 45) { doc.addPage(); y = 15; }
+
+    for (let i = 0; i < preguntas.length; i++) {
+      const p = preguntas[i];
+      const opciones = p.opciones || [];
+
       if (p.seccion && p.seccion !== seccionActual) {
         seccionActual = p.seccion;
-        y += 5; doc.setFontSize(10); doc.setTextColor(70, 70, 70);
-        doc.text(`Sección: ${p.seccion}`, mX, y); y += 1;
+        if (y + 16 > bottomLimit) { doc.addPage(); y = topContent; }
+        y += 2;
+        const letra = String.fromCharCode(65 + Math.max(0, ordenSecciones.indexOf(p.seccion)));
+        doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(mX, y, contentW, 9, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+        doc.text(`SECCIÓN ${letra}. ${p.seccion.toUpperCase()}`, pageW / 2, y + 6, { align: 'center' });
+        y += 14;
       }
-      doc.setFontSize(9.5); doc.setTextColor(30, 30, 30);
-      const tituloP = p.titulo + (p.multiple ? ' (opción múltiple)' : '');
-      const lineas = doc.splitTextToSize(tituloP, pageW - mX * 2);
-      if (y + lineas.length * 4 > pageH - 40) { doc.addPage(); y = 15; }
-      doc.text(lineas, mX, y + 4); y += lineas.length * 4 + 4;
 
-      const filas = (p.opciones || []).map((op: any) => [op.etiqueta, String(op.total ?? ''), `${op.porcentaje}%`]);
-      autoTable(doc, {
-        startY: y, head: [['Respuesta', 'Conteo', '%']], body: filas, theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontSize: 8 }, styles: { fontSize: 8 },
-        columnStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 25, halign: 'right' }, 2: { cellWidth: 22, halign: 'right' } },
-        margin: { left: mX, right: mX }
+      const legendW = 98, gap = 6, chartW = contentW - legendW - gap;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      let legendH = 0;
+      const legendLineas: string[][] = opciones.map((op: any) => {
+        const l = doc.splitTextToSize(`${op.etiqueta}  (${op.porcentaje}%)`, legendW - 7);
+        legendH += Math.max(4.5, l.length * 3.6) + 1.6;
+        return l;
       });
-      y = (doc as any).lastAutoTable.finalY + 3;
-      doc.setFontSize(7.5); doc.setTextColor(140, 140, 140);
-      doc.text(`${p.totalReal} respuestas con dato · ${p.sinDato} sin dato`, mX, y);
-      y += 6;
+
+      const canvasP = document.getElementById('chart-pregunta-' + i) as HTMLCanvasElement | null;
+      let chartImg: string | null = null, chartH = 0;
+      if (canvasP && canvasP.width > 0) {
+        try {
+          chartImg = canvasP.toDataURL('image/png');
+          const ar = (canvasP.width / canvasP.height) || 1.4;
+          chartH = Math.min(60, chartW / ar);
+        } catch { chartImg = null; }
+      }
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
+      const tLineas = doc.splitTextToSize(p.titulo + (p.multiple ? '  (opción múltiple)' : ''), contentW);
+      const tituloH = tLineas.length * 4.6 + 3;
+      const bloqueH = tituloH + Math.max(legendH, chartH) + 9;
+
+      if (y + bloqueH > bottomLimit) { doc.addPage(); y = topContent; }
+
+      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      doc.text(tLineas, mX, y + 4);
+      const yBody = y + tituloH + 3;
+
+      let yl = yBody;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      opciones.forEach((op: any, j: number) => {
+        const rgb = this.hexARgb(PALETA[j % PALETA.length]);
+        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(mX, yl - 0.4, 3, 3, 'F');
+        doc.setTextColor(55, 55, 55);
+        doc.text(legendLineas[j], mX + 5, yl + 2.2);
+        yl += Math.max(4.5, legendLineas[j].length * 3.6) + 1.6;
+      });
+
+      if (chartImg) { try { doc.addImage(chartImg, 'PNG', mX + legendW + gap, yBody, chartW, chartH); } catch { /* grafica omitida */ } }
+
+      const yFin = Math.max(yl, yBody + chartH);
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+      doc.text(`${p.totalReal} respuestas con dato · ${p.sinDato} sin dato legible`, mX, yFin + 3);
+      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 6, pageW - mX, yFin + 6);
+      y = yFin + 11;
     }
 
-    // --- Pie de página numerado ---
+    // --- Pie de página institucional (banda) en todas las hojas ---
     const nPaginas = doc.getNumberOfPages();
-    for (let i = 1; i <= nPaginas; i++) {
-      doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
-      doc.text(`OTS - UPSE   |   ${feriadoTxt}   |   Página ${i} de ${nPaginas}`, pageW / 2, pageH - 8, { align: 'center' });
+    for (let pg = 1; pg <= nPaginas; pg++) {
+      doc.setPage(pg);
+      doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, pageH - footerH - 1.5, pageW, 1.5, 'F');
+      doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, pageH - footerH, pageW, footerH, 'F');
+      doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+      doc.text('UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA', mX, pageH - footerH / 2 + 1);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+      doc.text(`OTS · ${feriadoTxt} · Pág. ${pg} de ${nPaginas}`, pageW - mX, pageH - footerH / 2 + 1, { align: 'right' });
     }
 
     const slug = (this.filtroFeriado || 'todos').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
@@ -173,6 +253,12 @@ export class ReportesPage implements OnInit {
         lector.readAsDataURL(blob);
       });
     } catch { return null; }
+  }
+
+  // Convierte un color hex (#RRGGBB) a [r,g,b] para jsPDF (colores de la leyenda = de las gráficas).
+  private hexARgb(hex: string): [number, number, number] {
+    const h = (hex || '#000000').replace('#', '');
+    return [parseInt(h.substring(0, 2), 16) || 0, parseInt(h.substring(2, 4), 16) || 0, parseInt(h.substring(4, 6), 16) || 0];
   }
 
   limpiarFiltros() {
