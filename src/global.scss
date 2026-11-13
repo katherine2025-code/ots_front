@@ -723,6 +723,25 @@ ion-card-content {
         overflow: visible !important;
     }
 
+    // CLAVE: Ionic envuelve cada página en .ion-page e ion-app con position:absolute,
+    // height:100% y overflow:hidden. Si no se liberan TAMBIÉN estos contenedores padres,
+    // recortan el contenido a una pantalla y el PDF sale casi en blanco (solo el encabezado).
+    html,
+    body {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    ion-app,
+    .ion-page {
+        position: static !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        contain: none !important;
+        display: block !important;
+    }
+
     // Que los colores de fondo (encabezado del reporte, tablas) se impriman tal cual.
     * {
         -webkit-print-color-adjust: exact !important;
