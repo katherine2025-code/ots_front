@@ -8,7 +8,7 @@
     <div class="header-right">
       <ion-badge color="primary" class="model-badge">
         <ion-icon name="code-outline"></ion-icon>
-        {{ modeloUsado || 'Modelo listo' }}
+        Modelo ML activo
       </ion-badge>
     </div>
   </div>
@@ -21,10 +21,10 @@
         Entrenamiento Comparativo de Modelos ML
       </h2>
       <p>Entrenamiento simultáneo de <strong>Random Forest</strong>, <strong>XGBoost</strong> y <strong>Prophet</strong> para comparar su
-        precisión. El sistema usa automáticamente el modelo más preciso (🏆 ganador) para las predicciones.</p>
+        precisión. El sistema usa automáticamente el modelo más preciso para las predicciones.</p>
     </div>
 
-    <ion-button expand="block" color="primary" size="large" class="train-button" (click)="entrenarModelo()"
+    <ion-button color="primary" class="train-button" (click)="entrenarModelo()"
       [disabled]="entrenando">
       <ion-spinner name="crescent" *ngIf="entrenando" slot="start"></ion-spinner>
       <ion-icon name="play-circle-outline" slot="start" *ngIf="!entrenando"></ion-icon>
@@ -37,9 +37,6 @@
         <div class="card-header">
           <ion-icon name="leaf-outline"></ion-icon>
           <h3>Random Forest</h3>
-          <span class="badge" [class.winner]="comparacion.ganador === 'Random Forest'">
-            {{ comparacion.ganador === 'Random Forest' ? '🏆 GANADOR' : 'Alternativo' }}
-          </span>
         </div>
         <div class="metric-values">
           <div class="metric-item">
@@ -65,9 +62,6 @@
         <div class="card-header">
           <ion-icon name="flash-outline"></ion-icon>
           <h3>XGBoost</h3>
-          <span class="badge" [class.winner]="comparacion.ganador === 'XGBoost'">
-            {{ comparacion.ganador === 'XGBoost' ? '🏆 GANADOR' : 'Alternativo' }}
-          </span>
         </div>
         <div class="metric-values">
           <div class="metric-item">
@@ -93,9 +87,6 @@
         <div class="card-header">
           <ion-icon name="trending-up-outline"></ion-icon>
           <h3>Prophet</h3>
-          <span class="badge" [class.winner]="comparacion.ganador === 'Prophet'">
-            {{ comparacion.ganador === 'Prophet' ? '🏆 GANADOR' : 'Alternativo' }}
-          </span>
         </div>
         <div class="metric-values">
           <div class="metric-item">
@@ -169,7 +160,7 @@
         </ion-item>
       </div>
 
-      <ion-button expand="block" color="secondary" size="large" (click)="predecir()" [disabled]="prediciendo">
+      <ion-button color="secondary" (click)="predecir()" [disabled]="prediciendo">
         <ion-spinner name="crescent" *ngIf="prediciendo" slot="start"></ion-spinner>
         <ion-icon name="analytics-outline" slot="start" *ngIf="!prediciendo"></ion-icon>
         {{ prediciendo ? 'Calculando…' : 'Generar predicción' }}
@@ -247,7 +238,7 @@
         </ion-item>
       </div>
 
-      <ion-button expand="block" color="tertiary" size="large" (click)="predecirRango()" [disabled]="calculandoRango">
+      <ion-button color="tertiary" (click)="predecirRango()" [disabled]="calculandoRango">
         <ion-spinner name="crescent" *ngIf="calculandoRango" slot="start"></ion-spinner>
         <ion-icon name="calendar-outline" slot="start" *ngIf="!calculandoRango"></ion-icon>
         {{ calculandoRango ? 'Proyectando…' : 'Generar proyección' }}
@@ -331,7 +322,7 @@
       <p>Compara predicciones con valores reales para evaluar la precisión del modelo.</p>
     </div>
 
-    <ion-button expand="block" color="medium" size="large" (click)="cargarPrediccionesHistoricas()"
+    <ion-button color="medium" (click)="cargarPrediccionesHistoricas()"
       [disabled]="cargandoHistoricas">
       <ion-spinner name="crescent" *ngIf="cargandoHistoricas" slot="start"></ion-spinner>
       <ion-icon name="refresh-outline" slot="start" *ngIf="!cargandoHistoricas"></ion-icon>
