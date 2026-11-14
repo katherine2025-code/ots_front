@@ -196,10 +196,10 @@ export class PrediccionesPage implements OnInit {
 
       setTimeout(() => this.crearGraficoComparacion(), 100);
 
-      this.mostrarToast(`✅ Entrenamiento completado. Mejor modelo: ${response.mejor_modelo}`, 'success');
+      this.mostrarToast('Entrenamiento completado correctamente', 'success');
     } catch (error) {
       console.error('Error entrenando:', error);
-      this.mostrarToast('❌ Error al entrenar los modelos de predicción', 'danger');
+      this.mostrarToast('Error al entrenar los modelos de predicción', 'danger');
     } finally {
       this.entrenando = false;
     }
@@ -288,10 +288,10 @@ export class PrediccionesPage implements OnInit {
       this.prediccionCargada = true;
 
       setTimeout(() => this.crearGraficoPrediccion(), 100);
-      this.mostrarToast('✅ Predicción calculada correctamente', 'success');
+      this.mostrarToast('Predicción calculada correctamente', 'success');
     } catch (error) {
       console.error('Error prediciendo:', error);
-      this.mostrarToast('❌ Error al generar predicción. Verifique que exista un modelo entrenado.', 'danger');
+      this.mostrarToast('Error al generar predicción. Verifique que exista un modelo entrenado.', 'danger');
     } finally {
       this.prediciendo = false;
     }
@@ -380,7 +380,7 @@ export class PrediccionesPage implements OnInit {
 
   async predecirRango() {
     if (!this.fechaInicioRango || !this.fechaFinRango) {
-      this.mostrarToast('⚠️ Por favor seleccione una fecha de inicio y una fecha de fin.', 'warning');
+      this.mostrarToast('Por favor seleccione una fecha de inicio y una fecha de fin.', 'warning');
       return;
     }
 
@@ -393,10 +393,10 @@ export class PrediccionesPage implements OnInit {
       this.resultadoRango = response;
 
       setTimeout(() => this.crearGraficoRango(), 100);
-      this.mostrarToast(`✅ Proyección para ${response.total_dias} días generada`, 'success');
+      this.mostrarToast(`Proyección para ${response.total_dias} días generada`, 'success');
     } catch (error) {
       console.error('Error al proyectar rango:', error);
-      this.mostrarToast('❌ Error al proyectar el rango de fechas.', 'danger');
+      this.mostrarToast('Error al proyectar el rango de fechas.', 'danger');
     } finally {
       this.calculandoRango = false;
     }
@@ -551,10 +551,10 @@ export class PrediccionesPage implements OnInit {
 
 
       setTimeout(() => this.crearGraficoHistoricas(), 100);
-      this.mostrarToast(`✅ ${response.total_registros} registros históricos validados`, 'success');
+      this.mostrarToast(`${response.total_registros} registros históricos validados`, 'success');
     } catch (error) {
       console.error('Error cargando predicciones históricas:', error);
-      this.mostrarToast('⚠️ Error cargando predicciones históricas. Entrene el modelo primero.', 'warning');
+      this.mostrarToast('Error cargando predicciones históricas. Entrene el modelo primero.', 'warning');
     } finally {
       this.cargandoHistoricas = false;
     }
