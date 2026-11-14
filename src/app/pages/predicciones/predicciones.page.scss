@@ -63,6 +63,41 @@
   font-size: 14px; color: #334155; line-height: 1.5;
   ion-icon { font-size: 20px; color: var(--ion-color-primary); flex: 0 0 auto; margin-top: 1px; }
   strong { color: var(--ots-text); }
+  .nota-proyeccion { display: block; margin-top: 4px; font-size: 13px; color: var(--ots-warning, #b45309); }
+}
+
+// ===== SECCIÓN DESTACADA (predicción por feriado) =====
+.section-card.destacada {
+  border-top: 3px solid var(--ion-color-primary);
+}
+
+// ===== TOGGLE AVANZADO (plegable) =====
+.toggle-avanzado {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  background: transparent; border: none; cursor: pointer;
+  padding: 0; margin: 0;
+  color: var(--ots-text); font-size: 17px; font-weight: 700;
+  .toggle-titulo { display: flex; align-items: center; gap: 10px; }
+  ion-icon { font-size: 18px; color: var(--ion-color-primary); }
+  .toggle-titulo ion-icon {
+    background: var(--ots-primary-soft); border-radius: 8px; padding: 6px;
+  }
+}
+
+.avanzado-body { margin-top: 16px; }
+
+.section-sub { color: var(--ots-text-muted); font-size: 14px; margin: 0 0 16px; line-height: 1.5; }
+
+// ===== SUB-SECCIÓN DE VALIDACIÓN (dentro de Sustento) =====
+.validacion-sub {
+  margin-top: 28px; padding-top: 20px;
+  border-top: 1px dashed var(--ots-border);
+  .sub-titulo {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; color: var(--ots-text); margin: 0 0 6px;
+    ion-icon { font-size: 18px; color: var(--ion-color-primary); }
+  }
 }
 
 .glosario {
