@@ -44,6 +44,9 @@ export class PrediccionesPage implements OnInit {
   anioSel: number = new Date().getFullYear() + 1;
   aniosDisponibles: number[] = [];
 
+  // Modo de la sección protagonista: por feriado o proyección anual.
+  modoHero: 'feriado' | 'anual' = 'feriado';
+
   prediciendoFeriado: boolean = false;
   resultadoFeriado: any = null;
   resultadoFeriadoNombre: string = '';
@@ -51,6 +54,15 @@ export class PrediccionesPage implements OnInit {
   feriadoMin: number = 0;
   feriadoMax: number = 0;
   chartFeriado: any = null;
+
+  // ==========================================
+  // PROYECCIÓN ANUAL (con banda de confianza)
+  // ==========================================
+  anioProyeccion: number = new Date().getFullYear() + 1;
+  proyectandoAnio: boolean = false;
+  resultadoAnual: any = null;
+  chartAnual: any = null;
+  chartMensualBarras: any = null;
 
   // Catálogo simplificado para el <ion-select> del template.
   get feriadosCatalogo() {
@@ -325,6 +337,213 @@ export class PrediccionesPage implements OnInit {
             title: { display: true, text: 'Ocupación (%)', color: EJE_TICK },
             ticks: { color: EJE_TICK }, grid: { color: EJE_GRID }
           }
+        }
+      }
+    });
+  }
+
+  // ==========================================
+  // PROYECCIÓN ANUAL (banda de confianza)
+  // ==========================================
+
+  // RMSE del modelo en uso (su error típico), para dibujar la banda de confianza.
+  private rmseModeloActual(): number {
+    const c = this.comparacion;
+    if (!c) return 5;
+    const nombre = (this.modeloUsado || '').toLowerCase();
+    let m: any = null;
+    if (nombre.includes('forest')) m = c.random_forest;
+    else if (nombre.includes('xgb')) m = c.xgboost;
+    else if (nombre.includes('prophet')) m = c.prophet;
+    if (!m) m = c.random_forest || c.xgboost || c.prophet;
+    const r = m?.rmse;
+    return (typeof r === 'number' && r > 0) ? r : 5;
+  }
+
+  async proyectarAnio() {
+    const anio = this.anioProyeccion;
+    const inicio = `${anio}-01-01`;
+    const fin = `${anio}-12-31`;
+
+    this.proyectandoAnio = true;
+    try {
+      const response: any = await this.prediccionService.predecirRango(inicio, fin).toPromise();
+      const dias: any[] = response?.predicciones_diarias || [];
+
+      // Agrupar las predicciones diarias por mes y promediar.
+      const acumulado: { [mes: number]: number[] } = {};
+      for (const d of dias) {
+        const mes = parseInt(String(d.fecha || '0000-00').slice(5, 7), 10);
+        if (!mes) continue;
+        (acumulado[mes] = acumulado[mes] || []).push(d.ocupacion_predicha);
+      }
+
+      const nombresMes = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const rmse = Math.round(this.rmseModeloActual() * 100) / 100;
+      const r1 = (n: number) => Math.round(n * 100) / 100;
+
+      const meses: any[] = [];
+      for (let i = 1; i <= 12; i++) {
+        const vals = acumulado[i] || [];
+        const prom = vals.length ? r1(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+        meses.push({
+          mes: i,
+          nombre: nombresMes[i - 1],
+          valor: prom,
+          tiene: vals.length > 0,
+          inf: Math.max(0, r1(prom - rmse)),
+          sup: Math.min(100, r1(prom + rmse))
+        });
+      }
+
+      const conValor = meses.filter(m => m.tiene);
+      const valores = conValor.map(m => m.valor);
+      const promedio = valores.length ? r1(valores.reduce((a, b) => a + b, 0) / valores.length) : 0;
+      const pico = conValor.length ? conValor.reduce((a, b) => (b.valor > a.valor ? b : a)) : null;
+      const valle = conValor.length ? conValor.reduce((a, b) => (b.valor < a.valor ? b : a)) : null;
+
+      this.resultadoAnual = {
+        anio,
+        meses,
+        promedio,
+        pico,
+        valle,
+        rmse,
+        modelo: response?.modelo_usado || this.modeloUsado
+      };
+
+      setTimeout(() => {
+        this.crearGraficoAnual();
+        this.crearGraficoMensualBarras();
+      }, 120);
+      this.mostrarToast(`Proyección anual ${anio} generada`, 'success');
+    } catch (error) {
+      console.error('Error en proyección anual:', error);
+      this.mostrarToast('Error al generar la proyección anual. Verifique que exista un modelo entrenado.', 'danger');
+    } finally {
+      this.proyectandoAnio = false;
+    }
+  }
+
+  // Gráfico tipo pronóstico: línea de ocupación proyectada + banda de confianza sombreada.
+  crearGraficoAnual() {
+    const ctx = document.getElementById('chartAnual') as HTMLCanvasElement;
+    if (!ctx || !this.resultadoAnual) return;
+
+    if (this.chartAnual) this.chartAnual.destroy();
+
+    const meses: any[] = this.resultadoAnual.meses;
+    const labels = meses.map(m => m.nombre);
+    const valores = meses.map(m => m.valor);
+    const inf = meses.map(m => m.inf);
+    const sup = meses.map(m => m.sup);
+
+    this.chartAnual = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            // Límite inferior (invisible, sirve de base para la banda)
+            label: 'Límite inferior',
+            data: inf,
+            borderColor: 'rgba(42, 111, 151, 0)',
+            backgroundColor: 'rgba(42, 111, 151, 0.12)',
+            pointRadius: 0,
+            fill: false,
+            tension: 0.35
+          },
+          {
+            // Límite superior: rellena hacia el dataset anterior (la banda)
+            label: 'Banda de confianza (± error)',
+            data: sup,
+            borderColor: 'rgba(42, 111, 151, 0)',
+            backgroundColor: 'rgba(42, 111, 151, 0.15)',
+            pointRadius: 0,
+            fill: '-1',
+            tension: 0.35
+          },
+          {
+            label: 'Ocupación proyectada (%)',
+            data: valores,
+            borderColor: 'rgba(42, 111, 151, 1)',
+            backgroundColor: 'rgba(42, 111, 151, 0.1)',
+            pointRadius: 4,
+            pointBackgroundColor: 'rgba(142, 68, 173, 1)',
+            fill: false,
+            tension: 0.35,
+            borderWidth: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: LEYENDA,
+              filter: (item: any) => item.text !== 'Límite inferior'
+            }
+          },
+          title: {
+            display: true,
+            text: `Proyección de ocupación ${this.resultadoAnual.anio} — ${this.resultadoAnual.modelo || 'Modelo ML'}`,
+            color: TITULO_CHART,
+            font: { size: 14, weight: 'bold' }
+          }
+        },
+        scales: {
+          x: { ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: { display: true, text: 'Ocupación (%)', color: EJE_TICK },
+            ticks: { color: EJE_TICK }, grid: { color: EJE_GRID }
+          }
+        }
+      }
+    });
+  }
+
+  // Barras de ocupación promedio por mes (estilo imagen de referencia).
+  crearGraficoMensualBarras() {
+    const ctx = document.getElementById('chartMensualBarras') as HTMLCanvasElement;
+    if (!ctx || !this.resultadoAnual) return;
+
+    if (this.chartMensualBarras) this.chartMensualBarras.destroy();
+
+    const meses: any[] = this.resultadoAnual.meses;
+
+    this.chartMensualBarras = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: meses.map(m => m.nombre),
+        datasets: [{
+          label: 'Ocupación promedio (%)',
+          data: meses.map(m => m.valor),
+          backgroundColor: 'rgba(52, 152, 219, 0.8)',
+          borderColor: 'rgba(52, 152, 219, 1)',
+          borderWidth: 2,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: `Ocupación promedio por mes — ${this.resultadoAnual.anio}`,
+            color: TITULO_CHART,
+            font: { size: 13, weight: 'bold' }
+          }
+        },
+        scales: {
+          x: { ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } },
+          y: { beginAtZero: true, max: 100, ticks: { color: EJE_TICK }, grid: { color: EJE_GRID } }
         }
       }
     });

@@ -21,101 +21,196 @@
     <div class="section-header">
       <h2>
         <ion-icon name="trending-up-outline" class="section-icon"></ion-icon>
-        Ocupación esperada por feriado
+        Predicción de ocupación hotelera
       </h2>
-      <p>Elija un feriado y el año. El sistema estima la ocupación hotelera esperada para ese
-        feriado usando el modelo de Machine Learning más preciso.</p>
+      <p>Estime la ocupación hotelera esperada usando el modelo de Machine Learning más preciso:
+        por un feriado puntual, o la proyección de todo un año con su banda de confianza.</p>
     </div>
 
-    <div class="form-grid dos-col">
-      <ion-item>
-        <ion-label position="floating">Feriado</ion-label>
-        <ion-select [(ngModel)]="feriadoSel" interface="popover">
-          <ion-select-option *ngFor="let f of feriadosCatalogo" [value]="f.id">{{ f.nombre }}</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label position="floating">Año</ion-label>
-        <ion-select [(ngModel)]="anioSel" interface="popover">
-          <ion-select-option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</ion-select-option>
-        </ion-select>
-      </ion-item>
-    </div>
+    <!-- Selector de modo -->
+    <ion-segment [(ngModel)]="modoHero" color="primary" class="segment-selector">
+      <ion-segment-button value="feriado">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-label>Por feriado</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="anual">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <ion-label>Proyección anual</ion-label>
+      </ion-segment-button>
+    </ion-segment>
 
-    <p class="modo-ayuda" *ngIf="feriadoInfo">
-      <ion-icon name="calendar-outline"></ion-icon>
-      <span>
-        <strong>{{ feriadoInfo.nombre }} {{ anioSel }}</strong> — {{ feriadoInfo.rangoTexto }}.
-        <span *ngIf="!feriadoInfo.conDatos" class="nota-proyeccion">
-          Sin datos históricos recolectados para este feriado: la estimación es una proyección del modelo.
+    <!-- ================= MODO: POR FERIADO ================= -->
+    <div *ngIf="modoHero === 'feriado'">
+      <div class="form-grid dos-col">
+        <ion-item>
+          <ion-label position="floating">Feriado</ion-label>
+          <ion-select [(ngModel)]="feriadoSel" interface="popover">
+            <ion-select-option *ngFor="let f of feriadosCatalogo" [value]="f.id">{{ f.nombre }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Año</ion-label>
+          <ion-select [(ngModel)]="anioSel" interface="popover">
+            <ion-select-option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <p class="modo-ayuda" *ngIf="feriadoInfo">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span>
+          <strong>{{ feriadoInfo.nombre }} {{ anioSel }}</strong> — {{ feriadoInfo.rangoTexto }}.
+          <span *ngIf="!feriadoInfo.conDatos" class="nota-proyeccion">
+            Sin datos históricos recolectados para este feriado: la estimación es una proyección del modelo.
+          </span>
         </span>
-      </span>
-    </p>
+      </p>
 
-    <ion-button color="primary" (click)="predecirFeriado()" [disabled]="prediciendoFeriado">
-      <ion-spinner name="crescent" *ngIf="prediciendoFeriado" slot="start"></ion-spinner>
-      <ion-icon name="analytics-outline" slot="start" *ngIf="!prediciendoFeriado"></ion-icon>
-      {{ prediciendoFeriado ? 'Calculando…' : 'Predecir ocupación' }}
-    </ion-button>
+      <ion-button color="primary" (click)="predecirFeriado()" [disabled]="prediciendoFeriado">
+        <ion-spinner name="crescent" *ngIf="prediciendoFeriado" slot="start"></ion-spinner>
+        <ion-icon name="analytics-outline" slot="start" *ngIf="!prediciendoFeriado"></ion-icon>
+        {{ prediciendoFeriado ? 'Calculando…' : 'Predecir ocupación' }}
+      </ion-button>
 
-    <!-- Resultado -->
-    <div class="prediction-result" *ngIf="resultadoFeriado">
-      <div class="result-card">
-        <div class="result-header">
-          <ion-icon name="business-outline"></ion-icon>
-          <h3>{{ resultadoFeriadoNombre }} {{ resultadoFeriadoAnio }}</h3>
-        </div>
-        <div class="result-value">
-          <span class="value-label">Ocupación hotelera esperada</span>
-          <span class="value-number">{{ resultadoFeriado.ocupacion_promedio }}%</span>
-        </div>
-        <div class="result-range">
-          <div class="range-item">
-            <span class="range-label">Día pico</span>
-            <span class="range-value">{{ resultadoFeriado.dia_pico?.ocupacion_predicha || 0 }}%</span>
+      <!-- Resultado feriado -->
+      <div class="prediction-result" *ngIf="resultadoFeriado">
+        <div class="result-card">
+          <div class="result-header">
+            <ion-icon name="business-outline"></ion-icon>
+            <h3>{{ resultadoFeriadoNombre }} {{ resultadoFeriadoAnio }}</h3>
           </div>
-          <div class="range-item">
-            <span class="range-label">Rango estimado</span>
-            <span class="range-value">{{ feriadoMin }}–{{ feriadoMax }}%</span>
+          <div class="result-value">
+            <span class="value-label">Ocupación hotelera esperada</span>
+            <span class="value-number">{{ resultadoFeriado.ocupacion_promedio }}%</span>
           </div>
-          <div class="range-item">
-            <span class="range-label">Turistas proyectados</span>
-            <span class="range-value">~{{ resultadoFeriado.turistas_estimados_totales || 0 }}</span>
+          <div class="result-range">
+            <div class="range-item">
+              <span class="range-label">Día pico</span>
+              <span class="range-value">{{ resultadoFeriado.dia_pico?.ocupacion_predicha || 0 }}%</span>
+            </div>
+            <div class="range-item">
+              <span class="range-label">Rango estimado</span>
+              <span class="range-value">{{ feriadoMin }}–{{ feriadoMax }}%</span>
+            </div>
+            <div class="range-item">
+              <span class="range-label">Turistas proyectados</span>
+              <span class="range-value">~{{ resultadoFeriado.turistas_estimados_totales || 0 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="chartFeriado"></canvas>
+        </div>
+
+        <!-- Detalle por día -->
+        <div class="table-container" *ngIf="resultadoFeriado.predicciones_diarias?.length">
+          <h3>Detalle por día</h3>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Día</th>
+                  <th>Temporada</th>
+                  <th>Ocupación esperada</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of resultadoFeriado.predicciones_diarias">
+                  <td>{{ item.fecha | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ item.dia_semana }}</td>
+                  <td>
+                    <ion-badge
+                      [color]="item.temporada === 'Alta' ? 'danger' : item.temporada === 'Media' ? 'warning' : 'medium'">
+                      {{ item.temporada }}
+                    </ion-badge>
+                  </td>
+                  <td><strong>{{ item.ocupacion_predicha }}%</strong></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="chart-container">
-        <canvas id="chartFeriado"></canvas>
+    <!-- ================= MODO: PROYECCIÓN ANUAL ================= -->
+    <div *ngIf="modoHero === 'anual'">
+      <p class="modo-ayuda">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>Proyección <strong>mes a mes</strong> de la ocupación esperada para el año elegido.
+          La franja sombreada es la <strong>banda de confianza</strong> (± el margen de error del
+          modelo). Toda la curva es un <strong>pronóstico del modelo</strong>, no datos reales.</span>
+      </p>
+
+      <div class="form-grid dos-col">
+        <ion-item>
+          <ion-label position="floating">Año a proyectar</ion-label>
+          <ion-select [(ngModel)]="anioProyeccion" interface="popover">
+            <ion-select-option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</ion-select-option>
+          </ion-select>
+        </ion-item>
       </div>
 
-      <!-- Detalle por día -->
-      <div class="table-container" *ngIf="resultadoFeriado.predicciones_diarias?.length">
-        <h3>Detalle por día</h3>
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Día</th>
-                <th>Temporada</th>
-                <th>Ocupación esperada</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of resultadoFeriado.predicciones_diarias">
-                <td>{{ item.fecha | date:'dd/MM/yyyy' }}</td>
-                <td>{{ item.dia_semana }}</td>
-                <td>
-                  <ion-badge
-                    [color]="item.temporada === 'Alta' ? 'danger' : item.temporada === 'Media' ? 'warning' : 'medium'">
-                    {{ item.temporada }}
-                  </ion-badge>
-                </td>
-                <td><strong>{{ item.ocupacion_predicha }}%</strong></td>
-              </tr>
-            </tbody>
-          </table>
+      <ion-button color="primary" (click)="proyectarAnio()" [disabled]="proyectandoAnio">
+        <ion-spinner name="crescent" *ngIf="proyectandoAnio" slot="start"></ion-spinner>
+        <ion-icon name="stats-chart-outline" slot="start" *ngIf="!proyectandoAnio"></ion-icon>
+        {{ proyectandoAnio ? 'Proyectando…' : 'Generar proyección anual' }}
+      </ion-button>
+
+      <!-- Resultado anual -->
+      <div class="prediction-result" *ngIf="resultadoAnual">
+        <div class="metrics-grid-small">
+          <div class="metric-box success">
+            <h3>{{ resultadoAnual.promedio }}%</h3>
+            <p>Ocupación promedio {{ resultadoAnual.anio }}</p>
+          </div>
+          <div class="metric-box warning">
+            <h3>{{ resultadoAnual.pico?.nombre || '-' }}</h3>
+            <p>Mes pico ({{ resultadoAnual.pico?.valor || 0 }}%)</p>
+          </div>
+          <div class="metric-box">
+            <h3>{{ resultadoAnual.valle?.nombre || '-' }}</h3>
+            <p>Mes más bajo ({{ resultadoAnual.valle?.valor || 0 }}%)</p>
+          </div>
+          <div class="metric-box primary">
+            <h3>±{{ resultadoAnual.rmse }}%</h3>
+            <p>Margen de error (banda)</p>
+          </div>
+        </div>
+
+        <!-- Gráfico tipo pronóstico con banda de confianza -->
+        <div class="chart-container">
+          <canvas id="chartAnual"></canvas>
+        </div>
+
+        <!-- Barras por mes -->
+        <div class="chart-container">
+          <canvas id="chartMensualBarras"></canvas>
+        </div>
+
+        <!-- Detalle por mes -->
+        <div class="table-container">
+          <h3>Detalle por mes</h3>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mes</th>
+                  <th>Ocupación esperada</th>
+                  <th>Banda de confianza</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of resultadoAnual.meses">
+                  <td>{{ m.nombre }}</td>
+                  <td><strong>{{ m.valor }}%</strong></td>
+                  <td>{{ m.inf }}% – {{ m.sup }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
