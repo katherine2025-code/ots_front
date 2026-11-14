@@ -64,10 +64,13 @@ export class PrediccionesPage implements OnInit {
   chartAnual: any = null;
   chartMensualBarras: any = null;
 
-  // Catálogo simplificado para el <ion-select> del template.
-  get feriadosCatalogo() {
-    return this.FERIADOS_CAT.map(f => ({ id: f.id, nombre: f.nombre, conDatos: f.conDatos }));
-  }
+  // Catálogo simplificado para el <ion-select> del template. Se calcula UNA sola vez en ngOnInit
+  // (no como getter) para no recrear el arreglo en cada ciclo de detección de cambios, lo que
+  // junto con los ion-select podía dejar la detección girando y congelar la página.
+  feriadosCatalogo: Array<{ id: string; nombre: string; conDatos: boolean }> = [];
+
+  // Info del feriado seleccionado (se recalcula solo al cambiar feriado/año, no en cada ciclo).
+  feriadoInfo: { nombre: string; conDatos: boolean; rangoTexto: string } | null = null;
 
   // ==========================================
   // MODO DE PREDICCIÓN (avanzado)
@@ -161,6 +164,10 @@ export class PrediccionesPage implements OnInit {
     const anioActual = new Date().getFullYear();
     this.aniosDisponibles = [anioActual, anioActual + 1, anioActual + 2, anioActual + 3, anioActual + 4];
 
+    // Catálogo e info del feriado: se calculan una sola vez aquí (no en getters del template).
+    this.feriadosCatalogo = this.FERIADOS_CAT.map(f => ({ id: f.id, nombre: f.nombre, conDatos: f.conDatos }));
+    this.actualizarFeriadoInfo();
+
     // Si es investigador, modo rango por defecto
     if (this.isInvestigador) {
       this.modoPrediccion = 'rango';
@@ -245,18 +252,23 @@ export class PrediccionesPage implements OnInit {
     return { inicio: this.fmtFecha(inicio), fin: this.fmtFecha(fin), oficialIni, oficialFin };
   }
 
-  // Texto informativo del feriado seleccionado (nombre, rango de fechas oficial y si tiene datos).
-  get feriadoInfo(): { nombre: string; conDatos: boolean; rangoTexto: string } | null {
+  // Recalcula el texto informativo del feriado seleccionado (nombre, rango de fechas y si tiene
+  // datos). Se llama al iniciar y al cambiar el feriado o el año (ionChange), NO en cada ciclo de
+  // detección de cambios.
+  actualizarFeriadoInfo(): void {
     const cat = this.FERIADOS_CAT.find(f => f.id === this.feriadoSel);
     const v = this.ventanaFeriado(this.feriadoSel, this.anioSel);
-    if (!cat || !v) return null;
+    if (!cat || !v) {
+      this.feriadoInfo = null;
+      return;
+    }
 
     const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
     const txt = (d: Date) => `${d.getDate()} ${meses[d.getMonth()]}`;
     const rangoTexto = v.oficialIni.getTime() === v.oficialFin.getTime()
       ? txt(v.oficialIni)
       : `${txt(v.oficialIni)} al ${txt(v.oficialFin)}`;
-    return { nombre: cat.nombre, conDatos: cat.conDatos, rangoTexto };
+    this.feriadoInfo = { nombre: cat.nombre, conDatos: cat.conDatos, rangoTexto };
   }
 
   async predecirFeriado() {
