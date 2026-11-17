@@ -158,30 +158,6 @@ export class ReportesPage implements OnInit {
     const preguntas = this.tabulacion?.preguntas || [];
     const ordenSecciones: string[] = [];
     for (const pp of preguntas) if (pp.seccion && !ordenSecciones.includes(pp.seccion)) ordenSecciones.push(pp.seccion);
-
-    // Nota metodológica: explica por qué algunas preguntas opcionales tienen "sin responder".
-    // Solo se imprime si de verdad hay no-respuesta en el reporte (si todo está completo, no aparece).
-    const totalSinResp = preguntas.reduce((a: number, pp: any) => a + (pp.sinDato || 0), 0);
-    if (totalSinResp > 0) {
-      const notaTxt =
-        'El total de cada pregunta corresponde a las respuestas válidas efectivamente recolectadas en campo. ' +
-        'En algunas preguntas opcionales del instrumento —principalmente las escalas de satisfacción (1-5), que incluyen la opción «No aplica»— ' +
-        'un número reducido de encuestados (menos del 1%) optó por no responder; esos casos se registran como «sin responder». ' +
-        'El sistema NO completa, imputa ni estima esos valores: cada dato mostrado proviene directamente de la encuesta aplicada y depurada por el proceso ETL, ' +
-        'que descarta registros inconsistentes pero nunca fabrica respuestas. Por ello, en cada pregunta se cumple que ' +
-        'respuestas válidas + sin responder = total de encuestas, lo que garantiza la trazabilidad e integridad de la información presentada.';
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-      const notaLineas = doc.splitTextToSize(notaTxt, contentW - 8);
-      const notaH = notaLineas.length * 3.8 + 11;
-      if (y + notaH > bottomLimit) { doc.addPage(); y = topContent; }
-      doc.setFillColor(248, 249, 251); doc.setDrawColor(AMBER[0], AMBER[1], AMBER[2]); doc.setLineWidth(0.5);
-      doc.roundedRect(mX, y, contentW, notaH, 1.5, 1.5, 'FD');
-      doc.text('NOTA METODOLÓGICA SOBRE LA NO-RESPUESTA', mX + 4, y + 6);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(70, 70, 70);
-      doc.text(notaLineas, mX + 4, y + 10.5);
-      y += notaH + 8;
-    }
-
     let seccionActual = '';
 
     for (let i = 0; i < preguntas.length; i++) {
@@ -251,6 +227,27 @@ export class ReportesPage implements OnInit {
       );
       doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 6, pageW - mX, yFin + 6);
       y = yFin + 11;
+    }
+
+    // --- Nota metodológica (al final): explica la no-respuesta en palabras simples.
+    // Solo aparece si realmente hay preguntas con "sin responder".
+    const totalSinResp = preguntas.reduce((a: number, pp: any) => a + (pp.sinDato || 0), 0);
+    if (totalSinResp > 0) {
+      const notaTxt =
+        'Algunas preguntas de satisfacción eran opcionales, por lo que un número muy pequeño de turistas (menos del 1%) ' +
+        'prefirió no responderlas. Esos casos se muestran como «sin responder». El sistema no inventa ni rellena esos datos: ' +
+        'solo presenta lo que realmente se recolectó y se depuró. Por eso, en cada pregunta, las respuestas válidas más las ' +
+        '«sin responder» suman siempre el total de encuestas.';
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      const notaLineas = doc.splitTextToSize(notaTxt, contentW - 8);
+      const notaH = notaLineas.length * 3.8 + 11;
+      if (y + notaH > bottomLimit) { doc.addPage(); y = topContent; }
+      doc.setFillColor(248, 249, 251); doc.setDrawColor(AMBER[0], AMBER[1], AMBER[2]); doc.setLineWidth(0.5);
+      doc.roundedRect(mX, y, contentW, notaH, 1.5, 1.5, 'FD');
+      doc.text('NOTA SOBRE LAS RESPUESTAS «SIN RESPONDER»', mX + 4, y + 6);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(70, 70, 70);
+      doc.text(notaLineas, mX + 4, y + 10.5);
+      y += notaH + 8;
     }
 
     // --- Pie de página institucional (banda) en todas las hojas ---
