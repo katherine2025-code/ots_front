@@ -307,21 +307,16 @@ export class ReportesPage implements OnInit {
   // Carga la tabulación de la encuesta elegida. La turística sale de los datos importados
   // (encuestas_turisticas); la hotelera sale de las encuestas de la app (todas sus preguntas).
   private async cargarTabulacion(filtros: any): Promise<any> {
-    if (this.encuestaTab === 'hotel') {
-      const data: any = await this.reporteService.getTabulacionApp({
-        tipo: 'hotel', feriado: filtros.feriado,
-        fechaInicio: filtros.fechaInicio, fechaFin: filtros.fechaFin
-      }).toPromise();
-      return this.aplanarTabulacionApp(data);
-    }
-    if (this.fuenteTab === 'app') {
-      const data: any = await this.reporteService.getTabulacionApp({
-        tipo: 'turista', feriado: filtros.feriado,
-        fechaInicio: filtros.fechaInicio, fechaFin: filtros.fechaFin
-      }).toPromise();
-      return this.aplanarTabulacionApp(data);
-    }
-    return this.reporteService.getTabulacion(filtros).toPromise();
+    // Ambas encuestas (turística y hotelera) se tabulan desde los datos REALES de la app
+    // (respuestas_encuestas), que corresponden a la encuesta final aplicada en campo: cada
+    // respuesta trae el código y el texto exacto de su opción. Ya no se tabula desde la tabla
+    // del ETL (encuestas_turisticas), que se había llenado desde archivos con un formato
+    // distinto y por eso no coincidía con la encuesta final.
+    const data: any = await this.reporteService.getTabulacionApp({
+      tipo: this.encuestaTab, feriado: filtros.feriado,
+      fechaInicio: filtros.fechaInicio, fechaFin: filtros.fechaFin
+    }).toPromise();
+    return this.aplanarTabulacionApp(data);
   }
 
   // Cambia entre la encuesta turística y la hotelera, y recarga solo la tabulación.
@@ -353,9 +348,12 @@ export class ReportesPage implements OnInit {
     for (const s of (data?.secciones || [])) {
       for (const p of (s.preguntas || [])) {
         if (!p.opciones || p.opciones.length === 0) continue;
+        // "País de residencia" es texto libre y la gente escribió ciudades además de países;
+        // se muestra con un título honesto, sin alterar la pregunta de la encuesta.
+        const titulo = p.codigo === 'pais_residencia' ? 'Lugar de residencia habitual' : p.titulo;
         preguntas.push({
           seccion: s.seccion,
-          titulo: p.titulo,
+          titulo,
           totalReal: p.respondidas,
           sinDato: p.sinDato,
           opciones: p.opciones,
