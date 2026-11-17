@@ -175,58 +175,60 @@ export class ReportesPage implements OnInit {
         y += 14;
       }
 
-      const legendW = 98, gap = 6, chartW = contentW - legendW - gap;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      // Título de la pregunta (ancho completo)
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      const tLineas = doc.splitTextToSize(p.titulo + (p.multiple ? '  (opción múltiple)' : ''), contentW);
+      const tituloH = tLineas.length * 4.8 + 3;
+
+      // Gráfica GRANDE a alta resolución (barra a todo el ancho; dona centrada).
+      const g = this.graficaPreguntaPDF(p, contentW);
+      const chartHmm = g ? g.hMm : 0;
+      const chartWmm = g ? (g.esDona ? 70 : contentW) : 0;
+      const chartXmm = g && g.esDona ? mX + (contentW - 70) / 2 : mX;
+
+      // Leyenda (una columna, bajo la gráfica) con su porcentaje. Se mide el alto.
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
       let legendH = 0;
       const legendLineas: string[][] = opciones.map((op: any) => {
-        const l = doc.splitTextToSize(`${op.etiqueta}  (${op.porcentaje}%)`, legendW - 7);
-        legendH += Math.max(4.5, l.length * 3.6) + 1.6;
+        const l = doc.splitTextToSize(`${op.etiqueta}  (${op.porcentaje}%)`, contentW - 7);
+        legendH += Math.max(4.6, l.length * 3.7) + 1.4;
         return l;
       });
 
-      const canvasP = document.getElementById('chart-pregunta-' + i) as HTMLCanvasElement | null;
-      let chartImg: string | null = null, chartH = 0;
-      if (canvasP && canvasP.width > 0) {
-        try {
-          chartImg = canvasP.toDataURL('image/png');
-          const ar = (canvasP.width / canvasP.height) || 1.4;
-          chartH = Math.min(60, chartW / ar);
-        } catch { chartImg = null; }
-      }
-
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-      const tLineas = doc.splitTextToSize(p.titulo + (p.multiple ? '  (opción múltiple)' : ''), contentW);
-      const tituloH = tLineas.length * 4.6 + 3;
-      const bloqueH = tituloH + Math.max(legendH, chartH) + 9;
-
+      const bloqueH = tituloH + chartHmm + 4 + legendH + 8;
       if (y + bloqueH > bottomLimit) { doc.addPage(); y = topContent; }
 
-      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      // Título
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
       doc.text(tLineas, mX, y + 4);
-      const yBody = y + tituloH + 3;
+      let yy = y + tituloH + 2;
 
-      let yl = yBody;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      // Gráfica
+      if (g) {
+        try { doc.addImage(g.img, 'PNG', chartXmm, yy, chartWmm, chartHmm); } catch { /* grafica omitida */ }
+        yy += chartHmm + 4;
+      }
+
+      // Leyenda
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
       opciones.forEach((op: any, j: number) => {
         const rgb = this.hexARgb(PALETA[j % PALETA.length]);
-        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(mX, yl - 0.4, 3, 3, 'F');
+        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(mX, yy - 0.4, 3, 3, 'F');
         doc.setTextColor(55, 55, 55);
-        doc.text(legendLineas[j], mX + 5, yl + 2.2);
-        yl += Math.max(4.5, legendLineas[j].length * 3.6) + 1.6;
+        doc.text(legendLineas[j], mX + 5, yy + 2.2);
+        yy += Math.max(4.6, legendLineas[j].length * 3.7) + 1.4;
       });
 
-      if (chartImg) { try { doc.addImage(chartImg, 'PNG', mX + legendW + gap, yBody, chartW, chartH); } catch { /* grafica omitida */ } }
-
-      const yFin = Math.max(yl, yBody + chartH);
+      const yFin = yy + 1;
       doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
       doc.text(
         p.sinDato > 0
           ? `${p.totalReal} respuestas válidas · ${p.sinDato} sin responder`
           : `${p.totalReal} respuestas válidas`,
-        mX, yFin + 3
+        mX, yFin
       );
-      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 6, pageW - mX, yFin + 6);
-      y = yFin + 11;
+      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 3, pageW - mX, yFin + 3);
+      y = yFin + 8;
     }
 
     // --- Nota metodológica (al final): explica la no-respuesta en palabras simples.
@@ -457,6 +459,58 @@ export class ReportesPage implements OnInit {
       });
       this.chartsPreguntas.push(chart);
     });
+  }
+
+  // Dibuja la gráfica de UNA pregunta en un canvas fuera de pantalla, a alta resolución
+  // (~150 dpi) y con fuentes grandes, SOLO para incrustarla en el PDF. Así las barras salen
+  // grandes y legibles sin depender del tamaño que tenga la gráfica en pantalla.
+  // Devuelve { img, hMm } (PNG + alto en mm) o null si no se pudo.
+  private graficaPreguntaPDF(p: any, contentW: number): { img: string; hMm: number; esDona: boolean } | null {
+    const opciones = p.opciones || [];
+    if (!opciones.length) return null;
+    const esDona = !p.multiple && opciones.length <= 4;
+    const PXMM = 6; // píxeles por mm (~150 dpi) para que no se vea borroso
+    // Barra: alto proporcional al número de opciones (barras gruesas). Dona: alto fijo.
+    const hMm = esDona ? 60 : Math.min(120, Math.max(46, opciones.length * 7 + 16));
+    const wMm = esDona ? 70 : contentW;
+
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(wMm * PXMM);
+    cv.height = Math.round(hMm * PXMM);
+    const colores = opciones.map((_: any, j: number) => PALETA[j % PALETA.length]);
+
+    let chart: any = null;
+    try {
+      chart = new Chart(cv, {
+        type: esDona ? 'doughnut' : 'bar',
+        data: {
+          labels: opciones.map((o: any) => o.etiqueta),
+          datasets: [{
+            data: opciones.map((o: any) => o.porcentaje),
+            backgroundColor: colores,
+            borderWidth: esDona ? 3 : 0
+          }]
+        },
+        options: esDona ? {
+          responsive: false, animation: false,
+          plugins: { legend: { display: false } }
+        } : {
+          indexAxis: 'y',
+          responsive: false, animation: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, ticks: { font: { size: 18 }, callback: (v: any) => v + '%' } },
+            y: { ticks: { autoSkip: false, font: { size: 18 } } }
+          }
+        }
+      });
+      const img = cv.toDataURL('image/png');
+      return { img, hMm, esDona };
+    } catch {
+      return null;
+    } finally {
+      if (chart) chart.destroy();
+    }
   }
 
   colorOpcion(indicePregunta: number, indiceOpcion: number): string {
