@@ -219,7 +219,12 @@ export class ReportesPage implements OnInit {
 
       const yFin = Math.max(yl, yBody + chartH);
       doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-      doc.text(`${p.totalReal} respuestas con dato · ${p.sinDato} sin dato legible`, mX, yFin + 3);
+      doc.text(
+        p.sinDato > 0
+          ? `${p.totalReal} respuestas válidas · ${p.sinDato} sin responder`
+          : `${p.totalReal} respuestas válidas`,
+        mX, yFin + 3
+      );
       doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 6, pageW - mX, yFin + 6);
       y = yFin + 11;
     }
