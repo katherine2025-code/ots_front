@@ -421,7 +421,12 @@ export class ReportesPage implements OnInit {
           indexAxis: 'y',
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false } },
-          scales: { x: { beginAtZero: true, ticks: { callback: (v: any) => v + '%' } } }
+          scales: {
+            x: { beginAtZero: true, ticks: { callback: (v: any) => v + '%' } },
+            // autoSkip: false → muestra TODAS las etiquetas (si no, con muchas opciones
+            // Chart.js oculta algunas y una barra grande queda sin su nombre, ej. "Salinas").
+            y: { ticks: { autoSkip: false, font: { size: 10 } } }
+          }
         }
       });
       this.chartsPreguntas.push(chart);
