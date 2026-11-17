@@ -252,6 +252,107 @@ export class ReportesPage implements OnInit {
       y += notaH + 8;
     }
 
+    // =====================================================================
+    //  PÁGINA FINAL: MINI INFORME / FICHA TÉCNICA (datos reales) + BANNER
+    // =====================================================================
+    // Metadatos fijos del proyecto (editables si cambian). El resto de cifras
+    // se toman de los datos REALES ya cargados (estadisticas / tabulacion).
+    const PROYECTO_TITULO = 'Desarrollo de un sistema de datos para la gestión del turismo en Santa Elena';
+    const PROYECTO_REGISTRO = 'INCYT-PNF-2025-D12-212';
+    const DIRECTORA = 'Ph.D. Myriam Sarabia Molina';
+    const DIRECTORA_CARGO = 'Directora Observatorio Turístico Sostenible OTS';
+
+    doc.addPage();
+    let yr = topContent;
+
+    // Título
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(mX, yr, contentW, 10, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text('RESUMEN DEL ESTUDIO', pageW / 2, yr + 6.6, { align: 'center' });
+    yr += 15;
+    doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text(`Feriado ${feriadoTxt} · ${anio}`, mX, yr); yr += 7;
+
+    // --- Ficha técnica (label: valor) con datos reales ---
+    const tipoMuestra = this.encuestaTab === 'hotel' ? 'encuestas a establecimientos de alojamiento' : 'encuestas turísticas';
+    const ficha: [string, string][] = [
+      ['Proyecto', PROYECTO_TITULO],
+      ['Registro', PROYECTO_REGISTRO],
+      ['Período', `Feriado ${feriadoTxt} · ${anio}`],
+      ['Muestra efectiva', `${totalEnc} ${tipoMuestra} válidas`],
+      ['Instrumento', `Encuesta estructurada de ${preguntas.length} preguntas`],
+      ['Recolección', 'Aplicación del OTS (web y móvil) y, en algunos casos, encuestas impresas'],
+      ['Procesamiento', 'Pipeline ETL (extracción, transformación y carga): detección de encabezados, mapeo estandarizado, limpieza y normalización de variables'],
+      ['Muestreo', 'No probabilístico por conveniencia, sobre alojamientos formales operativos y turistas dispuestos a participar'],
+    ];
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.text('FICHA TÉCNICA', mX, yr); yr += 5;
+    const labW = 32;
+    for (const [lab, val] of ficha) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      doc.text(`${lab}:`, mX, yr);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+      const vLineas = doc.splitTextToSize(val, contentW - labW);
+      doc.text(vLineas, mX + labW, yr);
+      yr += Math.max(4.6, vLineas.length * 3.9) + 1.6;
+    }
+    yr += 4;
+
+    // --- Indicadores del feriado (cifras reales) ---
+    const ind: [string, string][] = [['Total de encuestas', String(totalEnc)]];
+    if (o.ocupacion_promedio != null) ind.push(['Ocupación hotelera promedio', `${Number(o.ocupacion_promedio).toFixed(1)}%`]);
+    if (this.encuestaTab !== 'hotel') {
+      if (e.satisfaccion_promedio != null) ind.push(['Satisfacción promedio', `${Number(e.satisfaccion_promedio).toFixed(1)} / 5`]);
+      if (e.gasto_promedio != null) ind.push(['Gasto promedio por turista', `$${Number(e.gasto_promedio).toFixed(2)}`]);
+      if (e.paises != null) ind.push(['Lugares de origen distintos', String(e.paises)]);
+    }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.text('INDICADORES DEL FERIADO', mX, yr); yr += 4;
+    const indW = contentW / Math.min(ind.length, 3), indH = 15;
+    ind.forEach((k, idx) => {
+      const col = idx % 3, fila = Math.floor(idx / 3);
+      const x = mX + col * indW, yb = yr + fila * (indH + 3);
+      doc.setFillColor(244, 246, 249); doc.roundedRect(x + 1, yb, indW - 2, indH, 1.5, 1.5, 'F');
+      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+      doc.text(k[1], x + indW / 2, yb + 6.5, { align: 'center' });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
+      doc.text(doc.splitTextToSize(k[0], indW - 5), x + indW / 2, yb + 10.5, { align: 'center' });
+    });
+    yr += Math.ceil(ind.length / 3) * (indH + 3) + 6;
+
+    // --- Párrafo de cierre con datos reales ---
+    const frases: string[] = [];
+    if (o.ocupacion_promedio != null) {
+      frases.push(`Durante el feriado de ${feriadoTxt}, los establecimientos de alojamiento reportaron una ocupación hotelera promedio del ${Number(o.ocupacion_promedio).toFixed(1)}%.`);
+    }
+    if (this.encuestaTab !== 'hotel' && e.satisfaccion_promedio != null) {
+      frases.push(`La satisfacción general de los turistas encuestados fue de ${Number(e.satisfaccion_promedio).toFixed(1)} sobre 5.`);
+    }
+    frases.push(`En total se procesaron ${totalEnc} ${tipoMuestra} válidas, depuradas y normalizadas por el sistema, lo que garantiza la trazabilidad e integridad de la información presentada en este reporte.`);
+    const cierre = doc.splitTextToSize(frases.join(' '), contentW);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60, 60, 60);
+    doc.text(cierre, mX, yr);
+
+    // --- BANNER INSTITUCIONAL (al final de la página) ---
+    const bH1 = 11, bAcc = 1.5, bH2 = 13;           // franja directora, acento, banda UPSE
+    const bTop = pageH - footerH - 10 - (bH1 + bAcc + bH2);
+    // Franja ámbar (Directora)
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bTop, pageW * 0.56, bH1, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+    doc.text(DIRECTORA, mX, bTop + 4.8);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.text(DIRECTORA_CARGO, mX, bTop + 9);
+    // Banda azul (UPSE)
+    const bY = bTop + bH1;
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bY, pageW, bAcc, 'F');
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, bY + bAcc, pageW, bH2, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text('UPSE', mX, bY + bAcc + 9);
+    doc.setFontSize(10);
+    doc.text('UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA', mX + 22, bY + bAcc + 8.5);
+    doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]); doc.setFont('helvetica', 'italic'); doc.setFontSize(11);
+    doc.text('¡crece sin límites!', pageW - mX, bY + bAcc + 8.8, { align: 'right' });
+
     // --- Pie de página institucional (banda) en todas las hojas ---
     const nPaginas = doc.getNumberOfPages();
     for (let pg = 1; pg <= nPaginas; pg++) {
