@@ -131,6 +131,7 @@ export class ReportesPage implements OnInit {
       ? 'Encuesta de Establecimientos de Alojamiento'
       : 'Encuesta Turística';
     const logo = await this.cargarLogoPDF();
+    const banner = await this.cargarBannerPie();
 
     // ===================== PORTADA =====================
     doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, 0, pageW, 10, 'F');
@@ -165,8 +166,6 @@ export class ReportesPage implements OnInit {
     // Metadatos fijos del proyecto (editables si cambian)
     const PROYECTO_TITULO = 'Desarrollo de un sistema de datos para la gestión del turismo en Santa Elena';
     const PROYECTO_REGISTRO = 'INCYT-PNF-2025-D12-212';
-    const DIRECTORA = 'Ph.D. Myriam Sarabia Molina';
-    const DIRECTORA_CARGO = 'Directora Observatorio Turístico Sostenible OTS';
 
     // ===================== PÁGINA 2: RESUMEN DEL ESTUDIO (justo después de la portada) =====================
     doc.addPage();
@@ -180,7 +179,9 @@ export class ReportesPage implements OnInit {
     // ===================== TABULACIÓN POR SECCIÓN =====================
     doc.addPage();
     const topContent = 16;
-    const bottomLimit = pageH - footerH - 5;
+    // Reserva al pie el alto de la banda o del banner (lo que sea más alto), para no solaparlos.
+    const bannerHmm = banner ? pageW * (banner.h / banner.w) : 0;
+    const bottomLimit = pageH - Math.max(footerH, bannerHmm) - 5;
     let y = topContent;
 
     const preguntas = this.tabulacion?.preguntas || [];
@@ -223,7 +224,8 @@ export class ReportesPage implements OnInit {
         return l;
       });
 
-      const bloqueH = tituloH + chartHmm + 4 + legendH + 8;
+      const notaSatH = (/satisfacci/i.test(p.titulo || '') && p.sinDato > 0) ? 8 : 0;
+      const bloqueH = tituloH + chartHmm + 4 + legendH + 8 + notaSatH;
       if (y + bloqueH > bottomLimit) { doc.addPage(); y = topContent; }
 
       // Título
@@ -256,38 +258,33 @@ export class ReportesPage implements OnInit {
           : `${p.totalReal} respuestas válidas`,
         mX, yFin
       );
-      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 3, pageW - mX, yFin + 3);
-      y = yFin + 8;
+      let yTrasNota = yFin;
+      // Nota SOLO en preguntas de Satisfacción (1-5) con "sin responder": ahí es donde aplica,
+      // porque eran opcionales y el sistema no rellena los valores no contestados.
+      const esSatisfaccion = /satisfacci/i.test(p.titulo || '');
+      if (esSatisfaccion && p.sinDato > 0) {
+        const notaSat =
+          'Pregunta opcional (escala 1-5): quienes no la respondieron se registran como «sin responder». ' +
+          'El sistema no rellena ese valor; por eso respuestas válidas + sin responder = total de encuestas.';
+        doc.setFont('helvetica', 'italic'); doc.setFontSize(6.8); doc.setTextColor(120, 120, 120);
+        const nl = doc.splitTextToSize(notaSat, contentW - 4);
+        doc.text(nl, mX, yFin + 3.4);
+        yTrasNota = yFin + 3.4 + (nl.length - 1) * 2.8;
+      }
+      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yTrasNota + 3, pageW - mX, yTrasNota + 3);
+      y = yTrasNota + 8;
     }
 
-    // --- Nota metodológica (al final): explica la no-respuesta en palabras simples.
-    // Solo aparece si realmente hay preguntas con "sin responder".
-    const totalSinResp = preguntas.reduce((a: number, pp: any) => a + (pp.sinDato || 0), 0);
-    if (totalSinResp > 0) {
-      const notaTxt =
-        'Algunas preguntas de satisfacción eran opcionales, por lo que un número muy pequeño de turistas (menos del 1%) ' +
-        'prefirió no responderlas. Esos casos se muestran como «sin responder». El sistema no inventa ni rellena esos datos: ' +
-        'solo presenta lo que realmente se recolectó y se depuró. Por eso, en cada pregunta, las respuestas válidas más las ' +
-        '«sin responder» suman siempre el total de encuestas.';
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-      const notaLineas = doc.splitTextToSize(notaTxt, contentW - 8);
-      const notaH = notaLineas.length * 3.8 + 11;
-      if (y + notaH > bottomLimit) { doc.addPage(); y = topContent; }
-      doc.setFillColor(248, 249, 251); doc.setDrawColor(AMBER[0], AMBER[1], AMBER[2]); doc.setLineWidth(0.5);
-      doc.roundedRect(mX, y, contentW, notaH, 1.5, 1.5, 'FD');
-      doc.text('NOTA SOBRE LAS RESPUESTAS «SIN RESPONDER»', mX + 4, y + 6);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(70, 70, 70);
-      doc.text(notaLineas, mX + 4, y + 10.5);
-      y += notaH + 8;
-    }
-
-    // --- Banner institucional (Directora + UPSE) al final del PDF ---
-    this.dibujarBanner(doc, { pageW, pageH, mX, footerH, NAVY, AMBER, directora: DIRECTORA, cargo: DIRECTORA_CARGO });
-
-    // --- Pie de página institucional (banda) en todas las hojas ---
+    // --- Pie de página: banda institucional en todas las hojas; en la ÚLTIMA, el banner real ---
     const nPaginas = doc.getNumberOfPages();
+    const bannerH = banner ? pageW * (banner.h / banner.w) : 0;
     for (let pg = 1; pg <= nPaginas; pg++) {
       doc.setPage(pg);
+      if (banner && pg === nPaginas) {
+        // Banner institucional (Directora + UPSE) pegado al pie de la última página.
+        try { doc.addImage(banner.img, 'PNG', 0, pageH - bannerH, pageW, bannerH); } catch { /* sin banner */ }
+        continue;
+      }
       doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, pageH - footerH - 1.5, pageW, 1.5, 'F');
       doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, pageH - footerH, pageW, footerH, 'F');
       doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
@@ -672,24 +669,29 @@ export class ReportesPage implements OnInit {
   }
 
   // Banner institucional (Directora del OTS + banda UPSE) al pie de la última página.
-  private dibujarBanner(doc: any, c: any) {
-    const { pageW, pageH, mX, footerH, NAVY, AMBER, directora, cargo } = c;
-    const bH1 = 11, bAcc = 1.5, bH2 = 13;
-    const bTop = pageH - footerH - 10 - (bH1 + bAcc + bH2);
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bTop, pageW * 0.56, bH1, 'F');
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-    doc.text(directora, mX, bTop + 4.8);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.text(cargo, mX, bTop + 9);
-    const bY = bTop + bH1;
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bY, pageW, bAcc, 'F');
-    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, bY + bAcc, pageW, bH2, 'F');
-    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
-    doc.text('UPSE', mX, bY + bAcc + 9);
-    doc.setFontSize(10);
-    doc.text('UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA', mX + 22, bY + bAcc + 8.5);
-    doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]); doc.setFont('helvetica', 'italic'); doc.setFontSize(11);
-    doc.text('¡crece sin límites!', pageW - mX, bY + bAcc + 8.8, { align: 'right' });
+  // Carga el banner institucional del pie (assets/icon/banner_pie.png) como data URL con sus
+  // dimensiones, para colocarlo a lo ancho en el pie de la última página. null si no se puede.
+  private async cargarBannerPie(): Promise<{ img: string; w: number; h: number } | null> {
+    try {
+      const resp = await fetch('assets/icon/banner_pie.png');
+      if (!resp.ok) return null;
+      const blob = await resp.blob();
+      const img = await new Promise<string>((res, rej) => {
+        const r = new FileReader();
+        r.onloadend = () => res(r.result as string);
+        r.onerror = rej;
+        r.readAsDataURL(blob);
+      });
+      const dim = await new Promise<{ w: number; h: number }>((res, rej) => {
+        const im = new Image();
+        im.onload = () => res({ w: im.naturalWidth || 1, h: im.naturalHeight || 1 });
+        im.onerror = rej;
+        im.src = img;
+      });
+      return { img, w: dim.w, h: dim.h };
+    } catch {
+      return null;
+    }
   }
 
   colorOpcion(indicePregunta: number, indiceOpcion: number): string {

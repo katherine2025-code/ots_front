@@ -17,7 +17,7 @@ function titulo(clv: string): string {
 }
 
 const LUGARES_ECUADOR = new Set<string>([
-  'ecuador', 'republica del ecuador', 'el ecuador',
+  'ecuador', 'republica del ecuador', 'el ecuador', 'ecuatoriana', 'ecuatoriano',
   'azuay', 'bolivar', 'canar', 'carchi', 'chimborazo', 'cotopaxi', 'el oro', 'esmeraldas',
   'galapagos', 'guayas', 'imbabura', 'loja', 'los rios', 'manabi', 'morona santiago', 'napo',
   'orellana', 'pastaza', 'pichincha', 'santa elena', 'santo domingo de los tsachilas',
@@ -26,6 +26,7 @@ const LUGARES_ECUADOR = new Set<string>([
   'montanita', 'ambato', 'machala', 'portoviejo', 'manta', 'riobamba', 'ibarra', 'milagro',
   'duran', 'guaranda', 'babahoyo', 'quevedo', 'latacunga', 'tulcan', 'azogues', 'tena', 'puyo',
   'macas', 'zamora', 'santo domingo', 'playas', 'general villamil playas', 'daule', 'samborondon',
+  'milagros', 'esmeralda', 'manabi', 'santa elena', 'libertad',
   'jipijapa', 'chone', 'bahia de caraquez', 'ventanas', 'vinces', 'nueva loja', 'lago agrio',
   'otavalo', 'cayambe', 'sangolqui', 'santa rosa', 'pasaje', 'huaquillas',
   'ancon', 'anconcito', 'chanduy', 'colonche', 'manglaralto', 'olon', 'ayangue', 'san pablo',
@@ -60,6 +61,14 @@ export function normalizarResidencia(valor: string): string {
   return titulo(clv);
 }
 
+// Un valor de residencia es legible solo si, tras limpiarlo (sin tildes), queda compuesto
+// únicamente por letras latinas y espacios/guiones y tiene al menos dos letras. Así se
+// descartan respuestas corruptas (emojis, mojibake como "Ø<Ÿê", símbolos) que no son lugares.
+export function residenciaLegible(valor: string): boolean {
+  const c = clave(valor);
+  return /^[a-z][a-z' -]*$/.test(c) && c.replace(/[^a-z]/g, '').length >= 2;
+}
+
 // Recibe las opciones de la pregunta de residencia [{etiqueta,total,porcentaje}], unifica las
 // etiquetas al país canónico, suma los totales repetidos y recalcula el porcentaje sobre el total
 // de respuestas. Devuelve la lista ordenada de mayor a menor.
@@ -69,10 +78,12 @@ export function unificarResidencia(
 ): Array<{ etiqueta: string; total: number; porcentaje: number }> {
   const acum = new Map<string, number>();
   for (const o of opciones) {
+    if (!residenciaLegible(o.etiqueta)) continue; // descarta basura/mojibake
     const pais = normalizarResidencia(o.etiqueta) || o.etiqueta;
     acum.set(pais, (acum.get(pais) || 0) + (o.total || 0));
   }
-  const base = respondidas || [...acum.values()].reduce((a, b) => a + b, 0) || 1;
+  // El porcentaje se calcula sobre el total de respuestas legibles (suman ~100%).
+  const base = [...acum.values()].reduce((a, b) => a + b, 0) || 1;
   return [...acum.entries()]
     .map(([etiqueta, total]) => ({ etiqueta, total, porcentaje: Math.round((total / base) * 1000) / 10 }))
     .sort((a, b) => b.total - a.total);
