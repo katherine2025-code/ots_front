@@ -675,20 +675,19 @@ export class ReportesPage implements OnInit {
     try {
       const resp = await fetch('assets/icon/banner_pie.png');
       if (!resp.ok) return null;
-      const blob = await resp.blob();
-      const img = await new Promise<string>((res, rej) => {
-        const r = new FileReader();
-        r.onloadend = () => res(r.result as string);
-        r.onerror = rej;
-        r.readAsDataURL(blob);
-      });
-      const dim = await new Promise<{ w: number; h: number }>((res, rej) => {
-        const im = new Image();
-        im.onload = () => res({ w: im.naturalWidth || 1, h: im.naturalHeight || 1 });
-        im.onerror = rej;
-        im.src = img;
-      });
-      return { img, w: dim.w, h: dim.h };
+      const buf = await resp.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      // Dimensiones leídas del header PNG (chunk IHDR: ancho en offset 16, alto en 20).
+      let w = 709, h = 75;
+      if (bytes.length > 24 && bytes[12] === 0x49 && bytes[13] === 0x48 && bytes[14] === 0x44 && bytes[15] === 0x52) {
+        const dv = new DataView(buf);
+        w = dv.getUint32(16) || w;
+        h = dv.getUint32(20) || h;
+      }
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      const img = 'data:image/png;base64,' + btoa(bin);
+      return { img, w, h };
     } catch {
       return null;
     }
