@@ -175,58 +175,60 @@ export class ReportesPage implements OnInit {
         y += 14;
       }
 
-      const legendW = 98, gap = 6, chartW = contentW - legendW - gap;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      // Título de la pregunta (ancho completo)
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      const tLineas = doc.splitTextToSize(p.titulo + (p.multiple ? '  (opción múltiple)' : ''), contentW);
+      const tituloH = tLineas.length * 4.8 + 3;
+
+      // Gráfica GRANDE a alta resolución (barra a todo el ancho; dona centrada).
+      const g = this.graficaPreguntaPDF(p, contentW);
+      const chartHmm = g ? g.hMm : 0;
+      const chartWmm = g ? (g.esDona ? 70 : contentW) : 0;
+      const chartXmm = g && g.esDona ? mX + (contentW - 70) / 2 : mX;
+
+      // Leyenda (una columna, bajo la gráfica) con su porcentaje. Se mide el alto.
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
       let legendH = 0;
       const legendLineas: string[][] = opciones.map((op: any) => {
-        const l = doc.splitTextToSize(`${op.etiqueta}  (${op.porcentaje}%)`, legendW - 7);
-        legendH += Math.max(4.5, l.length * 3.6) + 1.6;
+        const l = doc.splitTextToSize(`${op.etiqueta}  (${op.porcentaje}%)`, contentW - 7);
+        legendH += Math.max(4.6, l.length * 3.7) + 1.4;
         return l;
       });
 
-      const canvasP = document.getElementById('chart-pregunta-' + i) as HTMLCanvasElement | null;
-      let chartImg: string | null = null, chartH = 0;
-      if (canvasP && canvasP.width > 0) {
-        try {
-          chartImg = canvasP.toDataURL('image/png');
-          const ar = (canvasP.width / canvasP.height) || 1.4;
-          chartH = Math.min(60, chartW / ar);
-        } catch { chartImg = null; }
-      }
-
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-      const tLineas = doc.splitTextToSize(p.titulo + (p.multiple ? '  (opción múltiple)' : ''), contentW);
-      const tituloH = tLineas.length * 4.6 + 3;
-      const bloqueH = tituloH + Math.max(legendH, chartH) + 9;
-
+      const bloqueH = tituloH + chartHmm + 4 + legendH + 8;
       if (y + bloqueH > bottomLimit) { doc.addPage(); y = topContent; }
 
-      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      // Título
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
       doc.text(tLineas, mX, y + 4);
-      const yBody = y + tituloH + 3;
+      let yy = y + tituloH + 2;
 
-      let yl = yBody;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      // Gráfica
+      if (g) {
+        try { doc.addImage(g.img, 'PNG', chartXmm, yy, chartWmm, chartHmm); } catch { /* grafica omitida */ }
+        yy += chartHmm + 4;
+      }
+
+      // Leyenda
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
       opciones.forEach((op: any, j: number) => {
         const rgb = this.hexARgb(PALETA[j % PALETA.length]);
-        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(mX, yl - 0.4, 3, 3, 'F');
+        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(mX, yy - 0.4, 3, 3, 'F');
         doc.setTextColor(55, 55, 55);
-        doc.text(legendLineas[j], mX + 5, yl + 2.2);
-        yl += Math.max(4.5, legendLineas[j].length * 3.6) + 1.6;
+        doc.text(legendLineas[j], mX + 5, yy + 2.2);
+        yy += Math.max(4.6, legendLineas[j].length * 3.7) + 1.4;
       });
 
-      if (chartImg) { try { doc.addImage(chartImg, 'PNG', mX + legendW + gap, yBody, chartW, chartH); } catch { /* grafica omitida */ } }
-
-      const yFin = Math.max(yl, yBody + chartH);
+      const yFin = yy + 1;
       doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
       doc.text(
         p.sinDato > 0
           ? `${p.totalReal} respuestas válidas · ${p.sinDato} sin responder`
           : `${p.totalReal} respuestas válidas`,
-        mX, yFin + 3
+        mX, yFin
       );
-      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 6, pageW - mX, yFin + 6);
-      y = yFin + 11;
+      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 3, pageW - mX, yFin + 3);
+      y = yFin + 8;
     }
 
     // --- Nota metodológica (al final): explica la no-respuesta en palabras simples.
@@ -249,6 +251,107 @@ export class ReportesPage implements OnInit {
       doc.text(notaLineas, mX + 4, y + 10.5);
       y += notaH + 8;
     }
+
+    // =====================================================================
+    //  PÁGINA FINAL: MINI INFORME / FICHA TÉCNICA (datos reales) + BANNER
+    // =====================================================================
+    // Metadatos fijos del proyecto (editables si cambian). El resto de cifras
+    // se toman de los datos REALES ya cargados (estadisticas / tabulacion).
+    const PROYECTO_TITULO = 'Desarrollo de un sistema de datos para la gestión del turismo en Santa Elena';
+    const PROYECTO_REGISTRO = 'INCYT-PNF-2025-D12-212';
+    const DIRECTORA = 'Ph.D. Myriam Sarabia Molina';
+    const DIRECTORA_CARGO = 'Directora Observatorio Turístico Sostenible OTS';
+
+    doc.addPage();
+    let yr = topContent;
+
+    // Título
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(mX, yr, contentW, 10, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text('RESUMEN DEL ESTUDIO', pageW / 2, yr + 6.6, { align: 'center' });
+    yr += 15;
+    doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text(`Feriado ${feriadoTxt} · ${anio}`, mX, yr); yr += 7;
+
+    // --- Ficha técnica (label: valor) con datos reales ---
+    const tipoMuestra = this.encuestaTab === 'hotel' ? 'encuestas a establecimientos de alojamiento' : 'encuestas turísticas';
+    const ficha: [string, string][] = [
+      ['Proyecto', PROYECTO_TITULO],
+      ['Registro', PROYECTO_REGISTRO],
+      ['Período', `Feriado ${feriadoTxt} · ${anio}`],
+      ['Muestra efectiva', `${totalEnc} ${tipoMuestra} válidas`],
+      ['Instrumento', `Encuesta estructurada de ${preguntas.length} preguntas`],
+      ['Recolección', 'Aplicación del OTS (web y móvil) y, en algunos casos, encuestas impresas'],
+      ['Procesamiento', 'Pipeline ETL (extracción, transformación y carga): detección de encabezados, mapeo estandarizado, limpieza y normalización de variables'],
+      ['Muestreo', 'No probabilístico por conveniencia, sobre alojamientos formales operativos y turistas dispuestos a participar'],
+    ];
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.text('FICHA TÉCNICA', mX, yr); yr += 5;
+    const labW = 32;
+    for (const [lab, val] of ficha) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      doc.text(`${lab}:`, mX, yr);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+      const vLineas = doc.splitTextToSize(val, contentW - labW);
+      doc.text(vLineas, mX + labW, yr);
+      yr += Math.max(4.6, vLineas.length * 3.9) + 1.6;
+    }
+    yr += 4;
+
+    // --- Indicadores del feriado (cifras reales) ---
+    const ind: [string, string][] = [['Total de encuestas', String(totalEnc)]];
+    if (o.ocupacion_promedio != null) ind.push(['Ocupación hotelera promedio', `${Number(o.ocupacion_promedio).toFixed(1)}%`]);
+    if (this.encuestaTab !== 'hotel') {
+      if (e.satisfaccion_promedio != null) ind.push(['Satisfacción promedio', `${Number(e.satisfaccion_promedio).toFixed(1)} / 5`]);
+      if (e.gasto_promedio != null) ind.push(['Gasto promedio por turista', `$${Number(e.gasto_promedio).toFixed(2)}`]);
+      if (e.paises != null) ind.push(['Lugares de origen distintos', String(e.paises)]);
+    }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.text('INDICADORES DEL FERIADO', mX, yr); yr += 4;
+    const indW = contentW / Math.min(ind.length, 3), indH = 15;
+    ind.forEach((k, idx) => {
+      const col = idx % 3, fila = Math.floor(idx / 3);
+      const x = mX + col * indW, yb = yr + fila * (indH + 3);
+      doc.setFillColor(244, 246, 249); doc.roundedRect(x + 1, yb, indW - 2, indH, 1.5, 1.5, 'F');
+      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+      doc.text(k[1], x + indW / 2, yb + 6.5, { align: 'center' });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
+      doc.text(doc.splitTextToSize(k[0], indW - 5), x + indW / 2, yb + 10.5, { align: 'center' });
+    });
+    yr += Math.ceil(ind.length / 3) * (indH + 3) + 6;
+
+    // --- Párrafo de cierre con datos reales ---
+    const frases: string[] = [];
+    if (o.ocupacion_promedio != null) {
+      frases.push(`Durante el feriado de ${feriadoTxt}, los establecimientos de alojamiento reportaron una ocupación hotelera promedio del ${Number(o.ocupacion_promedio).toFixed(1)}%.`);
+    }
+    if (this.encuestaTab !== 'hotel' && e.satisfaccion_promedio != null) {
+      frases.push(`La satisfacción general de los turistas encuestados fue de ${Number(e.satisfaccion_promedio).toFixed(1)} sobre 5.`);
+    }
+    frases.push(`En total se procesaron ${totalEnc} ${tipoMuestra} válidas, depuradas y normalizadas por el sistema, lo que garantiza la trazabilidad e integridad de la información presentada en este reporte.`);
+    const cierre = doc.splitTextToSize(frases.join(' '), contentW);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60, 60, 60);
+    doc.text(cierre, mX, yr);
+
+    // --- BANNER INSTITUCIONAL (al final de la página) ---
+    const bH1 = 11, bAcc = 1.5, bH2 = 13;           // franja directora, acento, banda UPSE
+    const bTop = pageH - footerH - 10 - (bH1 + bAcc + bH2);
+    // Franja ámbar (Directora)
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bTop, pageW * 0.56, bH1, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+    doc.text(DIRECTORA, mX, bTop + 4.8);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.text(DIRECTORA_CARGO, mX, bTop + 9);
+    // Banda azul (UPSE)
+    const bY = bTop + bH1;
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bY, pageW, bAcc, 'F');
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, bY + bAcc, pageW, bH2, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text('UPSE', mX, bY + bAcc + 9);
+    doc.setFontSize(10);
+    doc.text('UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA', mX + 22, bY + bAcc + 8.5);
+    doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]); doc.setFont('helvetica', 'italic'); doc.setFontSize(11);
+    doc.text('¡crece sin límites!', pageW - mX, bY + bAcc + 8.8, { align: 'right' });
 
     // --- Pie de página institucional (banda) en todas las hojas ---
     const nPaginas = doc.getNumberOfPages();
@@ -457,6 +560,58 @@ export class ReportesPage implements OnInit {
       });
       this.chartsPreguntas.push(chart);
     });
+  }
+
+  // Dibuja la gráfica de UNA pregunta en un canvas fuera de pantalla, a alta resolución
+  // (~150 dpi) y con fuentes grandes, SOLO para incrustarla en el PDF. Así las barras salen
+  // grandes y legibles sin depender del tamaño que tenga la gráfica en pantalla.
+  // Devuelve { img, hMm } (PNG + alto en mm) o null si no se pudo.
+  private graficaPreguntaPDF(p: any, contentW: number): { img: string; hMm: number; esDona: boolean } | null {
+    const opciones = p.opciones || [];
+    if (!opciones.length) return null;
+    const esDona = !p.multiple && opciones.length <= 4;
+    const PXMM = 6; // píxeles por mm (~150 dpi) para que no se vea borroso
+    // Barra: alto proporcional al número de opciones (barras gruesas). Dona: alto fijo.
+    const hMm = esDona ? 60 : Math.min(120, Math.max(46, opciones.length * 7 + 16));
+    const wMm = esDona ? 70 : contentW;
+
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(wMm * PXMM);
+    cv.height = Math.round(hMm * PXMM);
+    const colores = opciones.map((_: any, j: number) => PALETA[j % PALETA.length]);
+
+    let chart: any = null;
+    try {
+      chart = new Chart(cv, {
+        type: esDona ? 'doughnut' : 'bar',
+        data: {
+          labels: opciones.map((o: any) => o.etiqueta),
+          datasets: [{
+            data: opciones.map((o: any) => o.porcentaje),
+            backgroundColor: colores,
+            borderWidth: esDona ? 3 : 0
+          }]
+        },
+        options: esDona ? {
+          responsive: false, animation: false,
+          plugins: { legend: { display: false } }
+        } : {
+          indexAxis: 'y',
+          responsive: false, animation: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, ticks: { font: { size: 18 }, callback: (v: any) => v + '%' } },
+            y: { ticks: { autoSkip: false, font: { size: 18 } } }
+          }
+        }
+      });
+      const img = cv.toDataURL('image/png');
+      return { img, hMm, esDona };
+    } catch {
+      return null;
+    } finally {
+      if (chart) chart.destroy();
+    }
   }
 
   colorOpcion(indicePregunta: number, indiceOpcion: number): string {
