@@ -171,7 +171,10 @@ export class ReportesPage implements OnInit {
     doc.addPage();
     this.paginaResumenEstudio(doc, {
       pageW, pageH, mX, contentW, footerH, NAVY, AMBER, GRIS,
-      feriadoTxt, anio, totalEnc, nPreg: (this.tabulacion?.preguntas || []).length,
+      feriadoTxt, anio, totalEnc,
+      instrumento: this.encuestaTab === 'hotel'
+        ? 'Encuesta MINTUR de capacidad y demanda hotelera (hasta 5 fechas por feriado)'
+        : 'Encuesta estructurada de 26 preguntas',
       est: e, ocup: o, esHotel: this.encuestaTab === 'hotel',
       proyecto: PROYECTO_TITULO, registro: PROYECTO_REGISTRO
     });
@@ -275,22 +278,19 @@ export class ReportesPage implements OnInit {
       y = yTrasNota + 8;
     }
 
-    // --- Pie de página: banda institucional en todas las hojas; en la ÚLTIMA, el banner real ---
+    // --- Pie de página: el banner institucional (imagen) va en TODAS las hojas del PDF ---
     const nPaginas = doc.getNumberOfPages();
     const bannerH = banner ? pageW * (banner.h / banner.w) : 0;
     for (let pg = 1; pg <= nPaginas; pg++) {
       doc.setPage(pg);
-      if (banner && pg === nPaginas) {
-        // Banner institucional (Directora + UPSE) pegado al pie de la última página.
+      if (banner) {
         try { doc.addImage(banner.img, 'PNG', 0, pageH - bannerH, pageW, bannerH); } catch { /* sin banner */ }
-        continue;
+      } else {
+        // Respaldo si no se pudo cargar la imagen del banner.
+        doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, pageH - footerH, pageW, footerH, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+        doc.text('UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA', mX, pageH - footerH / 2 + 1);
       }
-      doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, pageH - footerH - 1.5, pageW, 1.5, 'F');
-      doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, pageH - footerH, pageW, footerH, 'F');
-      doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-      doc.text('UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA', mX, pageH - footerH / 2 + 1);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-      doc.text(`OTS · ${feriadoTxt} · Pág. ${pg} de ${nPaginas}`, pageW - mX, pageH - footerH / 2 + 1, { align: 'right' });
     }
 
     const slug = (this.filtroFeriado || 'todos').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
@@ -577,7 +577,7 @@ export class ReportesPage implements OnInit {
   // Dibuja la página "RESUMEN DEL ESTUDIO" (ficha técnica + indicadores + dona de ocupación),
   // centrada, con los datos reales. Va después de la portada.
   private paginaResumenEstudio(doc: any, c: any) {
-    const { pageW, mX, contentW, NAVY, AMBER, GRIS, feriadoTxt, anio, totalEnc, nPreg, est, ocup, esHotel } = c;
+    const { pageW, mX, contentW, NAVY, GRIS, feriadoTxt, anio, totalEnc, est, ocup, esHotel } = c;
     const cx = pageW / 2;
     let yr = 16;
 
@@ -596,7 +596,7 @@ export class ReportesPage implements OnInit {
       ['Registro', c.registro],
       ['Período', `Feriado ${feriadoTxt} · ${anio}`],
       ['Muestra efectiva', `${totalEnc} ${tipoMuestra} válidas`],
-      ['Instrumento', `Encuesta estructurada de ${nPreg} preguntas`],
+      ['Instrumento', c.instrumento],
       ['Recolección', 'Aplicación del OTS (web y móvil) y, en algunos casos, encuestas impresas'],
       ['Procesamiento', 'Pipeline ETL (extracción, transformación y carga): detección de encabezados, mapeo estandarizado, limpieza y normalización de variables'],
       ['Muestreo', 'No probabilístico por conveniencia, sobre alojamientos formales operativos y turistas dispuestos a participar'],
