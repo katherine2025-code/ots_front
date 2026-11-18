@@ -465,6 +465,11 @@ export class ReportesPage implements OnInit {
         if (esEscala15) {
           opciones = opciones.map((o: any) => ({ ...o, etiqueta: ESCALA_SATISF[o.etiqueta] || o.etiqueta }));
         }
+        // Lugares visitados: Ayampe y Canoa se agrupan en "Ayangue" (indicación de la revisión;
+        // quedan dentro de la zona de referencia). Se suman sus conteos y se recalcula el %.
+        if (p.codigo === 'lugares_visitados') {
+          opciones = this.agruparOpciones(opciones, ['Ayampe', 'Canoa'], 'Ayangue', p.respondidas);
+        }
         preguntas.push({
           seccion: s.seccion,
           titulo,
@@ -746,6 +751,35 @@ export class ReportesPage implements OnInit {
     } catch {
       return null;
     }
+  }
+
+  // Agrupa varias etiquetas de una pregunta (p. ej. Ayampe, Canoa) dentro de otra (Ayangue):
+  // suma sus conteos en la etiqueta destino y recalcula el porcentaje sobre las respuestas.
+  private agruparOpciones(
+    opciones: Array<{ etiqueta: string; total: number; porcentaje: number }>,
+    desde: string[],
+    hacia: string,
+    respondidas: number
+  ): Array<{ etiqueta: string; total: number; porcentaje: number }> {
+    const aAgrupar = new Set(desde.map((d) => d.toLowerCase()));
+    let sumaDesde = 0;
+    const resto: typeof opciones = [];
+    let destino = opciones.find((o) => o.etiqueta.toLowerCase() === hacia.toLowerCase());
+    for (const o of opciones) {
+      if (aAgrupar.has(o.etiqueta.toLowerCase())) { sumaDesde += o.total || 0; continue; }
+      if (o.etiqueta.toLowerCase() === hacia.toLowerCase()) continue; // se vuelve a insertar actualizado
+      resto.push(o);
+    }
+    const totalDestino = (destino?.total || 0) + sumaDesde;
+    const base = respondidas || 1;
+    const nuevoDestino = { etiqueta: hacia, total: totalDestino, porcentaje: Math.round((totalDestino / base) * 1000) / 10 };
+    // Mantiene el destino en su posición original si ya existía; si no, lo agrega al final.
+    if (destino) {
+      return opciones
+        .filter((o) => !aAgrupar.has(o.etiqueta.toLowerCase()))
+        .map((o) => (o.etiqueta.toLowerCase() === hacia.toLowerCase() ? nuevoDestino : o));
+    }
+    return [...resto, nuevoDestino];
   }
 
   colorOpcion(indicePregunta: number, indiceOpcion: number): string {
