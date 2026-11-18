@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ReporteService } from 'src/app/core/services/reporte.service';
 import { Chart } from 'chart.js';
+import { unificarResidencia } from 'src/app/utils/normalizar-residencia';
 
 
 const NOMBRES_FERIADOS = [
@@ -16,6 +17,40 @@ const PALETA = [
   '#2A6F97', '#48A9A7', '#E9A23B', '#475569', '#7FB3D5',
   '#10B981', '#E07A5F', '#94A3B8', '#1F4E6B', '#B7D7D6'
 ];
+
+// Plugin inline: escribe el porcentaje sobre cada barra / segmento del gráfico, para que el
+// valor de cada color quede especificado en el propio gráfico (no solo en la leyenda).
+const ETIQUETAS_PORCENTAJE = {
+  id: 'etiquetasPorcentaje',
+  afterDatasetsDraw(chart: any) {
+    const ctx = chart.ctx;
+    const esDona = chart.config?.type === 'doughnut';
+    const fs = Math.max(9, Math.round((chart.height || 200) / 24));
+    chart.data.datasets.forEach((ds: any, di: number) => {
+      const meta = chart.getDatasetMeta(di);
+      meta.data.forEach((el: any, i: number) => {
+        const val = ds.data[i];
+        if (val == null || val === 0) return;
+        const txt = `${val}%`;
+        ctx.save();
+        ctx.font = `bold ${fs}px Helvetica, Arial, sans-serif`;
+        ctx.textBaseline = 'middle';
+        if (esDona) {
+          if (val < 5) { ctx.restore(); return; } // no saturar con tajadas diminutas
+          const pos = el.tooltipPosition();
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.fillText(txt, pos.x, pos.y);
+        } else {
+          ctx.fillStyle = '#1A2A44';
+          ctx.textAlign = 'left';
+          ctx.fillText(txt, el.x + 4, el.y);
+        }
+        ctx.restore();
+      });
+    });
+  }
+};
 
 @Component({
   selector: 'app-reportes',
@@ -122,39 +157,32 @@ export class ReportesPage implements OnInit {
     doc.setFontSize(9);
     doc.text(`Observatorio Turístico Sostenible · UPSE · ${new Date().toLocaleDateString()}`, pageW / 2, cajaY + 80, { align: 'center' });
 
-    // ===================== CONTENIDO =====================
+    // Datos reales para el resumen y la tabulación
+    const e = this.estadisticas.encuestas || {};
+    const o = this.estadisticas.ocupacion || {};
+    const totalEnc = this.tabulacion?.totalEncuestas ?? this.tabulacion?.total ?? e.total ?? 0;
+
+    // Metadatos fijos del proyecto (editables si cambian)
+    const PROYECTO_TITULO = 'Desarrollo de un sistema de datos para la gestión del turismo en Santa Elena';
+    const PROYECTO_REGISTRO = 'INCYT-PNF-2025-D12-212';
+    const DIRECTORA = 'Ph.D. Myriam Sarabia Molina';
+    const DIRECTORA_CARGO = 'Directora Observatorio Turístico Sostenible OTS';
+
+    // ===================== PÁGINA 2: RESUMEN DEL ESTUDIO (justo después de la portada) =====================
+    doc.addPage();
+    this.paginaResumenEstudio(doc, {
+      pageW, pageH, mX, contentW, footerH, NAVY, AMBER, GRIS,
+      feriadoTxt, anio, totalEnc, nPreg: (this.tabulacion?.preguntas || []).length,
+      est: e, ocup: o, esHotel: this.encuestaTab === 'hotel',
+      proyecto: PROYECTO_TITULO, registro: PROYECTO_REGISTRO
+    });
+
+    // ===================== TABULACIÓN POR SECCIÓN =====================
     doc.addPage();
     const topContent = 16;
     const bottomLimit = pageH - footerH - 5;
     let y = topContent;
 
-    // Indicadores clave (tarjetas)
-    const e = this.estadisticas.encuestas || {};
-    const o = this.estadisticas.ocupacion || {};
-    const totalEnc = this.tabulacion?.totalEncuestas ?? this.tabulacion?.total ?? e.total ?? 0;
-    const kpis: string[][] = [['Total de encuestas', String(totalEnc)]];
-    if (this.encuestaTab === 'hotel') {
-      if (o.ocupacion_promedio != null) kpis.push(['Ocupación promedio', `${Number(o.ocupacion_promedio).toFixed(1)}%`]);
-    } else {
-      if (e.paises != null) kpis.push(['Países de origen', String(e.paises)]);
-      if (e.satisfaccion_promedio != null) kpis.push(['Satisfacción', `${Number(e.satisfaccion_promedio).toFixed(1)} / 5`]);
-      if (e.gasto_promedio != null) kpis.push(['Gasto prom./turista', `$${Number(e.gasto_promedio).toFixed(2)}`]);
-      if (o.ocupacion_promedio != null) kpis.push(['Ocupación prom.', `${Number(o.ocupacion_promedio).toFixed(1)}%`]);
-    }
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.text('INDICADORES CLAVE', mX, y); y += 3;
-    const kpW = contentW / kpis.length, kpH = 16;
-    kpis.forEach((k, idx) => {
-      const x = mX + idx * kpW;
-      doc.setFillColor(244, 246, 249); doc.roundedRect(x + 1, y, kpW - 2, kpH, 1.5, 1.5, 'F');
-      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-      doc.text(k[1], x + kpW / 2, y + 7, { align: 'center' });
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
-      doc.text(doc.splitTextToSize(k[0], kpW - 4), x + kpW / 2, y + 11, { align: 'center' });
-    });
-    y += kpH + 10;
-
-    // Tabulación por sección
     const preguntas = this.tabulacion?.preguntas || [];
     const ordenSecciones: string[] = [];
     for (const pp of preguntas) if (pp.seccion && !ordenSecciones.includes(pp.seccion)) ordenSecciones.push(pp.seccion);
@@ -203,13 +231,7 @@ export class ReportesPage implements OnInit {
       doc.text(tLineas, mX, y + 4);
       let yy = y + tituloH + 2;
 
-      // Gráfica
-      if (g) {
-        try { doc.addImage(g.img, 'PNG', chartXmm, yy, chartWmm, chartHmm); } catch { /* grafica omitida */ }
-        yy += chartHmm + 4;
-      }
-
-      // Leyenda
+      // Leyenda PRIMERO (arriba del gráfico), con su cuadro de color y porcentaje.
       doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
       opciones.forEach((op: any, j: number) => {
         const rgb = this.hexARgb(PALETA[j % PALETA.length]);
@@ -218,6 +240,13 @@ export class ReportesPage implements OnInit {
         doc.text(legendLineas[j], mX + 5, yy + 2.2);
         yy += Math.max(4.6, legendLineas[j].length * 3.7) + 1.4;
       });
+      yy += 2;
+
+      // Gráfica DEBAJO de la leyenda
+      if (g) {
+        try { doc.addImage(g.img, 'PNG', chartXmm, yy, chartWmm, chartHmm); } catch { /* grafica omitida */ }
+        yy += chartHmm + 3;
+      }
 
       const yFin = yy + 1;
       doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
@@ -252,106 +281,8 @@ export class ReportesPage implements OnInit {
       y += notaH + 8;
     }
 
-    // =====================================================================
-    //  PÁGINA FINAL: MINI INFORME / FICHA TÉCNICA (datos reales) + BANNER
-    // =====================================================================
-    // Metadatos fijos del proyecto (editables si cambian). El resto de cifras
-    // se toman de los datos REALES ya cargados (estadisticas / tabulacion).
-    const PROYECTO_TITULO = 'Desarrollo de un sistema de datos para la gestión del turismo en Santa Elena';
-    const PROYECTO_REGISTRO = 'INCYT-PNF-2025-D12-212';
-    const DIRECTORA = 'Ph.D. Myriam Sarabia Molina';
-    const DIRECTORA_CARGO = 'Directora Observatorio Turístico Sostenible OTS';
-
-    doc.addPage();
-    let yr = topContent;
-
-    // Título
-    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(mX, yr, contentW, 10, 'F');
-    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-    doc.text('RESUMEN DEL ESTUDIO', pageW / 2, yr + 6.6, { align: 'center' });
-    yr += 15;
-    doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.text(`Feriado ${feriadoTxt} · ${anio}`, mX, yr); yr += 7;
-
-    // --- Ficha técnica (label: valor) con datos reales ---
-    const tipoMuestra = this.encuestaTab === 'hotel' ? 'encuestas a establecimientos de alojamiento' : 'encuestas turísticas';
-    const ficha: [string, string][] = [
-      ['Proyecto', PROYECTO_TITULO],
-      ['Registro', PROYECTO_REGISTRO],
-      ['Período', `Feriado ${feriadoTxt} · ${anio}`],
-      ['Muestra efectiva', `${totalEnc} ${tipoMuestra} válidas`],
-      ['Instrumento', `Encuesta estructurada de ${preguntas.length} preguntas`],
-      ['Recolección', 'Aplicación del OTS (web y móvil) y, en algunos casos, encuestas impresas'],
-      ['Procesamiento', 'Pipeline ETL (extracción, transformación y carga): detección de encabezados, mapeo estandarizado, limpieza y normalización de variables'],
-      ['Muestreo', 'No probabilístico por conveniencia, sobre alojamientos formales operativos y turistas dispuestos a participar'],
-    ];
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.text('FICHA TÉCNICA', mX, yr); yr += 5;
-    const labW = 32;
-    for (const [lab, val] of ficha) {
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-      doc.text(`${lab}:`, mX, yr);
-      doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
-      const vLineas = doc.splitTextToSize(val, contentW - labW);
-      doc.text(vLineas, mX + labW, yr);
-      yr += Math.max(4.6, vLineas.length * 3.9) + 1.6;
-    }
-    yr += 4;
-
-    // --- Indicadores del feriado (cifras reales) ---
-    const ind: [string, string][] = [['Total de encuestas', String(totalEnc)]];
-    if (o.ocupacion_promedio != null) ind.push(['Ocupación hotelera promedio', `${Number(o.ocupacion_promedio).toFixed(1)}%`]);
-    if (this.encuestaTab !== 'hotel') {
-      if (e.satisfaccion_promedio != null) ind.push(['Satisfacción promedio', `${Number(e.satisfaccion_promedio).toFixed(1)} / 5`]);
-      if (e.gasto_promedio != null) ind.push(['Gasto promedio por turista', `$${Number(e.gasto_promedio).toFixed(2)}`]);
-      if (e.paises != null) ind.push(['Lugares de origen distintos', String(e.paises)]);
-    }
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.text('INDICADORES DEL FERIADO', mX, yr); yr += 4;
-    const indW = contentW / Math.min(ind.length, 3), indH = 15;
-    ind.forEach((k, idx) => {
-      const col = idx % 3, fila = Math.floor(idx / 3);
-      const x = mX + col * indW, yb = yr + fila * (indH + 3);
-      doc.setFillColor(244, 246, 249); doc.roundedRect(x + 1, yb, indW - 2, indH, 1.5, 1.5, 'F');
-      doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
-      doc.text(k[1], x + indW / 2, yb + 6.5, { align: 'center' });
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
-      doc.text(doc.splitTextToSize(k[0], indW - 5), x + indW / 2, yb + 10.5, { align: 'center' });
-    });
-    yr += Math.ceil(ind.length / 3) * (indH + 3) + 6;
-
-    // --- Párrafo de cierre con datos reales ---
-    const frases: string[] = [];
-    if (o.ocupacion_promedio != null) {
-      frases.push(`Durante el feriado de ${feriadoTxt}, los establecimientos de alojamiento reportaron una ocupación hotelera promedio del ${Number(o.ocupacion_promedio).toFixed(1)}%.`);
-    }
-    if (this.encuestaTab !== 'hotel' && e.satisfaccion_promedio != null) {
-      frases.push(`La satisfacción general de los turistas encuestados fue de ${Number(e.satisfaccion_promedio).toFixed(1)} sobre 5.`);
-    }
-    frases.push(`En total se procesaron ${totalEnc} ${tipoMuestra} válidas, depuradas y normalizadas por el sistema, lo que garantiza la trazabilidad e integridad de la información presentada en este reporte.`);
-    const cierre = doc.splitTextToSize(frases.join(' '), contentW);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60, 60, 60);
-    doc.text(cierre, mX, yr);
-
-    // --- BANNER INSTITUCIONAL (al final de la página) ---
-    const bH1 = 11, bAcc = 1.5, bH2 = 13;           // franja directora, acento, banda UPSE
-    const bTop = pageH - footerH - 10 - (bH1 + bAcc + bH2);
-    // Franja ámbar (Directora)
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bTop, pageW * 0.56, bH1, 'F');
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-    doc.text(DIRECTORA, mX, bTop + 4.8);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.text(DIRECTORA_CARGO, mX, bTop + 9);
-    // Banda azul (UPSE)
-    const bY = bTop + bH1;
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bY, pageW, bAcc, 'F');
-    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, bY + bAcc, pageW, bH2, 'F');
-    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
-    doc.text('UPSE', mX, bY + bAcc + 9);
-    doc.setFontSize(10);
-    doc.text('UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA', mX + 22, bY + bAcc + 8.5);
-    doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]); doc.setFont('helvetica', 'italic'); doc.setFontSize(11);
-    doc.text('¡crece sin límites!', pageW - mX, bY + bAcc + 8.8, { align: 'right' });
+    // --- Banner institucional (Directora + UPSE) al final del PDF ---
+    this.dibujarBanner(doc, { pageW, pageH, mX, footerH, NAVY, AMBER, directora: DIRECTORA, cargo: DIRECTORA_CARGO });
 
     // --- Pie de página institucional (banda) en todas las hojas ---
     const nPaginas = doc.getNumberOfPages();
@@ -479,13 +410,17 @@ export class ReportesPage implements OnInit {
         if (!p.opciones || p.opciones.length === 0) continue;
         // "País de residencia" es texto libre y la gente escribió ciudades además de países;
         // se muestra con un título honesto, sin alterar la pregunta de la encuesta.
-        const titulo = p.codigo === 'pais_residencia' ? 'Lugar de residencia habitual' : p.titulo;
+        const esResidencia = p.codigo === 'pais_residencia' || /residencia/i.test(p.codigo || '');
+        const titulo = esResidencia ? 'Lugar de residencia habitual' : p.titulo;
+        // Unifica Ecuador/ECUADOR/ecuador y ciudades del Ecuador en un solo "Ecuador"
+        // (y canoniza países) también aquí, por si el backend aún no está desplegado.
+        const opciones = esResidencia ? unificarResidencia(p.opciones, p.respondidas) : p.opciones;
         preguntas.push({
           seccion: s.seccion,
           titulo,
           totalReal: p.respondidas,
           sinDato: p.sinDato,
-          opciones: p.opciones,
+          opciones,
           multiple: p.tipo === 'multiselect'
         });
       }
@@ -535,6 +470,7 @@ export class ReportesPage implements OnInit {
 
       const chart = new Chart(ctx, {
         type: tipo,
+        plugins: [ETIQUETAS_PORCENTAJE],
         data: {
           labels: p.opciones.map((o: any) => o.etiqueta),
           datasets: [{
@@ -584,6 +520,7 @@ export class ReportesPage implements OnInit {
     try {
       chart = new Chart(cv, {
         type: esDona ? 'doughnut' : 'bar',
+        plugins: [ETIQUETAS_PORCENTAJE],
         data: {
           labels: opciones.map((o: any) => o.etiqueta),
           datasets: [{
@@ -612,6 +549,147 @@ export class ReportesPage implements OnInit {
     } finally {
       if (chart) chart.destroy();
     }
+  }
+
+  // Dona de ocupación hotelera (Ocupación vs Disponible) a alta resolución para el PDF.
+  private graficaOcupacionPDF(pct: number): string | null {
+    const PX = 6, lado = 58;
+    const ocupado = Math.round(pct * 10) / 10;
+    const disponible = Math.round((100 - pct) * 10) / 10;
+    const cv = document.createElement('canvas');
+    cv.width = lado * PX; cv.height = lado * PX;
+    let chart: any = null;
+    try {
+      chart = new Chart(cv, {
+        type: 'doughnut',
+        plugins: [ETIQUETAS_PORCENTAJE],
+        data: {
+          labels: ['Ocupación', 'Disponible'],
+          datasets: [{ data: [ocupado, disponible], backgroundColor: ['#2A6F97', '#E2E8F0'], borderWidth: 2 }]
+        },
+        options: { responsive: false, animation: false, cutout: '60%', plugins: { legend: { display: false } } }
+      });
+      return cv.toDataURL('image/png');
+    } catch {
+      return null;
+    } finally {
+      if (chart) chart.destroy();
+    }
+  }
+
+  // Dibuja la página "RESUMEN DEL ESTUDIO" (ficha técnica + indicadores + dona de ocupación),
+  // centrada, con los datos reales. Va después de la portada.
+  private paginaResumenEstudio(doc: any, c: any) {
+    const { pageW, mX, contentW, NAVY, AMBER, GRIS, feriadoTxt, anio, totalEnc, nPreg, est, ocup, esHotel } = c;
+    const cx = pageW / 2;
+    let yr = 16;
+
+    // Título
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(mX, yr, contentW, 10, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+    doc.text('RESUMEN DEL ESTUDIO', cx, yr + 6.6, { align: 'center' });
+    yr += 15;
+    doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text(`Feriado ${feriadoTxt} · ${anio}`, cx, yr, { align: 'center' }); yr += 8;
+
+    // --- Ficha técnica (columna centrada) ---
+    const tipoMuestra = esHotel ? 'encuestas a establecimientos de alojamiento' : 'encuestas turísticas';
+    const ficha: [string, string][] = [
+      ['Proyecto', c.proyecto],
+      ['Registro', c.registro],
+      ['Período', `Feriado ${feriadoTxt} · ${anio}`],
+      ['Muestra efectiva', `${totalEnc} ${tipoMuestra} válidas`],
+      ['Instrumento', `Encuesta estructurada de ${nPreg} preguntas`],
+      ['Recolección', 'Aplicación del OTS (web y móvil) y, en algunos casos, encuestas impresas'],
+      ['Procesamiento', 'Pipeline ETL (extracción, transformación y carga): detección de encabezados, mapeo estandarizado, limpieza y normalización de variables'],
+      ['Muestreo', 'No probabilístico por conveniencia, sobre alojamientos formales operativos y turistas dispuestos a participar'],
+    ];
+    const fichaW = 165, fichaX = (pageW - fichaW) / 2, labW = 34;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.text('FICHA TÉCNICA', cx, yr, { align: 'center' }); yr += 5;
+    for (const [lab, val] of ficha) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      doc.text(`${lab}:`, fichaX, yr);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
+      const vLineas = doc.splitTextToSize(val, fichaW - labW);
+      doc.text(vLineas, fichaX + labW, yr);
+      yr += Math.max(4.6, vLineas.length * 3.9) + 1.6;
+    }
+    yr += 5;
+
+    // --- Indicadores del feriado (tarjetas centradas) ---
+    const ind: [string, string][] = [['Total de encuestas', String(totalEnc)]];
+    if (ocup.ocupacion_promedio != null) ind.push(['Ocupación hotelera promedio', `${Number(ocup.ocupacion_promedio).toFixed(1)}%`]);
+    if (!esHotel) {
+      if (est.satisfaccion_promedio != null) ind.push(['Satisfacción promedio', `${Number(est.satisfaccion_promedio).toFixed(1)} / 5`]);
+      if (est.gasto_promedio != null) ind.push(['Gasto promedio por turista', `$${Number(est.gasto_promedio).toFixed(2)}`]);
+      if (est.paises != null) ind.push(['Lugares de origen distintos', String(est.paises)]);
+    }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.text('INDICADORES DEL FERIADO', cx, yr, { align: 'center' }); yr += 4;
+    const porFila = 3, cardW = 56, cardH = 15, gapC = 4;
+    for (let f = 0; f * porFila < ind.length; f++) {
+      const fila = ind.slice(f * porFila, f * porFila + porFila);
+      const filaW = fila.length * cardW + (fila.length - 1) * gapC;
+      const x0 = (pageW - filaW) / 2;
+      fila.forEach((k, idx) => {
+        const x = x0 + idx * (cardW + gapC);
+        doc.setFillColor(244, 246, 249); doc.roundedRect(x, yr, cardW, cardH, 1.5, 1.5, 'F');
+        doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+        doc.text(k[1], x + cardW / 2, yr + 6.5, { align: 'center' });
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
+        doc.text(doc.splitTextToSize(k[0], cardW - 5), x + cardW / 2, yr + 10.5, { align: 'center' });
+      });
+      yr += cardH + gapC;
+    }
+    yr += 4;
+
+    // --- Gráfica de ocupación (dona) centrada ---
+    if (ocup.ocupacion_promedio != null) {
+      const img = this.graficaOcupacionPDF(Number(ocup.ocupacion_promedio));
+      if (img) {
+        const d = 46;
+        try { doc.addImage(img, 'PNG', cx - d / 2, yr, d, d); } catch { /* omitida */ }
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
+        doc.text(`Ocupación hotelera promedio: ${Number(ocup.ocupacion_promedio).toFixed(1)}%`, cx, yr + d + 4, { align: 'center' });
+        // leyenda de la dona
+        doc.setFillColor(42, 111, 151); doc.rect(cx - 30, yr + d + 7, 3, 3, 'F');
+        doc.setTextColor(60, 60, 60); doc.text('Ocupación', cx - 25, yr + d + 9.4);
+        doc.setFillColor(226, 232, 240); doc.rect(cx + 2, yr + d + 7, 3, 3, 'F');
+        doc.text('Disponible', cx + 7, yr + d + 9.4);
+        yr += d + 14;
+      }
+    }
+
+    // --- Párrafo de cierre (centrado) con cifras reales ---
+    const frases: string[] = [];
+    if (ocup.ocupacion_promedio != null) frases.push(`Durante el feriado de ${feriadoTxt}, los establecimientos de alojamiento reportaron una ocupación hotelera promedio del ${Number(ocup.ocupacion_promedio).toFixed(1)}%.`);
+    if (!esHotel && est.satisfaccion_promedio != null) frases.push(`La satisfacción general de los turistas encuestados fue de ${Number(est.satisfaccion_promedio).toFixed(1)} sobre 5.`);
+    frases.push(`En total se procesaron ${totalEnc} ${tipoMuestra} válidas, depuradas y normalizadas por el sistema, lo que garantiza la trazabilidad e integridad de la información presentada.`);
+    const cierre = doc.splitTextToSize(frases.join(' '), contentW - 20);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60, 60, 60);
+    doc.text(cierre, cx, yr, { align: 'center' });
+  }
+
+  // Banner institucional (Directora del OTS + banda UPSE) al pie de la última página.
+  private dibujarBanner(doc: any, c: any) {
+    const { pageW, pageH, mX, footerH, NAVY, AMBER, directora, cargo } = c;
+    const bH1 = 11, bAcc = 1.5, bH2 = 13;
+    const bTop = pageH - footerH - 10 - (bH1 + bAcc + bH2);
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bTop, pageW * 0.56, bH1, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+    doc.text(directora, mX, bTop + 4.8);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.text(cargo, mX, bTop + 9);
+    const bY = bTop + bH1;
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, bY, pageW, bAcc, 'F');
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, bY + bAcc, pageW, bH2, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text('UPSE', mX, bY + bAcc + 9);
+    doc.setFontSize(10);
+    doc.text('UNIVERSIDAD ESTATAL PENÍNSULA DE SANTA ELENA', mX + 22, bY + bAcc + 8.5);
+    doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]); doc.setFont('helvetica', 'italic'); doc.setFontSize(11);
+    doc.text('¡crece sin límites!', pageW - mX, bY + bAcc + 8.8, { align: 'right' });
   }
 
   colorOpcion(indicePregunta: number, indiceOpcion: number): string {
