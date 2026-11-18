@@ -12,6 +12,16 @@ const NOMBRES_FERIADOS = [
   'Día de los Difuntos', 'Navidad', 'Fin de Año'
 ];
 
+// Significado de la escala de satisfacción 1-5 (para que el reporte se comprenda, no solo números).
+const ESCALA_SATISF: { [k: string]: string } = {
+  '1': '1 · Muy insatisfecho',
+  '2': '2 · Insatisfecho',
+  '3': '3 · Ni satisfecho ni insatisfecho',
+  '4': '4 · Satisfecho',
+  '5': '5 · Muy satisfecho',
+  'N/A': 'N/A · No aplica'
+};
+
 // Paleta categórica de la marca (azul, teal, ámbar, pizarra...); se recicla por índice de opción.
 const PALETA = [
   '#2A6F97', '#48A9A7', '#E9A23B', '#475569', '#7FB3D5',
@@ -131,7 +141,8 @@ export class ReportesPage implements OnInit {
       ? 'Encuesta de Establecimientos de Alojamiento'
       : 'Encuesta Turística';
     const logo = await this.cargarLogoPDF();
-    const banner = await this.cargarBannerPie();
+    const banner = await this.cargarImagenPNG('assets/icon/banner_pie.png');
+    const directora = await this.cargarImagenPNG('assets/icon/dir_ots.png');
 
     // ===================== PORTADA =====================
     doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, 0, pageW, 10, 'F');
@@ -210,7 +221,8 @@ export class ReportesPage implements OnInit {
         ['Total de llegadas', fmt(dem.llegadas_total)],
         ['Pernoctaciones', fmt(dem.pernoctaciones)],
         ['Habitaciones ocupadas', fmt(dem.habitaciones_ocupadas)],
-        ['Tarifa promedio cobrada', dem.tarifa_promedio != null ? `$${Number(dem.tarifa_promedio).toFixed(2)}` : 'N/D'],
+        ['Tarifa prom. por persona', dem.tarifa_promedio_persona != null ? `$${Number(dem.tarifa_promedio_persona).toFixed(2)}` : 'N/D'],
+        ['Tarifa prom. por habitación', dem.tarifa_promedio_habitacion != null ? `$${Number(dem.tarifa_promedio_habitacion).toFixed(2)}` : 'N/D'],
       ];
       const porFila = 3, cardW = (contentW - 2 * 4) / porFila, cardH = 16, gapC = 4;
       tarjetas.forEach((k, idx) => {
@@ -243,82 +255,81 @@ export class ReportesPage implements OnInit {
         y += 14;
       }
 
-      // Título de la pregunta (ancho completo)
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      // LAYOUT HORIZONTAL COMPACTO: porcentajes a la IZQUIERDA, gráfico de barras AL LADO.
+      const legendW = 82, gapLC = 5, chartCol = contentW - legendW - gapLC;
+
+      // Título (ancho completo)
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
       const tLineas = doc.splitTextToSize(p.titulo + (p.multiple ? '  (opción múltiple)' : ''), contentW);
-      const tituloH = tLineas.length * 4.8 + 3;
+      const tituloH = tLineas.length * 4.3 + 2.5;
 
-      // Gráfica GRANDE a alta resolución (barra a todo el ancho; dona centrada).
-      const g = this.graficaPreguntaPDF(p, contentW);
+      // Gráfica (se renderiza al ancho de la columna derecha)
+      const g = this.graficaPreguntaPDF(p, chartCol);
       const chartHmm = g ? g.hMm : 0;
-      const chartWmm = g ? (g.esDona ? 70 : contentW) : 0;
-      const chartXmm = g && g.esDona ? mX + (contentW - 70) / 2 : mX;
+      const chartWmm = g ? (g.esDona ? Math.min(52, chartCol) : chartCol) : 0;
 
-      // Leyenda (una columna, bajo la gráfica) con su porcentaje. Se mide el alto.
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-      let legendH = 0;
-      const legendLineas: string[][] = opciones.map((op: any) => {
-        const l = doc.splitTextToSize(`${op.etiqueta}  (${op.porcentaje}%)`, contentW - 7);
-        legendH += Math.max(4.6, l.length * 3.7) + 1.4;
-        return l;
-      });
+      // Porcentajes (izquierda): una línea por opción, con su cuadro de color
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8);
+      const legendLineas: string[][] = opciones.map((op: any) =>
+        doc.splitTextToSize(`${op.etiqueta}  (${op.porcentaje}%)`, legendW - 5));
+      const legendH = legendLineas.reduce((a, l) => a + Math.max(3.9, l.length * 3.3) + 1.1, 0);
 
-      const notaSatH = (/satisfacci/i.test(p.titulo || '') && p.sinDato > 0) ? 8 : 0;
-      const bloqueH = tituloH + chartHmm + 4 + legendH + 8 + notaSatH;
+      const cuerpoH = Math.max(legendH, chartHmm);
+      const esSatisf = /satisfacci/i.test(p.titulo || '');
+      const notaSatH = (esSatisf && p.sinDato > 0) ? 6 : 0;
+      const bloqueH = tituloH + cuerpoH + 7 + notaSatH;
       if (y + bloqueH > bottomLimit) { doc.addPage(); y = topContent; }
 
       // Título
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
       doc.text(tLineas, mX, y + 4);
-      let yy = y + tituloH + 2;
+      const yBody = y + tituloH + 2;
 
-      // Leyenda PRIMERO (arriba del gráfico), con su cuadro de color y porcentaje.
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+      // Porcentajes a la izquierda
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8);
+      let yl = yBody;
       opciones.forEach((op: any, j: number) => {
         const rgb = this.hexARgb(PALETA[j % PALETA.length]);
-        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(mX, yy - 0.4, 3, 3, 'F');
+        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(mX, yl - 0.2, 2.6, 2.6, 'F');
         doc.setTextColor(55, 55, 55);
-        doc.text(legendLineas[j], mX + 5, yy + 2.2);
-        yy += Math.max(4.6, legendLineas[j].length * 3.7) + 1.4;
+        doc.text(legendLineas[j], mX + 4, yl + 2);
+        yl += Math.max(3.9, legendLineas[j].length * 3.3) + 1.1;
       });
-      yy += 2;
 
-      // Gráfica DEBAJO de la leyenda
+      // Gráfica a la derecha
       if (g) {
-        try { doc.addImage(g.img, 'PNG', chartXmm, yy, chartWmm, chartHmm); } catch { /* grafica omitida */ }
-        yy += chartHmm + 3;
+        const chartX = g.esDona ? mX + legendW + gapLC + (chartCol - chartWmm) / 2 : mX + legendW + gapLC;
+        try { doc.addImage(g.img, 'PNG', chartX, yBody, chartWmm, chartHmm); } catch { /* grafica omitida */ }
       }
 
-      const yFin = yy + 1;
-      doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+      let yFin = yBody + cuerpoH + 2.5;
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(6.8); doc.setTextColor(150, 150, 150);
       doc.text(
         p.sinDato > 0
           ? `${p.totalReal} respuestas válidas · ${p.sinDato} sin responder`
           : `${p.totalReal} respuestas válidas`,
         mX, yFin
       );
-      let yTrasNota = yFin;
-      // Nota SOLO en preguntas de Satisfacción (1-5) con "sin responder": ahí es donde aplica,
-      // porque eran opcionales y el sistema no rellena los valores no contestados.
-      const esSatisfaccion = /satisfacci/i.test(p.titulo || '');
-      if (esSatisfaccion && p.sinDato > 0) {
-        const notaSat =
-          'Pregunta opcional (escala 1-5): quienes no la respondieron se registran como «sin responder». ' +
-          'El sistema no rellena ese valor; por eso respuestas válidas + sin responder = total de encuestas.';
-        doc.setFont('helvetica', 'italic'); doc.setFontSize(6.8); doc.setTextColor(120, 120, 120);
-        const nl = doc.splitTextToSize(notaSat, contentW - 4);
-        doc.text(nl, mX, yFin + 3.4);
-        yTrasNota = yFin + 3.4 + (nl.length - 1) * 2.8;
+      if (esSatisf && p.sinDato > 0) {
+        doc.setFontSize(6.4); doc.setTextColor(130, 130, 130);
+        doc.text('Pregunta opcional (escala 1-5): quienes no la respondieron se registran como «sin responder».', mX, yFin + 3);
+        yFin += 3;
       }
-      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yTrasNota + 3, pageW - mX, yTrasNota + 3);
-      y = yTrasNota + 8;
+      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 2.5, pageW - mX, yFin + 2.5);
+      y = yFin + 6;
     }
 
     // --- Pie de página: el banner institucional (imagen) va en TODAS las hojas del PDF ---
     const nPaginas = doc.getNumberOfPages();
     const bannerH = banner ? pageW * (banner.h / banner.w) : 0;
+    const dirH = directora ? Math.min(11, pageW * 0.56 * (directora.h / directora.w)) : 0;
     for (let pg = 1; pg <= nPaginas; pg++) {
       doc.setPage(pg);
+      // En la ÚLTIMA página, el nombre de la Directora va arriba del banner (como la captura).
+      if (directora && pg === nPaginas) {
+        const dirW = dirH * (directora.w / directora.h);
+        try { doc.addImage(directora.img, 'PNG', 0, pageH - bannerH - dirH, dirW, dirH); } catch { /* sin firma */ }
+      }
       if (banner) {
         try { doc.addImage(banner.img, 'PNG', 0, pageH - bannerH, pageW, bannerH); } catch { /* sin banner */ }
       } else {
@@ -447,14 +458,26 @@ export class ReportesPage implements OnInit {
         const titulo = esResidencia ? 'Lugar de residencia habitual' : p.titulo;
         // Unifica Ecuador/ECUADOR/ecuador y ciudades del Ecuador en un solo "Ecuador"
         // (y canoniza países) también aquí, por si el backend aún no está desplegado.
-        const opciones = esResidencia ? unificarResidencia(p.opciones, p.respondidas) : p.opciones;
+        let opciones = esResidencia ? unificarResidencia(p.opciones, p.respondidas) : p.opciones;
+        // Satisfacción (escala 1-5): se añade el significado de la escala para que se comprenda
+        // (1 = Muy insatisfecho ... 5 = Muy satisfecho), como pidió la revisión.
+        const esEscala15 = p.tipo === 'escala' && (p.opciones || []).every((o: any) => ESCALA_SATISF[o.etiqueta] !== undefined);
+        if (esEscala15) {
+          opciones = opciones.map((o: any) => ({ ...o, etiqueta: ESCALA_SATISF[o.etiqueta] || o.etiqueta }));
+        }
+        // Lugares visitados: Ayampe y Canoa se agrupan en "Ayangue" (indicación de la revisión;
+        // quedan dentro de la zona de referencia). Se suman sus conteos y se recalcula el %.
+        if (p.codigo === 'lugares_visitados') {
+          opciones = this.agruparOpciones(opciones, ['Ayampe', 'Canoa'], 'Ayangue', p.respondidas);
+        }
         preguntas.push({
           seccion: s.seccion,
           titulo,
           totalReal: p.respondidas,
           sinDato: p.sinDato,
           opciones,
-          multiple: p.tipo === 'multiselect'
+          multiple: p.tipo === 'multiselect',
+          escala: esEscala15
         });
       }
     }
@@ -540,9 +563,9 @@ export class ReportesPage implements OnInit {
     if (!opciones.length) return null;
     const esDona = !p.multiple && opciones.length <= 4;
     const PXMM = 6; // píxeles por mm (~150 dpi) para que no se vea borroso
-    // Barra: alto proporcional al número de opciones (barras gruesas). Dona: alto fijo.
-    const hMm = esDona ? 60 : Math.min(120, Math.max(46, opciones.length * 7 + 16));
-    const wMm = esDona ? 70 : contentW;
+    // Compacto (va al lado de los porcentajes): alto proporcional al número de opciones.
+    const hMm = esDona ? 44 : Math.min(84, Math.max(24, opciones.length * 5 + 10));
+    const wMm = esDona ? 52 : contentW;
 
     const cv = document.createElement('canvas');
     cv.width = Math.round(wMm * PXMM);
@@ -568,10 +591,13 @@ export class ReportesPage implements OnInit {
         } : {
           indexAxis: 'y',
           responsive: false, animation: false,
+          layout: { padding: { right: 42 } }, // espacio para que el % del final no se corte
           plugins: { legend: { display: false } },
           scales: {
-            x: { beginAtZero: true, ticks: { font: { size: 18 }, callback: (v: any) => v + '%' } },
-            y: { ticks: { autoSkip: false, font: { size: 18 } } }
+            // Los nombres ya están en la columna de porcentajes al lado → se ocultan en el eje
+            // para que las barras sean más anchas y no se duplique el texto.
+            x: { beginAtZero: true, ticks: { font: { size: 16 }, callback: (v: any) => v + '%' } },
+            y: { ticks: { display: false }, grid: { display: false } }
           }
         }
       });
@@ -704,29 +730,56 @@ export class ReportesPage implements OnInit {
     doc.text(cierre, cx, yr, { align: 'center' });
   }
 
-  // Banner institucional (Directora del OTS + banda UPSE) al pie de la última página.
-  // Carga el banner institucional del pie (assets/icon/banner_pie.png) como data URL con sus
-  // dimensiones, para colocarlo a lo ancho en el pie de la última página. null si no se puede.
-  private async cargarBannerPie(): Promise<{ img: string; w: number; h: number } | null> {
+  // Carga un PNG de assets como data URL + dimensiones (leídas del header IHDR, sin depender de
+  // que el navegador lo decodifique). Devuelve null si no se puede. Se usa para el banner y para
+  // la franja con el nombre de la directora en el pie de la última página.
+  private async cargarImagenPNG(ruta: string): Promise<{ img: string; w: number; h: number } | null> {
     try {
-      const resp = await fetch('assets/icon/banner_pie.png');
+      const resp = await fetch(ruta);
       if (!resp.ok) return null;
       const buf = await resp.arrayBuffer();
       const bytes = new Uint8Array(buf);
-      // Dimensiones leídas del header PNG (chunk IHDR: ancho en offset 16, alto en 20).
-      let w = 709, h = 75;
+      let w = 0, h = 0;
       if (bytes.length > 24 && bytes[12] === 0x49 && bytes[13] === 0x48 && bytes[14] === 0x44 && bytes[15] === 0x52) {
         const dv = new DataView(buf);
-        w = dv.getUint32(16) || w;
-        h = dv.getUint32(20) || h;
+        w = dv.getUint32(16); h = dv.getUint32(20);
       }
+      if (!w || !h) return null;
       let bin = '';
       for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-      const img = 'data:image/png;base64,' + btoa(bin);
-      return { img, w, h };
+      return { img: 'data:image/png;base64,' + btoa(bin), w, h };
     } catch {
       return null;
     }
+  }
+
+  // Agrupa varias etiquetas de una pregunta (p. ej. Ayampe, Canoa) dentro de otra (Ayangue):
+  // suma sus conteos en la etiqueta destino y recalcula el porcentaje sobre las respuestas.
+  private agruparOpciones(
+    opciones: Array<{ etiqueta: string; total: number; porcentaje: number }>,
+    desde: string[],
+    hacia: string,
+    respondidas: number
+  ): Array<{ etiqueta: string; total: number; porcentaje: number }> {
+    const aAgrupar = new Set(desde.map((d) => d.toLowerCase()));
+    let sumaDesde = 0;
+    const resto: typeof opciones = [];
+    let destino = opciones.find((o) => o.etiqueta.toLowerCase() === hacia.toLowerCase());
+    for (const o of opciones) {
+      if (aAgrupar.has(o.etiqueta.toLowerCase())) { sumaDesde += o.total || 0; continue; }
+      if (o.etiqueta.toLowerCase() === hacia.toLowerCase()) continue; // se vuelve a insertar actualizado
+      resto.push(o);
+    }
+    const totalDestino = (destino?.total || 0) + sumaDesde;
+    const base = respondidas || 1;
+    const nuevoDestino = { etiqueta: hacia, total: totalDestino, porcentaje: Math.round((totalDestino / base) * 1000) / 10 };
+    // Mantiene el destino en su posición original si ya existía; si no, lo agrega al final.
+    if (destino) {
+      return opciones
+        .filter((o) => !aAgrupar.has(o.etiqueta.toLowerCase()))
+        .map((o) => (o.etiqueta.toLowerCase() === hacia.toLowerCase() ? nuevoDestino : o));
+    }
+    return [...resto, nuevoDestino];
   }
 
   colorOpcion(indicePregunta: number, indiceOpcion: number): string {
