@@ -76,19 +76,39 @@ function distancia(a: string, b: string): number {
   return d[m][n];
 }
 
+// Ciudades extranjeras frecuentes → su país (la residencia se reporta como país).
+const CIUDADES_PAIS = new Map<string, string>([
+  ['new york', 'Estados Unidos'], ['nueva york', 'Estados Unidos'], ['miami', 'Estados Unidos'],
+  ['los angeles', 'Estados Unidos'], ['washington', 'Estados Unidos'], ['houston', 'Estados Unidos'],
+  ['madrid', 'España'], ['barcelona', 'España'], ['bogota', 'Colombia'], ['medellin', 'Colombia'],
+  ['lima', 'Perú'], ['buenos aires', 'Argentina'], ['caracas', 'Venezuela'], ['ciudad de mexico', 'México'],
+]);
+
 const esEcuador = (c: string) =>
   LUGARES_ECUADOR.has(c) || (Math.abs(c.length - 7) <= 2 && distancia(c, 'ecuador') <= 2);
+
+// Ciudad extranjera (exacta o con un pequeño error de tipeo, p. ej. "New Yourk" → "New York").
+const ciudadPais = (c: string): string | null => {
+  if (CIUDADES_PAIS.has(c)) return CIUDADES_PAIS.get(c)!;
+  for (const [k, v] of CIUDADES_PAIS) {
+    if (k.length >= 6 && Math.abs(c.length - k.length) <= 2 && distancia(c, k) <= 2) return v;
+  }
+  return null;
+};
 
 export function normalizarResidencia(valor: string): string {
   const clv = clave(valor);
   if (!clv) return '';
   if (esEcuador(clv)) return 'Ecuador';
   if (PAISES.has(clv)) return PAISES.get(clv)!;
+  const ciudad = ciudadPais(clv);
+  if (ciudad) return ciudad;
   // Valores compuestos ("Milagro - Guayaquil", "Guayaquil Ecuador"): si algún token es un lugar
   // del Ecuador o un país conocido, se usa ese. Primero se prioriza Ecuador.
   const tokens = clv.split(/[^a-z]+/).filter((t) => t.length >= 3);
   if (tokens.some((t) => esEcuador(t))) return 'Ecuador';
   for (const t of tokens) if (PAISES.has(t)) return PAISES.get(t)!;
+  for (const t of tokens) if (CIUDADES_PAIS.has(t)) return CIUDADES_PAIS.get(t)!;
   return titulo(clv);
 }
 
