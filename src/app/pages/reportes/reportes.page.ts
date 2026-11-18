@@ -192,6 +192,42 @@ export class ReportesPage implements OnInit {
     for (const pp of preguntas) if (pp.seccion && !ordenSecciones.includes(pp.seccion)) ordenSecciones.push(pp.seccion);
     let seccionActual = '';
 
+    // HOTELES: tabla de "Información sobre demanda turística" (formato MINTUR, Anexo 1).
+    // Son los totales numéricos por fecha que la tabulación por opciones no incluye.
+    const dem = this.encuestaTab === 'hotel' ? this.tabulacion?.demanda : null;
+    if (dem) {
+      doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(mX, y, contentW, 9, 'F');
+      doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+      doc.text('INFORMACIÓN SOBRE DEMANDA TURÍSTICA', pageW / 2, y + 6, { align: 'center' });
+      y += 13;
+      const fmt = (n: any) => Number(n || 0).toLocaleString('es-EC');
+      const tarjetas: [string, string][] = [
+        ['Establecimientos reportados', fmt(dem.establecimientos)],
+        ['Habitaciones disponibles', fmt(dem.habitaciones_disponibles)],
+        ['Plazas disponibles', fmt(dem.plazas_disponibles)],
+        ['Check-in Nacionales', fmt(dem.checkin_nacionales)],
+        ['Check-in Extranjeros', fmt(dem.checkin_extranjeros)],
+        ['Total de llegadas', fmt(dem.llegadas_total)],
+        ['Pernoctaciones', fmt(dem.pernoctaciones)],
+        ['Habitaciones ocupadas', fmt(dem.habitaciones_ocupadas)],
+        ['Tarifa promedio cobrada', dem.tarifa_promedio != null ? `$${Number(dem.tarifa_promedio).toFixed(2)}` : 'N/D'],
+      ];
+      const porFila = 3, cardW = (contentW - 2 * 4) / porFila, cardH = 16, gapC = 4;
+      tarjetas.forEach((k, idx) => {
+        const col = idx % porFila, fila = Math.floor(idx / porFila);
+        const x = mX + col * (cardW + gapC), yb = y + fila * (cardH + gapC);
+        doc.setFillColor(244, 246, 249); doc.roundedRect(x, yb, cardW, cardH, 1.5, 1.5, 'F');
+        doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+        doc.text(k[1], x + cardW / 2, yb + 7.5, { align: 'center' });
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
+        doc.text(doc.splitTextToSize(k[0], cardW - 5), x + cardW / 2, yb + 12, { align: 'center' });
+      });
+      y += Math.ceil(tarjetas.length / porFila) * (cardH + gapC) + 2;
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(120, 120, 120);
+      doc.text('Totales agregados de todas las fechas reportadas (Fecha 1 a 5) por los establecimientos del feriado.', mX, y);
+      y += 8;
+    }
+
     for (let i = 0; i < preguntas.length; i++) {
       const p = preguntas[i];
       const opciones = p.opciones || [];
@@ -422,7 +458,7 @@ export class ReportesPage implements OnInit {
         });
       }
     }
-    return { preguntas, total: data?.total || 0, encuesta: data?.encuesta, fuente: 'app' };
+    return { preguntas, total: data?.total || 0, encuesta: data?.encuesta, fuente: 'app', demanda: data?.demanda || null };
   }
 
   // (Reservado) Cambia la fuente de la tabulación turística y recarga. Hoy el selector de fuente

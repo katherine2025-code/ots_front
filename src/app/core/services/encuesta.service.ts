@@ -26,6 +26,8 @@ export interface Encuesta {
   activa: boolean;
   fechaCreacion: string;
   totalPreguntas: number;
+  // Texto a mostrar para el conteo (preguntas oficiales; en hotel, formato MINTUR).
+  preguntasLabel?: string;
   totalRespuestas?: number;
   preguntas?: PreguntaEncuesta[];
   // Presente solo cuando el cuestionario se sirvió desde la copia guardada en el dispositivo
