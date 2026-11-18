@@ -64,7 +64,7 @@
           <div class="encuesta-meta">
             <span class="badge info">
               <ion-icon name="document-text-outline"></ion-icon>
-              {{ encuesta.totalPreguntas }} preguntas
+              {{ encuesta.preguntasLabel || (encuesta.totalPreguntas + ' preguntas') }}
             </span>
             <span class="badge info" *ngIf="puedeVerRespuestas">
               <ion-icon name="clipboard-outline"></ion-icon>
