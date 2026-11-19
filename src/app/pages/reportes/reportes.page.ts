@@ -149,27 +149,29 @@ export class ReportesPage implements OnInit {
     const NUMERO_REPORTE = '06';
     const bannerHport = banner ? pageW * (banner.h / banner.w) : footerH;
 
-    // ===================== PORTADA (con foto turística) =====================
-    // 1) Foto a todo el ancho, recortada (cover) a la banda inferior de la portada.
-    const bandTop = 90, bandBot = pageH - bannerHport;
+    // ===================== PORTADA (foto a página completa, texto encima y centrado) =====================
+    // 1) Foto a PÁGINA COMPLETA (cover: se ajusta por alto y recorta a los lados).
     if (fotoPortada) {
-      const imgW = pageW;
-      const imgH = imgW * (fotoPortada.h / fotoPortada.w);
-      const imgY = bandTop - Math.max(0, (imgH - (bandBot - bandTop)) / 2);
-      try { doc.addImage(fotoPortada.img, 'JPEG', 0, imgY, imgW, imgH); } catch { /* sin foto */ }
+      const imgH = pageH;
+      const imgW = imgH * (fotoPortada.w / fotoPortada.h);
+      try { doc.addImage(fotoPortada.img, 'JPEG', (pageW - imgW) / 2, 0, imgW, imgH); } catch { /* sin foto */ }
     }
-    // 2) Máscara blanca de la zona superior (título) + franja de marca
-    doc.setFillColor(255, 255, 255); doc.rect(0, 0, pageW, bandTop, 'F');
-    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, 0, pageW, 8, 'F');
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, 8, pageW, 1.6, 'F');
+    // 2) Velo oscuro en la franja superior para que el texto se lea sobre la foto.
+    try {
+      doc.setGState(new (doc as any).GState({ opacity: 0.42 }));
+      doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, 0, pageW, 96, 'F');
+      doc.setGState(new (doc as any).GState({ opacity: 1 }));
+    } catch { /* si no hay GState, el texto va directo sobre la foto */ }
+    // Línea de marca superior
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, 0, pageW, 2, 'F');
 
-    // 3) Logo centrado
+    // 3) Logo centrado (sobre la foto)
     if (logo) {
       const lw = 74, lh = lw * (60 / 402);
-      try { doc.addImage(logo, 'PNG', pageW / 2 - lw / 2, 14, lw, lh); } catch { /* sin logo */ }
+      try { doc.addImage(logo, 'PNG', pageW / 2 - lw / 2, 12, lw, lh); } catch { /* sin logo */ }
     }
 
-    // 4) Caja "REPORTE TÉCNICO Y ESTADÍSTICO" + número
+    // 4) Caja "REPORTE TÉCNICO Y ESTADÍSTICO" + número (bloque centrado)
     const cajaW = 150, cajaH = 20, cajaX = (pageW - cajaW) / 2, cajaY = 32;
     doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.roundedRect(cajaX, cajaY, cajaW - 24, cajaH, 2, 2, 'F');
     doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(cajaX + cajaW - 22, cajaY, 22, cajaH, 2, 2, 'F');
@@ -179,21 +181,21 @@ export class ReportesPage implements OnInit {
     doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(17);
     doc.text(NUMERO_REPORTE, cajaX + cajaW - 11, cajaY + 13, { align: 'center' });
 
-    // 5) FERIADO <nombre> <año>
-    const fy = cajaY + cajaH + 12;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(19); doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]);
-    doc.text('FERIADO', cajaX, fy);
-    // Caja de año a la derecha
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(pageW - mX - 28, fy - 7, 28, 17, 2, 2, 'F');
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(14);
-    doc.text(String(anio), pageW - mX - 14, fy + 3, { align: 'center' });
-    // Nombre del feriado
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(17);
-    const ferLineas = doc.splitTextToSize(feriadoTxt.toUpperCase(), cajaW - 36);
-    doc.text(ferLineas, cajaX, fy + 9);
-    // Tipo de encuesta (pequeño)
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
-    doc.text(tipoTxt, cajaX, fy + 9 + ferLineas.length * 7 + 2);
+    // 5) FERIADO <nombre> <año>, todo CENTRADO sobre la foto
+    const fy = cajaY + cajaH + 13;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(20); doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]);
+    doc.text('FERIADO', pageW / 2, fy, { align: 'center' });
+    doc.setTextColor(255, 255, 255); doc.setFontSize(18);
+    const ferLineas = doc.splitTextToSize(feriadoTxt.toUpperCase(), contentW - 20);
+    doc.text(ferLineas, pageW / 2, fy + 9, { align: 'center' });
+    let fyAnio = fy + 9 + ferLineas.length * 7 + 3;
+    // Caja de año centrada
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(pageW / 2 - 16, fyAnio - 6, 32, 13, 2, 2, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(13);
+    doc.text(String(anio), pageW / 2, fyAnio + 2.5, { align: 'center' });
+    // Tipo de encuesta (pequeño, centrado)
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(235, 238, 242);
+    doc.text(tipoTxt, pageW / 2, fyAnio + 12, { align: 'center' });
 
     // Datos reales para el resumen y la tabulación
     const e = this.estadisticas.encuestas || {};
