@@ -150,11 +150,15 @@ export class ReportesPage implements OnInit {
     const bannerHport = banner ? pageW * (banner.h / banner.w) : footerH;
 
     // ===================== PORTADA (foto a página completa, texto encima y centrado) =====================
-    // 1) Foto a PÁGINA COMPLETA (cover: se ajusta por alto y recorta a los lados).
+    // 1) Foto a PÁGINA COMPLETA a sangre (efecto "cover"): se escala al MÁXIMO entre cubrir por
+    //    ancho y por alto, así nunca deja franjas; se centra y lo que sobra se recorta. El texto
+    //    se dibuja DESPUÉS, por lo que siempre queda delante de la foto (la foto cubre toda la hoja,
+    //    incluida la zona del título).
     if (fotoPortada) {
-      const imgH = pageH;
-      const imgW = imgH * (fotoPortada.w / fotoPortada.h);
-      try { doc.addImage(fotoPortada.img, 'JPEG', (pageW - imgW) / 2, 0, imgW, imgH); } catch { /* sin foto */ }
+      const ratio = fotoPortada.w / fotoPortada.h;
+      let imgW = pageW, imgH = pageW / ratio;      // cubrir por ancho
+      if (imgH < pageH) { imgH = pageH; imgW = pageH * ratio; } // si falta alto, cubrir por alto
+      try { doc.addImage(fotoPortada.img, 'JPEG', (pageW - imgW) / 2, (pageH - imgH) / 2, imgW, imgH); } catch { /* sin foto */ }
     }
     // 2) Velo DEGRADADO oscuro de arriba hacia abajo: fuerte arriba (donde va el texto) y se
     //    funde con la foto hacia el centro, para que el título se lea claramente sobre la imagen
