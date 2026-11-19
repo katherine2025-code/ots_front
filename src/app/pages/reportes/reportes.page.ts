@@ -12,6 +12,17 @@ const NOMBRES_FERIADOS = [
   'Día de los Difuntos', 'Navidad', 'Fin de Año'
 ];
 
+// Fecha representativa de cada feriado para la portada (estilo OTS: muestra la fecha, p. ej.
+// "2 DE NOVIEMBRE"). Solo los de fecha FIJA; Carnaval y Semana Santa cambian cada año, así que
+// para esos se usa el nombre del feriado como respaldo.
+const FECHA_FERIADO: { [k: string]: string } = {
+  'Día del Trabajador': '1 de Mayo',
+  'Primer Grito de la Independencia': '10 de Agosto',
+  'Día de los Difuntos': '2 de Noviembre',
+  'Navidad': '25 de Diciembre',
+  'Fin de Año': '31 de Diciembre',
+};
+
 // Significado de la escala de satisfacción 1-5 (para que el reporte se comprenda, no solo números).
 const ESCALA_SATISF: { [k: string]: string } = {
   '1': '1 · Muy insatisfecho',
@@ -164,10 +175,10 @@ export class ReportesPage implements OnInit {
     //    funde con la foto hacia el centro, para que el título se lea claramente sobre la imagen
     //    sin verse como una banda plana (efecto de portada tipo "cover").
     try {
-      const gradH = 122, pasos = 44;
+      const gradH = 132, pasos = 48;
       for (let i = 0; i < pasos; i++) {
         const t = i / (pasos - 1);
-        doc.setGState(new (doc as any).GState({ opacity: 0.66 * (1 - t) }));
+        doc.setGState(new (doc as any).GState({ opacity: 0.70 * (1 - t) }));
         doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
         doc.rect(0, (gradH * i) / pasos, pageW, gradH / pasos + 0.4, 'F');
       }
@@ -176,37 +187,55 @@ export class ReportesPage implements OnInit {
     // Línea de marca superior
     doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, 0, pageW, 2, 'F');
 
-    // 3) Logo centrado (sobre la foto)
+    // 3) Logo arriba a la IZQUIERDA (sobre la foto), estilo portada OTS.
     if (logo) {
-      const lw = 74, lh = lw * (60 / 402);
-      try { doc.addImage(logo, 'PNG', pageW / 2 - lw / 2, 12, lw, lh); } catch { /* sin logo */ }
+      const lw = 58, lh = lw * (60 / 402);
+      try { doc.addImage(logo, 'PNG', mX, 12, lw, lh); } catch { /* sin logo */ }
     }
 
-    // 4) Caja "REPORTE TÉCNICO Y ESTADÍSTICO" + número (bloque centrado)
-    const cajaW = 150, cajaH = 20, cajaX = (pageW - cajaW) / 2, cajaY = 32;
-    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.roundedRect(cajaX, cajaY, cajaW - 24, cajaH, 2, 2, 'F');
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(cajaX + cajaW - 22, cajaY, 22, cajaH, 2, 2, 'F');
-    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-    doc.text('REPORTE TÉCNICO', cajaX + 7, cajaY + 8.5);
-    doc.text('Y ESTADÍSTICO', cajaX + 7, cajaY + 15.5);
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(17);
-    doc.text(NUMERO_REPORTE, cajaX + cajaW - 11, cajaY + 13, { align: 'center' });
+    // Texto con sombra suave: se dibuja primero en navy semitransparente desplazado y luego el
+    // color encima, para que el título se lea sobre la foto (como las portadas OTS anteriores).
+    const textoSombra = (txt: string, tx: number, ty: number, rgb: number[]) => {
+      try { doc.setGState(new (doc as any).GState({ opacity: 0.5 })); } catch { /* sin GState */ }
+      doc.setTextColor(10, 18, 38); doc.text(txt, tx + 0.6, ty + 0.6);
+      try { doc.setGState(new (doc as any).GState({ opacity: 1 })); } catch { /* sin GState */ }
+      doc.setTextColor(rgb[0], rgb[1], rgb[2]); doc.text(txt, tx, ty);
+    };
 
-    // 5) FERIADO <nombre> <año>, todo CENTRADO sobre la foto
-    const fy = cajaY + cajaH + 13;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(20); doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]);
-    doc.text('FERIADO', pageW / 2, fy, { align: 'center' });
-    doc.setTextColor(255, 255, 255); doc.setFontSize(18);
-    const ferLineas = doc.splitTextToSize(feriadoTxt.toUpperCase(), contentW - 20);
-    doc.text(ferLineas, pageW / 2, fy + 9, { align: 'center' });
-    let fyAnio = fy + 9 + ferLineas.length * 7 + 3;
-    // Caja de año centrada
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(pageW / 2 - 16, fyAnio - 6, 32, 13, 2, 2, 'F');
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(13);
-    doc.text(String(anio), pageW / 2, fyAnio + 2.5, { align: 'center' });
-    // Tipo de encuesta (pequeño, centrado)
+    // 4) Título "REPORTE TÉCNICO / Y ESTADÍSTICO" a la IZQUIERDA + número en cuadro ámbar.
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(23);
+    const tY1 = 54, tY2 = 65;
+    textoSombra('REPORTE TÉCNICO', mX, tY1, [255, 255, 255]);
+    textoSombra('Y ESTADÍSTICO', mX, tY2, [255, 255, 255]);
+    const numBox = 18, numX = pageW - mX - numBox, numY = 47;
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(numX, numY, numBox, numBox, 2, 2, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(18);
+    doc.text(NUMERO_REPORTE, numX + numBox / 2, numY + numBox / 2 + 2.3, { align: 'center' });
+
+    // 5) "FERIADO" grande en ámbar + nombre del feriado en blanco (izquierda) + año partido en cuadros.
+    const fY = 92;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(30);
+    textoSombra('FERIADO', mX, fY, [AMBER[0], AMBER[1], AMBER[2]]);
+    doc.setFontSize(17);
+    // Línea del feriado = su FECHA (estilo OTS). Si el feriado es movible (Carnaval/Semana Santa),
+    // se usa su nombre como respaldo.
+    const etiquetaFeriado = (FECHA_FERIADO[feriadoTxt] || feriadoTxt).toUpperCase();
+    const ferLineas = doc.splitTextToSize(etiquetaFeriado, 116);
+    let ny = fY + 11;
+    for (const ln of ferLineas) { textoSombra(ln, mX, ny, [255, 255, 255]); ny += 8; }
+    // Año partido en dos cuadros ámbar (p. ej. 20 / 26), a la derecha.
+    const anioStr = String(anio);
+    const a1 = anioStr.slice(0, 2), a2 = anioStr.slice(2) || anioStr;
+    const yBox = 15, yBoxX = pageW - mX - yBox, yBoxY = fY - 9;
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]);
+    doc.roundedRect(yBoxX, yBoxY, yBox, yBox, 2, 2, 'F');
+    doc.roundedRect(yBoxX, yBoxY + yBox + 2, yBox, yBox, 2, 2, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text(a1, yBoxX + yBox / 2, yBoxY + yBox / 2 + 2, { align: 'center' });
+    doc.text(a2, yBoxX + yBox / 2, yBoxY + yBox + 2 + yBox / 2 + 2, { align: 'center' });
+    // Tipo de encuesta (pequeño, izquierda)
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(235, 238, 242);
-    doc.text(tipoTxt, pageW / 2, fyAnio + 12, { align: 'center' });
+    doc.text(tipoTxt, mX, ny + 3);
 
     // Datos reales para el resumen y la tabulación
     const e = this.estadisticas.encuestas || {};
