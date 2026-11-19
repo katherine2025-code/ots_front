@@ -249,8 +249,8 @@ export class ReportesPage implements OnInit {
         ['Total de llegadas', fmt(dem.llegadas_total)],
         ['Pernoctaciones', fmt(dem.pernoctaciones)],
         ['Habitaciones ocupadas', fmt(dem.habitaciones_ocupadas)],
-        ['Tarifa prom. por persona', dem.tarifa_promedio_persona != null ? `$${Number(dem.tarifa_promedio_persona).toFixed(2)}` : 'N/D'],
-        ['Tarifa prom. por habitación', dem.tarifa_promedio_habitacion != null ? `$${Number(dem.tarifa_promedio_habitacion).toFixed(2)}` : 'N/D'],
+        [`Tarifa prom. por persona (n=${dem.hoteles_tarifa_persona ?? 0})`, dem.tarifa_promedio_persona != null ? `$${Number(dem.tarifa_promedio_persona).toFixed(2)}` : 'N/D'],
+        [`Tarifa prom. por habitación (n=${dem.hoteles_tarifa_habitacion ?? 0})`, dem.tarifa_promedio_habitacion != null ? `$${Number(dem.tarifa_promedio_habitacion).toFixed(2)}` : 'N/D'],
       ];
       const porFila = 3, cardW = (contentW - 2 * 4) / porFila, cardH = 16, gapC = 4;
       tarjetas.forEach((k, idx) => {
