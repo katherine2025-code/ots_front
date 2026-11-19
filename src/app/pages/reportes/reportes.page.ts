@@ -193,57 +193,52 @@ export class ReportesPage implements OnInit {
     // Línea de marca superior
     doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, 0, pageW, 2, 'F');
 
-    // 3) Logo arriba a la IZQUIERDA (sobre la foto), estilo portada OTS.
+    // 3) Logo centrado arriba (sobre la foto), como tu diseño.
     if (logo) {
-      const lw = 58, lh = lw * (60 / 402);
-      try { doc.addImage(logo, 'PNG', mX, 12, lw, lh); } catch { /* sin logo */ }
+      const lw = 64, lh = lw * (60 / 402);
+      try { doc.addImage(logo, 'PNG', (pageW - lw) / 2, 12, lw, lh); } catch { /* sin logo */ }
     }
 
-    // Texto con sombra suave: se dibuja primero en navy semitransparente desplazado y luego el
-    // color encima, para que el título se lea sobre la foto (como las portadas OTS anteriores).
-    const textoSombra = (txt: string, tx: number, ty: number, rgb: number[]) => {
-      try { doc.setGState(new (doc as any).GState({ opacity: 0.5 })); } catch { /* sin GState */ }
-      doc.setTextColor(10, 18, 38); doc.text(txt, tx + 0.6, ty + 0.6);
-      try { doc.setGState(new (doc as any).GState({ opacity: 1 })); } catch { /* sin GState */ }
-      doc.setTextColor(rgb[0], rgb[1], rgb[2]); doc.text(txt, tx, ty);
-    };
+    // 4) BLOQUES SÓLIDOS estilo portada OTS (texto SOBRE bloques navy/ámbar → nítido, como tu PNG).
+    //    Título en bloque navy (texto blanco) + número en cuadro ámbar (texto navy), centrados como grupo.
+    doc.setFont('helvetica', 'bold');
+    const tSize = 19; doc.setFontSize(tSize);
+    const l1 = 'REPORTE TÉCNICO', l2 = 'Y ESTADÍSTICO';
+    const tW = Math.max(doc.getTextWidth(l1), doc.getTextWidth(l2));
+    const padX = 7, lineH = 8.2, blkH = 22;
+    const blkW = tW + padX * 2, numW = blkH, gap = 4;
+    const grupoW = blkW + gap + numW;
+    const gx0 = (pageW - grupoW) / 2, blkY = 46;
+    // Bloque navy + título blanco (dos líneas)
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.roundedRect(gx0, blkY, blkW, blkH, 2.5, 2.5, 'F');
+    doc.setTextColor(255, 255, 255);
+    const b1 = blkY + blkH / 2 - lineH / 2 + 2.3, b2 = b1 + lineH;
+    doc.text(l1, gx0 + padX, b1);
+    doc.text(l2, gx0 + padX, b2);
+    // Cuadro ámbar con el número (texto navy)
+    const numX = gx0 + blkW + gap;
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(numX, blkY, numW, blkH, 2.5, 2.5, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(20);
+    doc.text(NUMERO_REPORTE, numX + numW / 2, blkY + blkH / 2 + 3, { align: 'center' });
 
-    // 4) Título "REPORTE TÉCNICO / Y ESTADÍSTICO" a la IZQUIERDA + número ÁMBAR PEGADO al título.
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(23);
-    const tY1 = 56, tY2 = 68;
-    textoSombra('REPORTE TÉCNICO', mX, tY1, [255, 255, 255]);
-    textoSombra('Y ESTADÍSTICO', mX, tY2, [255, 255, 255]);
-    // El cuadro del número va JUSTO a la derecha del título (no al borde de la hoja).
-    const anchoTitulo = Math.max(doc.getTextWidth('REPORTE TÉCNICO'), doc.getTextWidth('Y ESTADÍSTICO'));
-    const numBox = 16, numX = mX + anchoTitulo + 7, numY = (tY1 + tY2) / 2 - numBox / 2 - 2.5;
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(numX, numY, numBox, numBox, 2, 2, 'F');
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(17);
-    doc.text(NUMERO_REPORTE, numX + numBox / 2, numY + numBox / 2 + 2.2, { align: 'center' });
-
-    // 5) "FERIADO" grande en ámbar + FECHA del feriado en blanco + año partido en cuadros PEGADOS.
-    const fY = 98;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(30);
-    textoSombra('FERIADO', mX, fY, [AMBER[0], AMBER[1], AMBER[2]]);
-    const anchoFeriado = doc.getTextWidth('FERIADO');
-    // Línea del feriado = su FECHA (estilo OTS). Feriados movibles (Carnaval/Semana Santa) → nombre.
-    doc.setFontSize(17);
+    // 5) Bloque FERIADO (ámbar) con texto NAVY: "FERIADO" grande, divisor y la FECHA debajo.
+    const fSize = 30, dSize = 17;
     const etiquetaFeriado = (FECHA_FERIADO[feriadoTxt] || feriadoTxt).toUpperCase();
-    const ferLineas = doc.splitTextToSize(etiquetaFeriado, 118);
-    let ny = fY + 11, anchoFecha = 0;
-    for (const ln of ferLineas) { textoSombra(ln, mX, ny, [255, 255, 255]); anchoFecha = Math.max(anchoFecha, doc.getTextWidth(ln)); ny += 8; }
-    // Año partido en dos cuadros ámbar (p. ej. 20 / 26), PEGADOS a la derecha del bloque FERIADO/fecha.
-    const anioStr = String(anio);
-    const a1 = anioStr.slice(0, 2), a2 = anioStr.slice(2) || anioStr;
-    const yBox = 13, gapY = 2, yBoxX = mX + Math.max(anchoFeriado, anchoFecha) + 8, yBoxY = fY - 9;
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]);
-    doc.roundedRect(yBoxX, yBoxY, yBox, yBox, 2, 2, 'F');
-    doc.roundedRect(yBoxX, yBoxY + yBox + gapY, yBox, yBox, 2, 2, 'F');
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
-    doc.text(a1, yBoxX + yBox / 2, yBoxY + yBox / 2 + 2, { align: 'center' });
-    doc.text(a2, yBoxX + yBox / 2, yBoxY + yBox + gapY + yBox / 2 + 2, { align: 'center' });
-    // Tipo de encuesta (pequeño, izquierda)
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(235, 238, 242);
-    doc.text(tipoTxt, mX, ny + 3);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(fSize); const wFer = doc.getTextWidth('FERIADO');
+    doc.setFontSize(dSize); const wFecha = doc.getTextWidth(etiquetaFeriado);
+    const fPadX = 11, fBlkW = Math.max(wFer, wFecha) + fPadX * 2, fBlkH = 30;
+    const fX = (pageW - fBlkW) / 2, fBlkY = blkY + blkH + 8;
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(fX, fBlkY, fBlkW, fBlkH, 2.5, 2.5, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
+    doc.setFontSize(fSize); doc.text('FERIADO', pageW / 2, fBlkY + 13, { align: 'center' });
+    doc.setDrawColor(NAVY[0], NAVY[1], NAVY[2]); doc.setLineWidth(0.6);
+    doc.line(fX + fPadX, fBlkY + 16.5, fX + fBlkW - fPadX, fBlkY + 16.5);
+    doc.setFontSize(dSize); doc.text(etiquetaFeriado, pageW / 2, fBlkY + 25, { align: 'center' });
+
+    // Tipo de encuesta (pequeño, centrado, debajo del bloque)
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(255, 255, 255);
+    doc.text(tipoTxt, pageW / 2, fBlkY + fBlkH + 8, { align: 'center' });
 
     // Datos reales para el resumen y la tabulación
     const e = this.estadisticas.encuestas || {};
