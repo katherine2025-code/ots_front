@@ -143,31 +143,57 @@ export class ReportesPage implements OnInit {
     const logo = await this.cargarLogoPDF();
     const banner = await this.cargarImagenPNG('assets/icon/banner_pie.png');
     const directora = await this.cargarImagenPNG('assets/icon/dir_ots.png');
+    const fotoPortada = await this.cargarImagenJPG('assets/icon/imagen_turistica.jpg');
 
-    // ===================== PORTADA =====================
-    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, 0, pageW, 10, 'F');
-    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, 10, pageW, 2, 'F');
-    if (logo) { try { doc.addImage(logo, 'PNG', pageW / 2 - 45, 46, 90, 14); } catch { /* sin logo */ } }
+    // Número de reporte (editable). La tutora pidió que este sea el 06.
+    const NUMERO_REPORTE = '06';
+    const bannerHport = banner ? pageW * (banner.h / banner.w) : footerH;
 
-    const cajaW = 150, cajaH = 30, cajaX = (pageW - cajaW) / 2, cajaY = 92;
+    // ===================== PORTADA (con foto turística) =====================
+    // 1) Foto a todo el ancho, recortada (cover) a la banda inferior de la portada.
+    const bandTop = 90, bandBot = pageH - bannerHport;
+    if (fotoPortada) {
+      const imgW = pageW;
+      const imgH = imgW * (fotoPortada.h / fotoPortada.w);
+      const imgY = bandTop - Math.max(0, (imgH - (bandBot - bandTop)) / 2);
+      try { doc.addImage(fotoPortada.img, 'JPEG', 0, imgY, imgW, imgH); } catch { /* sin foto */ }
+    }
+    // 2) Máscara blanca de la zona superior (título) + franja de marca
+    doc.setFillColor(255, 255, 255); doc.rect(0, 0, pageW, bandTop, 'F');
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, 0, pageW, 8, 'F');
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, 8, pageW, 1.6, 'F');
+
+    // 3) Logo centrado
+    if (logo) {
+      const lw = 74, lh = lw * (60 / 402);
+      try { doc.addImage(logo, 'PNG', pageW / 2 - lw / 2, 14, lw, lh); } catch { /* sin logo */ }
+    }
+
+    // 4) Caja "REPORTE TÉCNICO Y ESTADÍSTICO" + número
+    const cajaW = 150, cajaH = 20, cajaX = (pageW - cajaW) / 2, cajaY = 32;
     doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.roundedRect(cajaX, cajaY, cajaW - 24, cajaH, 2, 2, 'F');
     doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(cajaX + cajaW - 22, cajaY, 22, cajaH, 2, 2, 'F');
-    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(17);
-    doc.text('REPORTE TÉCNICO', cajaX + 7, cajaY + 13);
-    doc.text('Y ESTADÍSTICO', cajaX + 7, cajaY + 23);
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(19);
-    doc.text('01', cajaX + cajaW - 11, cajaY + 19, { align: 'center' });
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+    doc.text('REPORTE TÉCNICO', cajaX + 7, cajaY + 8.5);
+    doc.text('Y ESTADÍSTICO', cajaX + 7, cajaY + 15.5);
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(17);
+    doc.text(NUMERO_REPORTE, cajaX + cajaW - 11, cajaY + 13, { align: 'center' });
 
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(23); doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    const ferLineas = doc.splitTextToSize(`FERIADO ${feriadoTxt}`.toUpperCase(), contentW);
-    doc.text(ferLineas, pageW / 2, cajaY + 48, { align: 'center' });
-    doc.setFontSize(18);
-    doc.text(String(anio), pageW / 2, cajaY + 48 + ferLineas.length * 9, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(12); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
-    doc.text(tipoTxt, pageW / 2, cajaY + 72, { align: 'center' });
-    doc.setFontSize(9);
-    doc.text(`Observatorio Turístico Sostenible · UPSE · ${new Date().toLocaleDateString()}`, pageW / 2, cajaY + 80, { align: 'center' });
+    // 5) FERIADO <nombre> <año>
+    const fy = cajaY + cajaH + 12;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(19); doc.setTextColor(AMBER[0], AMBER[1], AMBER[2]);
+    doc.text('FERIADO', cajaX, fy);
+    // Caja de año a la derecha
+    doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(pageW - mX - 28, fy - 7, 28, 17, 2, 2, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(14);
+    doc.text(String(anio), pageW - mX - 14, fy + 3, { align: 'center' });
+    // Nombre del feriado
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(17);
+    const ferLineas = doc.splitTextToSize(feriadoTxt.toUpperCase(), cajaW - 36);
+    doc.text(ferLineas, cajaX, fy + 9);
+    // Tipo de encuesta (pequeño)
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(GRIS[0], GRIS[1], GRIS[2]);
+    doc.text(tipoTxt, cajaX, fy + 9 + ferLineas.length * 7 + 2);
 
     // Datos reales para el resumen y la tabulación
     const e = this.estadisticas.encuestas || {};
@@ -325,10 +351,10 @@ export class ReportesPage implements OnInit {
     const dirH = directora ? Math.min(11, pageW * 0.56 * (directora.h / directora.w)) : 0;
     for (let pg = 1; pg <= nPaginas; pg++) {
       doc.setPage(pg);
-      // En la ÚLTIMA página, el nombre de la Directora va arriba del banner (como la captura).
-      if (directora && pg === nPaginas) {
+      // El nombre de la Directora va arriba del banner en la PORTADA y en la última página.
+      if (directora && (pg === 1 || pg === nPaginas)) {
         const dirW = dirH * (directora.w / directora.h);
-        try { doc.addImage(directora.img, 'PNG', 0, pageH - bannerH - dirH, dirW, dirH); } catch { /* sin firma */ }
+        try { doc.addImage(directora.img, 'PNG', (pageW - dirW) / 2, pageH - bannerH - dirH, dirW, dirH); } catch { /* sin firma */ }
       }
       if (banner) {
         try { doc.addImage(banner.img, 'PNG', 0, pageH - bannerH, pageW, bannerH); } catch { /* sin banner */ }
@@ -748,6 +774,34 @@ export class ReportesPage implements OnInit {
       let bin = '';
       for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
       return { img: 'data:image/png;base64,' + btoa(bin), w, h };
+    } catch {
+      return null;
+    }
+  }
+
+  // Carga una foto JPG (p. ej. la imagen turística de la portada) como data URL + dimensiones
+  // (leídas del marcador SOF del JPEG). null si no se puede.
+  private async cargarImagenJPG(ruta: string): Promise<{ img: string; w: number; h: number } | null> {
+    try {
+      const resp = await fetch(ruta);
+      if (!resp.ok) return null;
+      const buf = await resp.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let w = 0, h = 0, i = 2;
+      while (i < bytes.length - 8) {
+        if (bytes[i] !== 0xFF) { i++; continue; }
+        const m = bytes[i + 1];
+        if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) {
+          h = (bytes[i + 5] << 8) | bytes[i + 6];
+          w = (bytes[i + 7] << 8) | bytes[i + 8];
+          break;
+        }
+        i += 2 + ((bytes[i + 2] << 8) | bytes[i + 3]);
+      }
+      if (!w || !h) { w = 1200; h = 1600; }
+      let bin = '';
+      for (let k = 0; k < bytes.length; k++) bin += String.fromCharCode(bytes[k]);
+      return { img: 'data:image/jpeg;base64,' + btoa(bin), w, h };
     } catch {
       return null;
     }
