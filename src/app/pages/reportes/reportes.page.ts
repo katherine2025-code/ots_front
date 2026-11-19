@@ -249,8 +249,8 @@ export class ReportesPage implements OnInit {
         ['Total de llegadas', fmt(dem.llegadas_total)],
         ['Pernoctaciones', fmt(dem.pernoctaciones)],
         ['Habitaciones ocupadas', fmt(dem.habitaciones_ocupadas)],
-        ['Tarifa prom. por persona', dem.tarifa_promedio_persona != null ? `$${Number(dem.tarifa_promedio_persona).toFixed(2)}` : 'N/D'],
-        ['Tarifa prom. por habitación', dem.tarifa_promedio_habitacion != null ? `$${Number(dem.tarifa_promedio_habitacion).toFixed(2)}` : 'N/D'],
+        [`Tarifa prom. por persona (n=${dem.hoteles_tarifa_persona ?? 0})`, dem.tarifa_promedio_persona != null ? `$${Number(dem.tarifa_promedio_persona).toFixed(2)}` : 'N/D'],
+        [`Tarifa prom. por habitación (n=${dem.hoteles_tarifa_habitacion ?? 0})`, dem.tarifa_promedio_habitacion != null ? `$${Number(dem.tarifa_promedio_habitacion).toFixed(2)}` : 'N/D'],
       ];
       const porFila = 3, cardW = (contentW - 2 * 4) / porFila, cardH = 16, gapC = 4;
       tarjetas.forEach((k, idx) => {
@@ -356,7 +356,7 @@ export class ReportesPage implements OnInit {
       // El nombre de la Directora va arriba del banner en la PORTADA y en la última página.
       if (directora && (pg === 1 || pg === nPaginas)) {
         const dirW = dirH * (directora.w / directora.h);
-        try { doc.addImage(directora.img, 'PNG', (pageW - dirW) / 2, pageH - bannerH - dirH, dirW, dirH); } catch { /* sin firma */ }
+        try { doc.addImage(directora.img, 'PNG', (pageW - dirW) / 2, pageH - bannerH - dirH - 2.5, dirW, dirH); } catch { /* sin firma */ }
       }
       if (banner) {
         try { doc.addImage(banner.img, 'PNG', 0, pageH - bannerH, pageW, bannerH); } catch { /* sin banner */ }
