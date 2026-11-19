@@ -12,6 +12,17 @@ const NOMBRES_FERIADOS = [
   'Día de los Difuntos', 'Navidad', 'Fin de Año'
 ];
 
+// Fecha representativa de cada feriado para la portada (estilo OTS: muestra la fecha, p. ej.
+// "2 DE NOVIEMBRE"). Solo los de fecha FIJA; Carnaval y Semana Santa cambian cada año, así que
+// para esos se usa el nombre del feriado como respaldo.
+const FECHA_FERIADO: { [k: string]: string } = {
+  'Día del Trabajador': '1 de Mayo',
+  'Primer Grito de la Independencia': '10 de Agosto',
+  'Día de los Difuntos': '2 de Noviembre',
+  'Navidad': '25 de Diciembre',
+  'Fin de Año': '31 de Diciembre',
+};
+
 // Significado de la escala de satisfacción 1-5 (para que el reporte se comprenda, no solo números).
 const ESCALA_SATISF: { [k: string]: string } = {
   '1': '1 · Muy insatisfecho',
@@ -206,7 +217,10 @@ export class ReportesPage implements OnInit {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(30);
     textoSombra('FERIADO', mX, fY, [AMBER[0], AMBER[1], AMBER[2]]);
     doc.setFontSize(17);
-    const ferLineas = doc.splitTextToSize(feriadoTxt.toUpperCase(), 116);
+    // Línea del feriado = su FECHA (estilo OTS). Si el feriado es movible (Carnaval/Semana Santa),
+    // se usa su nombre como respaldo.
+    const etiquetaFeriado = (FECHA_FERIADO[feriadoTxt] || feriadoTxt).toUpperCase();
+    const ferLineas = doc.splitTextToSize(etiquetaFeriado, 116);
     let ny = fY + 11;
     for (const ln of ferLineas) { textoSombra(ln, mX, ny, [255, 255, 255]); ny += 8; }
     // Año partido en dos cuadros ámbar (p. ej. 20 / 26), a la derecha.
