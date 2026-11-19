@@ -246,22 +246,22 @@ export class ReportesPage implements OnInit {
 
       if (p.seccion && p.seccion !== seccionActual) {
         seccionActual = p.seccion;
-        if (y + 16 > bottomLimit) { doc.addPage(); y = topContent; }
-        y += 2;
+        if (y + 12 > bottomLimit) { doc.addPage(); y = topContent; }
+        y += 1;
         const letra = String.fromCharCode(65 + Math.max(0, ordenSecciones.indexOf(p.seccion)));
-        doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(mX, y, contentW, 9, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-        doc.text(`SECCIÓN ${letra}. ${p.seccion.toUpperCase()}`, pageW / 2, y + 6, { align: 'center' });
-        y += 14;
+        doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(mX, y, contentW, 7.5, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+        doc.text(`SECCIÓN ${letra}. ${p.seccion.toUpperCase()}`, pageW / 2, y + 5, { align: 'center' });
+        y += 11;
       }
 
       // LAYOUT HORIZONTAL COMPACTO: porcentajes a la IZQUIERDA, gráfico de barras AL LADO.
       const legendW = 82, gapLC = 5, chartCol = contentW - legendW - gapLC;
 
       // Título (ancho completo)
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
       const tLineas = doc.splitTextToSize(p.titulo + (p.multiple ? '  (opción múltiple)' : ''), contentW);
-      const tituloH = tLineas.length * 4.3 + 2.5;
+      const tituloH = tLineas.length * 4 + 2;
 
       // Gráfica (se renderiza al ancho de la columna derecha)
       const g = this.graficaPreguntaPDF(p, chartCol);
@@ -269,15 +269,15 @@ export class ReportesPage implements OnInit {
       const chartWmm = g ? (g.esDona ? Math.min(52, chartCol) : chartCol) : 0;
 
       // Porcentajes (izquierda): una línea por opción, con su cuadro de color
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6);
       const legendLineas: string[][] = opciones.map((op: any) =>
         doc.splitTextToSize(`${op.etiqueta}  (${op.porcentaje}%)`, legendW - 5));
-      const legendH = legendLineas.reduce((a, l) => a + Math.max(3.9, l.length * 3.3) + 1.1, 0);
+      const legendH = legendLineas.reduce((a, l) => a + Math.max(3.6, l.length * 3.1) + 0.8, 0);
 
       const cuerpoH = Math.max(legendH, chartHmm);
       const esSatisf = /satisfacci/i.test(p.titulo || '');
-      const notaSatH = (esSatisf && p.sinDato > 0) ? 6 : 0;
-      const bloqueH = tituloH + cuerpoH + 7 + notaSatH;
+      const notaSatH = (esSatisf && p.sinDato > 0) ? 5 : 0;
+      const bloqueH = tituloH + cuerpoH + 5 + notaSatH;
       if (y + bloqueH > bottomLimit) { doc.addPage(); y = topContent; }
 
       // Título
@@ -286,14 +286,14 @@ export class ReportesPage implements OnInit {
       const yBody = y + tituloH + 2;
 
       // Porcentajes a la izquierda
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.8);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.6);
       let yl = yBody;
       opciones.forEach((op: any, j: number) => {
         const rgb = this.hexARgb(PALETA[j % PALETA.length]);
-        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(mX, yl - 0.2, 2.6, 2.6, 'F');
+        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(mX, yl - 0.2, 2.4, 2.4, 'F');
         doc.setTextColor(55, 55, 55);
-        doc.text(legendLineas[j], mX + 4, yl + 2);
-        yl += Math.max(3.9, legendLineas[j].length * 3.3) + 1.1;
+        doc.text(legendLineas[j], mX + 3.8, yl + 1.9);
+        yl += Math.max(3.6, legendLineas[j].length * 3.1) + 0.8;
       });
 
       // Gráfica a la derecha
@@ -302,7 +302,7 @@ export class ReportesPage implements OnInit {
         try { doc.addImage(g.img, 'PNG', chartX, yBody, chartWmm, chartHmm); } catch { /* grafica omitida */ }
       }
 
-      let yFin = yBody + cuerpoH + 2.5;
+      let yFin = yBody + cuerpoH + 2;
       doc.setFont('helvetica', 'italic'); doc.setFontSize(6.8); doc.setTextColor(150, 150, 150);
       doc.text(
         p.sinDato > 0
@@ -315,8 +315,8 @@ export class ReportesPage implements OnInit {
         doc.text('Pregunta opcional (escala 1-5): quienes no la respondieron se registran como «sin responder».', mX, yFin + 3);
         yFin += 3;
       }
-      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 2.5, pageW - mX, yFin + 2.5);
-      y = yFin + 6;
+      doc.setDrawColor(224, 227, 231); doc.setLineWidth(0.2); doc.line(mX, yFin + 2, pageW - mX, yFin + 2);
+      y = yFin + 4.5;
     }
 
     // --- Pie de página: el banner institucional (imagen) va en TODAS las hojas del PDF ---
@@ -564,8 +564,8 @@ export class ReportesPage implements OnInit {
     const esDona = !p.multiple && opciones.length <= 4;
     const PXMM = 6; // píxeles por mm (~150 dpi) para que no se vea borroso
     // Compacto (va al lado de los porcentajes): alto proporcional al número de opciones.
-    const hMm = esDona ? 44 : Math.min(84, Math.max(24, opciones.length * 5 + 10));
-    const wMm = esDona ? 52 : contentW;
+    const hMm = esDona ? 40 : Math.min(72, Math.max(22, opciones.length * 4.2 + 8));
+    const wMm = esDona ? 48 : contentW;
 
     const cv = document.createElement('canvas');
     cv.width = Math.round(wMm * PXMM);
