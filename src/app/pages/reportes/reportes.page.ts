@@ -356,7 +356,7 @@ export class ReportesPage implements OnInit {
       // El nombre de la Directora va arriba del banner en la PORTADA y en la última página.
       if (directora && (pg === 1 || pg === nPaginas)) {
         const dirW = dirH * (directora.w / directora.h);
-        try { doc.addImage(directora.img, 'PNG', (pageW - dirW) / 2, pageH - bannerH - dirH, dirW, dirH); } catch { /* sin firma */ }
+        try { doc.addImage(directora.img, 'PNG', (pageW - dirW) / 2, pageH - bannerH - dirH - 2.5, dirW, dirH); } catch { /* sin firma */ }
       }
       if (banner) {
         try { doc.addImage(banner.img, 'PNG', 0, pageH - bannerH, pageW, bannerH); } catch { /* sin banner */ }
