@@ -156,10 +156,17 @@ export class ReportesPage implements OnInit {
       const imgW = imgH * (fotoPortada.w / fotoPortada.h);
       try { doc.addImage(fotoPortada.img, 'JPEG', (pageW - imgW) / 2, 0, imgW, imgH); } catch { /* sin foto */ }
     }
-    // 2) Velo oscuro en la franja superior para que el texto se lea sobre la foto.
+    // 2) Velo DEGRADADO oscuro de arriba hacia abajo: fuerte arriba (donde va el texto) y se
+    //    funde con la foto hacia el centro, para que el título se lea claramente sobre la imagen
+    //    sin verse como una banda plana (efecto de portada tipo "cover").
     try {
-      doc.setGState(new (doc as any).GState({ opacity: 0.42 }));
-      doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.rect(0, 0, pageW, 96, 'F');
+      const gradH = 122, pasos = 44;
+      for (let i = 0; i < pasos; i++) {
+        const t = i / (pasos - 1);
+        doc.setGState(new (doc as any).GState({ opacity: 0.66 * (1 - t) }));
+        doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
+        doc.rect(0, (gradH * i) / pasos, pageW, gradH / pasos + 0.4, 'F');
+      }
       doc.setGState(new (doc as any).GState({ opacity: 1 }));
     } catch { /* si no hay GState, el texto va directo sobre la foto */ }
     // Línea de marca superior
