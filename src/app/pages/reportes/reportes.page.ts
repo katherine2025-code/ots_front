@@ -174,16 +174,22 @@ export class ReportesPage implements OnInit {
     // 2) Velo DEGRADADO oscuro de arriba hacia abajo: fuerte arriba (donde va el texto) y se
     //    funde con la foto hacia el centro, para que el título se lea claramente sobre la imagen
     //    sin verse como una banda plana (efecto de portada tipo "cover").
+    // Se genera en un canvas (degradado real navy→transparente) y se incrusta como imagen:
+    // así es perfectamente suave, SIN las bandas/costuras que deja apilar rectángulos.
     try {
-      const gradH = 132, pasos = 48;
-      for (let i = 0; i < pasos; i++) {
-        const t = i / (pasos - 1);
-        doc.setGState(new (doc as any).GState({ opacity: 0.70 * (1 - t) }));
-        doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
-        doc.rect(0, (gradH * i) / pasos, pageW, gradH / pasos + 0.4, 'F');
+      const gradH = 142;
+      const cv = document.createElement('canvas');
+      cv.width = 10; cv.height = 500;
+      const gx = cv.getContext('2d');
+      if (gx) {
+        const g = gx.createLinearGradient(0, 0, 0, 500);
+        g.addColorStop(0, 'rgba(9,18,40,0.72)');
+        g.addColorStop(0.55, 'rgba(9,18,40,0.26)');
+        g.addColorStop(1, 'rgba(9,18,40,0)');
+        gx.fillStyle = g; gx.fillRect(0, 0, 10, 500);
+        doc.addImage(cv.toDataURL('image/png'), 'PNG', 0, 0, pageW, gradH);
       }
-      doc.setGState(new (doc as any).GState({ opacity: 1 }));
-    } catch { /* si no hay GState, el texto va directo sobre la foto */ }
+    } catch { /* sin velo: el texto va directo sobre la foto */ }
     // Línea de marca superior
     doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, 0, pageW, 2, 'F');
 
@@ -202,37 +208,39 @@ export class ReportesPage implements OnInit {
       doc.setTextColor(rgb[0], rgb[1], rgb[2]); doc.text(txt, tx, ty);
     };
 
-    // 4) Título "REPORTE TÉCNICO / Y ESTADÍSTICO" a la IZQUIERDA + número en cuadro ámbar.
+    // 4) Título "REPORTE TÉCNICO / Y ESTADÍSTICO" a la IZQUIERDA + número ÁMBAR PEGADO al título.
     doc.setFont('helvetica', 'bold'); doc.setFontSize(23);
-    const tY1 = 54, tY2 = 65;
+    const tY1 = 56, tY2 = 68;
     textoSombra('REPORTE TÉCNICO', mX, tY1, [255, 255, 255]);
     textoSombra('Y ESTADÍSTICO', mX, tY2, [255, 255, 255]);
-    const numBox = 18, numX = pageW - mX - numBox, numY = 47;
+    // El cuadro del número va JUSTO a la derecha del título (no al borde de la hoja).
+    const anchoTitulo = Math.max(doc.getTextWidth('REPORTE TÉCNICO'), doc.getTextWidth('Y ESTADÍSTICO'));
+    const numBox = 16, numX = mX + anchoTitulo + 7, numY = (tY1 + tY2) / 2 - numBox / 2 - 2.5;
     doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(numX, numY, numBox, numBox, 2, 2, 'F');
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(18);
-    doc.text(NUMERO_REPORTE, numX + numBox / 2, numY + numBox / 2 + 2.3, { align: 'center' });
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(17);
+    doc.text(NUMERO_REPORTE, numX + numBox / 2, numY + numBox / 2 + 2.2, { align: 'center' });
 
-    // 5) "FERIADO" grande en ámbar + nombre del feriado en blanco (izquierda) + año partido en cuadros.
-    const fY = 92;
+    // 5) "FERIADO" grande en ámbar + FECHA del feriado en blanco + año partido en cuadros PEGADOS.
+    const fY = 98;
     doc.setFont('helvetica', 'bold'); doc.setFontSize(30);
     textoSombra('FERIADO', mX, fY, [AMBER[0], AMBER[1], AMBER[2]]);
+    const anchoFeriado = doc.getTextWidth('FERIADO');
+    // Línea del feriado = su FECHA (estilo OTS). Feriados movibles (Carnaval/Semana Santa) → nombre.
     doc.setFontSize(17);
-    // Línea del feriado = su FECHA (estilo OTS). Si el feriado es movible (Carnaval/Semana Santa),
-    // se usa su nombre como respaldo.
     const etiquetaFeriado = (FECHA_FERIADO[feriadoTxt] || feriadoTxt).toUpperCase();
-    const ferLineas = doc.splitTextToSize(etiquetaFeriado, 116);
-    let ny = fY + 11;
-    for (const ln of ferLineas) { textoSombra(ln, mX, ny, [255, 255, 255]); ny += 8; }
-    // Año partido en dos cuadros ámbar (p. ej. 20 / 26), a la derecha.
+    const ferLineas = doc.splitTextToSize(etiquetaFeriado, 118);
+    let ny = fY + 11, anchoFecha = 0;
+    for (const ln of ferLineas) { textoSombra(ln, mX, ny, [255, 255, 255]); anchoFecha = Math.max(anchoFecha, doc.getTextWidth(ln)); ny += 8; }
+    // Año partido en dos cuadros ámbar (p. ej. 20 / 26), PEGADOS a la derecha del bloque FERIADO/fecha.
     const anioStr = String(anio);
     const a1 = anioStr.slice(0, 2), a2 = anioStr.slice(2) || anioStr;
-    const yBox = 15, yBoxX = pageW - mX - yBox, yBoxY = fY - 9;
+    const yBox = 13, gapY = 2, yBoxX = mX + Math.max(anchoFeriado, anchoFecha) + 8, yBoxY = fY - 9;
     doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]);
     doc.roundedRect(yBoxX, yBoxY, yBox, yBox, 2, 2, 'F');
-    doc.roundedRect(yBoxX, yBoxY + yBox + 2, yBox, yBox, 2, 2, 'F');
-    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.roundedRect(yBoxX, yBoxY + yBox + gapY, yBox, yBox, 2, 2, 'F');
+    doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
     doc.text(a1, yBoxX + yBox / 2, yBoxY + yBox / 2 + 2, { align: 'center' });
-    doc.text(a2, yBoxX + yBox / 2, yBoxY + yBox + 2 + yBox / 2 + 2, { align: 'center' });
+    doc.text(a2, yBoxX + yBox / 2, yBoxY + yBox + gapY + yBox / 2 + 2, { align: 'center' });
     // Tipo de encuesta (pequeño, izquierda)
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(235, 238, 242);
     doc.text(tipoTxt, mX, ny + 3);
