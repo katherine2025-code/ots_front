@@ -151,7 +151,7 @@ export class ReportesPage implements OnInit {
     const tipoTxt = this.encuestaTab === 'hotel'
       ? 'Encuesta de Establecimientos de Alojamiento'
       : 'Encuesta Turística';
-    const logo = await this.cargarLogoPDF();
+    const logo = await this.cargarImagenPNG('assets/icon/logo_portada.png');
     const banner = await this.cargarImagenPNG('assets/icon/banner_pie.png');
     const directora = await this.cargarImagenPNG('assets/icon/dir_ots.png');
     const fotoPortada = await this.cargarImagenJPG('assets/icon/imagen_turistica.jpg');
@@ -193,10 +193,10 @@ export class ReportesPage implements OnInit {
     // Línea de marca superior
     doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.rect(0, 0, pageW, 2, 'F');
 
-    // 3) Logo centrado arriba (sobre la foto), como tu diseño.
+    // 3) Logo centrado arriba (sobre la foto), con su proporción real (no se deforma).
     if (logo) {
-      const lw = 64, lh = lw * (60 / 402);
-      try { doc.addImage(logo, 'PNG', (pageW - lw) / 2, 12, lw, lh); } catch { /* sin logo */ }
+      const lw = 46, lh = lw * (logo.h / logo.w);
+      try { doc.addImage(logo.img, 'PNG', (pageW - lw) / 2, 12, lw, lh); } catch { /* sin logo */ }
     }
 
     // 4) BLOQUES SÓLIDOS estilo portada OTS (texto SOBRE bloques navy/ámbar → nítido, como tu PNG).
@@ -221,20 +221,29 @@ export class ReportesPage implements OnInit {
     doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]); doc.setFontSize(20);
     doc.text(NUMERO_REPORTE, numX + numW / 2, blkY + blkH / 2 + 3, { align: 'center' });
 
-    // 5) Bloque FERIADO (ámbar) con texto NAVY: "FERIADO" grande, divisor y la FECHA debajo.
+    // 5) Bloque FERIADO (ámbar, texto NAVY) + cuadro del AÑO (navy) a la derecha, centrados como grupo.
     const fSize = 30, dSize = 17;
     const etiquetaFeriado = (FECHA_FERIADO[feriadoTxt] || feriadoTxt).toUpperCase();
+    const anioStr = String(anio);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(fSize); const wFer = doc.getTextWidth('FERIADO');
     doc.setFontSize(dSize); const wFecha = doc.getTextWidth(etiquetaFeriado);
     const fPadX = 11, fBlkW = Math.max(wFer, wFecha) + fPadX * 2, fBlkH = 30;
-    const fX = (pageW - fBlkW) / 2, fBlkY = blkY + blkH + 8;
+    const anioBoxW = 20, gapAnio = 5, grupoFW = fBlkW + gapAnio + anioBoxW;
+    const fX = (pageW - grupoFW) / 2, fBlkY = blkY + blkH + 8, fCx = fX + fBlkW / 2;
+    // Bloque ámbar con "FERIADO", divisor y la FECHA
     doc.setFillColor(AMBER[0], AMBER[1], AMBER[2]); doc.roundedRect(fX, fBlkY, fBlkW, fBlkH, 2.5, 2.5, 'F');
     doc.setTextColor(NAVY[0], NAVY[1], NAVY[2]);
-    doc.setFontSize(fSize); doc.text('FERIADO', pageW / 2, fBlkY + 13, { align: 'center' });
+    doc.setFontSize(fSize); doc.text('FERIADO', fCx, fBlkY + 13, { align: 'center' });
     doc.setDrawColor(NAVY[0], NAVY[1], NAVY[2]); doc.setLineWidth(0.6);
     doc.line(fX + fPadX, fBlkY + 16.5, fX + fBlkW - fPadX, fBlkY + 16.5);
-    doc.setFontSize(dSize); doc.text(etiquetaFeriado, pageW / 2, fBlkY + 25, { align: 'center' });
+    doc.setFontSize(dSize); doc.text(etiquetaFeriado, fCx, fBlkY + 25, { align: 'center' });
+    // Cuadro navy del AÑO a la derecha (20 / 26 = 2026)
+    const anioX = fX + fBlkW + gapAnio, anioCx = anioX + anioBoxW / 2;
+    doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]); doc.roundedRect(anioX, fBlkY, anioBoxW, fBlkH, 2.5, 2.5, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text(anioStr.slice(0, 2), anioCx, fBlkY + fBlkH * 0.42, { align: 'center' });
+    doc.text(anioStr.slice(2) || anioStr, anioCx, fBlkY + fBlkH * 0.82, { align: 'center' });
 
     // Tipo de encuesta (pequeño, centrado, debajo del bloque)
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(255, 255, 255);
