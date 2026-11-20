@@ -420,7 +420,7 @@
 
   <!-- ============================================================= -->
   <!-- SECCIÓN 3: SUSTENTO DEL MODELO (SOLO SUPER ADMINISTRADOR)     -->
-  <!-- Comparación de algoritmos + validación con datos reales       -->
+  <!-- Comparación de modelos + validación con datos reales          -->
   <!-- ============================================================= -->
   <div class="section-card sustento" *ngIf="isSuperAdmin">
     <div class="section-header">
@@ -428,15 +428,17 @@
         <ion-icon name="shield-checkmark-outline" class="section-icon"></ion-icon>
         Sustento del modelo
       </h2>
-      <p>Para garantizar la fiabilidad de las predicciones se entrenaron y compararon tres algoritmos
-        de Machine Learning. El sistema selecciona automáticamente el de mayor precisión sobre la
-        tasa de ocupación hotelera.</p>
+      <p>Para sustentar las predicciones se entrenaron y compararon tres modelos de Machine
+        Learning. Cada tarjeta muestra qué tan bien predice cada uno: mientras más alta sea la
+        <strong>precisión</strong> y el <strong>R²</strong>, y más bajos el <strong>error (RMSE y
+        MAE)</strong>, mejor predice ese modelo. Así puede compararlos directamente con los números
+        y ver cuál rinde mejor sobre la ocupación hotelera.</p>
     </div>
 
     <ion-button color="primary" class="train-button" (click)="entrenarModelo()" [disabled]="entrenando">
       <ion-spinner name="crescent" *ngIf="entrenando" slot="start"></ion-spinner>
       <ion-icon name="play-circle-outline" slot="start" *ngIf="!entrenando"></ion-icon>
-      {{ entrenando ? 'Entrenando modelos…' : 'Entrenar y comparar algoritmos' }}
+      {{ entrenando ? 'Entrenando modelos…' : 'Entrenar y comparar modelos' }}
     </ion-button>
 
     <!-- Tarjetas Comparativas -->
@@ -516,6 +518,10 @@
         </div>
       </div>
     </div>
+
+    <p class="section-sub" *ngIf="comparacion">💡 Compárelos usted mismo: el modelo con mayor
+      precisión y R², y menor error, es el que mejor predice. No se impone un “ganador”: los números
+      de cada tarjeta lo muestran por sí solos.</p>
 
     <!-- Gráfico Comparativo -->
     <div class="chart-container" *ngIf="comparacion">
