@@ -13,6 +13,38 @@
        darkreader-lock hace lo mismo con la extensión Dark Reader. -->
   <meta name="color-scheme" content="light dark">
   <meta name="darkreader-lock">
+
+  <!-- PWA: permite "Instalar la aplicación" desde el navegador (como SGA/UPSE). -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2A6F97">
+  <link rel="apple-touch-icon" href="assets/icon/pwa-192.png">
+
+  <script>
+    // Guarda el evento de instalación lo antes posible (puede dispararse antes
+    // de que Angular cargue el login) y avisa a la app que ya se puede instalar.
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      window.__deferredInstallPrompt = e;
+      window.dispatchEvent(new Event('pwa-installable'));
+    });
+    window.addEventListener('appinstalled', function () {
+      window.__deferredInstallPrompt = null;
+      window.dispatchEvent(new Event('pwa-installed'));
+    });
+
+    // Registra el service worker (requisito para que el navegador ofrezca instalar).
+    // Solo en la web: dentro del APK (Capacitor) no aplica y no debe tocar la webview nativa.
+    (function () {
+      var esNativo = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+      if (!esNativo && 'serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('sw.js').catch(function (err) {
+            console.warn('No se pudo registrar el service worker:', err);
+          });
+        });
+      }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>
