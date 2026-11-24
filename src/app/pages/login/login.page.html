@@ -59,6 +59,17 @@
           <span *ngIf="!loading">Iniciar sesión</span>
         </button>
 
+        <!-- Instalar la app en el dispositivo (PWA). Solo aparece si el navegador
+             lo permite y la app aún no está instalada. -->
+        <button
+          *ngIf="puedeInstalar"
+          type="button"
+          class="install-button"
+          (click)="instalarApp()">
+          <ion-icon name="download-outline"></ion-icon>
+          Instalar aplicación OTS
+        </button>
+
         <div *ngIf="error" class="error-alert">
           <ion-icon name="alert-circle-outline"></ion-icon>
           {{ error }}
