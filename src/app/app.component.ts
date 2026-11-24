@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
 import { IonicModule } from '@ionic/angular';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
+import { UpdateService } from './core/services/update.service';
 
 // Rutas públicas que no deben mostrar la barra lateral (usuario aún no autenticado)
 const RUTAS_SIN_SIDEBAR = ['/login', '/registro'];
@@ -18,9 +19,13 @@ const RUTAS_SIN_SIDEBAR = ['/login', '/registro'];
 export class AppComponent implements OnInit {
   mostrarSidebar = !RUTAS_SIN_SIDEBAR.some(ruta => this.router.url.startsWith(ruta));
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private updates: UpdateService) { }
 
   ngOnInit() {
+    // Live Updates: confirma el bundle actual y busca una versión web más nueva (solo en el APK).
+    this.updates.notificarListo();
+    this.updates.buscarActualizacion();
+
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event) => {
