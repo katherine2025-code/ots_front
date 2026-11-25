@@ -493,27 +493,53 @@
         </div>
       </div>
 
-      <div class="metric-card prophet-card" *ngIf="comparacion.prophet">
+      <div class="metric-card ridge-card" *ngIf="comparacion.ridge">
         <div class="card-header">
-          <ion-icon name="trending-up-outline"></ion-icon>
-          <h3>Prophet</h3>
+          <ion-icon name="analytics-outline"></ion-icon>
+          <h3>Ridge (Lineal)</h3>
         </div>
         <div class="metric-values">
           <div class="metric-item">
             <span class="metric-label">Precisión</span>
-            <span class="metric-value">{{ comparacion.prophet.precision }}%</span>
+            <span class="metric-value">{{ comparacion.ridge.precision }}%</span>
           </div>
           <div class="metric-item">
             <span class="metric-label">RMSE</span>
-            <span class="metric-value">{{ comparacion.prophet.rmse }}</span>
+            <span class="metric-value">{{ comparacion.ridge.rmse }}</span>
           </div>
           <div class="metric-item">
             <span class="metric-label">MAE</span>
-            <span class="metric-value">{{ comparacion.prophet.mae }}</span>
+            <span class="metric-value">{{ comparacion.ridge.mae }}</span>
           </div>
           <div class="metric-item">
             <span class="metric-label">R² Score</span>
-            <span class="metric-value">{{ comparacion.prophet.r2 }}</span>
+            <span class="metric-value">{{ comparacion.ridge.r2 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Baseline: referencia (promedio), no es un modelo de ML. Es el piso a vencer. -->
+      <div class="metric-card baseline-card" *ngIf="comparacion.baseline">
+        <div class="card-header">
+          <ion-icon name="remove-circle-outline"></ion-icon>
+          <h3>Baseline (promedio)</h3>
+        </div>
+        <div class="metric-values">
+          <div class="metric-item">
+            <span class="metric-label">Precisión</span>
+            <span class="metric-value">{{ comparacion.baseline.precision }}%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">RMSE</span>
+            <span class="metric-value">{{ comparacion.baseline.rmse }}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">MAE</span>
+            <span class="metric-value">{{ comparacion.baseline.mae }}</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">R² Score</span>
+            <span class="metric-value">{{ comparacion.baseline.r2 }}</span>
           </div>
         </div>
       </div>

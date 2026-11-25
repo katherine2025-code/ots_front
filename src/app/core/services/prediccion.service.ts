@@ -11,7 +11,7 @@ import { ApiService } from './api.service';
 export class PrediccionService {
   constructor(private api: ApiService) {}
 
-  // Entrenar los modelos (Random Forest, XGBoost, Prophet): reservado a Super Administrador
+  // Entrenar los modelos (Ridge, Random Forest, XGBoost + baseline): reservado a Super Administrador
   // (ver prediccionRoutes.js). Pasa por el backend Node en vez de llamar directo al
   // microservicio Python, que es el único lugar donde hoy se controla el rol.
   entrenarModelo(): Observable<any> {

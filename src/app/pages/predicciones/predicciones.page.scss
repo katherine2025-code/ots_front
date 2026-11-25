@@ -1,11 +1,12 @@
 // predicciones.page.scss — panel analítico claro, con los tokens --ots-* de la app.
-// Cada modelo conserva su color de acento (RF azul, XGBoost ámbar, Prophet teal).
+// Cada modelo conserva su color de acento (RF azul, XGBoost ámbar, Ridge teal, Baseline gris).
 :host {
   display: block;
 
   --acc-rf: #2A6F97;
   --acc-xgb: #d97706;
-  --acc-prophet: #2f8f8d;
+  --acc-ridge: #2f8f8d;
+  --acc-baseline: #94a3b8;
 }
 
 // ===== HEADER =====
@@ -132,7 +133,8 @@
 
   &.rf-card { --acc: var(--acc-rf); }
   &.xgb-card { --acc: var(--acc-xgb); }
-  &.prophet-card { --acc: var(--acc-prophet); }
+  &.ridge-card { --acc: var(--acc-ridge); }
+  &.baseline-card { --acc: var(--acc-baseline); }
 
   .card-header {
     display: flex; align-items: center; gap: 10px; margin-bottom: 14px;

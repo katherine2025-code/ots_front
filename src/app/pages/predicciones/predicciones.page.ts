@@ -366,8 +366,8 @@ export class PrediccionesPage implements OnInit {
     let m: any = null;
     if (nombre.includes('forest')) m = c.random_forest;
     else if (nombre.includes('xgb')) m = c.xgboost;
-    else if (nombre.includes('prophet')) m = c.prophet;
-    if (!m) m = c.random_forest || c.xgboost || c.prophet;
+    else if (nombre.includes('ridge')) m = c.ridge;
+    if (!m) m = c.random_forest || c.xgboost || c.ridge;
     const r = m?.rmse;
     return (typeof r === 'number' && r > 0) ? r : 5;
   }
@@ -593,13 +593,16 @@ export class PrediccionesPage implements OnInit {
     const rf = metricas?.['Random Forest'];
     if (!rf) return null;
     const xgboost = metricas['XGBoost'] || {};
-    const prophet = metricas['Prophet'] || null;
-    const precisiones = [rf, xgboost, prophet].filter(m => m).map(m => m.precision || 0);
+    const ridge = metricas['Ridge'] || null;
+    const baseline = metricas['Baseline'] || null;
+    // El baseline NO entra en la diferencia de precisión: es solo la referencia a vencer.
+    const precisiones = [rf, xgboost, ridge].filter(m => m).map(m => m.precision || 0);
     return {
       ganador,
       random_forest: rf,
       xgboost,
-      prophet,
+      ridge,
+      baseline,
       diferencia_precision: Math.round((Math.max(...precisiones) - Math.min(...precisiones)) * 100) / 100
     };
   }
@@ -636,7 +639,8 @@ export class PrediccionesPage implements OnInit {
 
     const rf = this.comparacion.random_forest;
     const xgb = this.comparacion.xgboost;
-    const prophet = this.comparacion.prophet;
+    const ridge = this.comparacion.ridge;
+    const baseline = this.comparacion.baseline;
 
     const datasets: any[] = [
       {
@@ -654,12 +658,21 @@ export class PrediccionesPage implements OnInit {
         borderWidth: 2
       }
     ];
-    if (prophet) {
+    if (ridge) {
       datasets.push({
-        label: 'Prophet',
-        data: [prophet.precision, prophet.r2 * 100, prophet.mae],
-        backgroundColor: 'rgba(16, 185, 129, 0.8)',
-        borderColor: 'rgba(16, 185, 129, 1)',
+        label: 'Ridge (Lineal)',
+        data: [ridge.precision, ridge.r2 * 100, ridge.mae],
+        backgroundColor: 'rgba(47, 143, 141, 0.8)',
+        borderColor: 'rgba(47, 143, 141, 1)',
+        borderWidth: 2
+      });
+    }
+    if (baseline) {
+      datasets.push({
+        label: 'Baseline (promedio)',
+        data: [baseline.precision, baseline.r2 * 100, baseline.mae],
+        backgroundColor: 'rgba(148, 163, 184, 0.7)',
+        borderColor: 'rgba(148, 163, 184, 1)',
         borderWidth: 2
       });
     }
@@ -677,7 +690,7 @@ export class PrediccionesPage implements OnInit {
           legend: { position: 'bottom', labels: { color: LEYENDA } },
           title: {
             display: true,
-            text: 'Comparación: Random Forest vs XGBoost vs Prophet',
+            text: 'Comparación de modelos (Baseline = referencia)',
             color: TITULO_CHART,
             font: { size: 14, weight: 'bold' }
           }
