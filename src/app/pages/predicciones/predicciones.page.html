@@ -92,10 +92,6 @@
               <span class="range-label">Rango estimado</span>
               <span class="range-value">{{ feriadoMin }}–{{ feriadoMax }}%</span>
             </div>
-            <div class="range-item">
-              <span class="range-label">Turistas proyectados</span>
-              <span class="range-value">~{{ resultadoFeriado.turistas_estimados_totales || 0 }}</span>
-            </div>
           </div>
         </div>
 
@@ -363,10 +359,6 @@
             <div class="metric-box warning">
               <h3>{{ resultadoRango.dia_pico?.fecha || '-' }}</h3>
               <p>Pico ({{ resultadoRango.dia_pico?.ocupacion_predicha || 0 }}%)</p>
-            </div>
-            <div class="metric-box primary">
-              <h3>~{{ resultadoRango.turistas_estimados_totales || 0 }}</h3>
-              <p>Turistas Proyectados</p>
             </div>
           </div>
 
